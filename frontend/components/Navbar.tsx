@@ -31,7 +31,7 @@ function LoginButton() {
 	return (
 		<Button
 			as="a"
-			href="https://www.google.com"
+			href="http://localhost:3000/api/auth/intra/login"
 			startContent={<img className="h-5 w-5 invert" src="42_Logo.svg" />}
 			variant="ghost"
 		>
