@@ -1,15 +1,16 @@
-"use client"
+"use client";
 import { Button } from "@/components/Button";
 import { UserPlus2, UserX2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
+import Divider from "@/components/Divider";
 
 function LevelBar() {
 	return (
-		<div className="flex h-2 items-center gap-8 w-full">
+		<div className="flex h-2 w-full items-center gap-8">
 			<div className="h-2 flex-1 overflow-hidden rounded-3xl bg-black ">
 				<div className="h-full w-1/2 bg-gradient-to-r from-card via-accent to-primary"></div>
 			</div>
-			<div className="flex aspect-square  h-[750%] items-center justify-center rounded-full bg-gradient-to-b from-accent to-card text-2xl font-bold leading-6 text-white ring-2 ring-card  -translate-y-1/2">
+			<div className="flex aspect-square  h-[750%] -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-accent to-card text-2xl font-bold leading-6 text-white ring-2  ring-card">
 				34
 			</div>
 		</div>
@@ -34,7 +35,7 @@ function PageTop() {
 					</Button>
 				</div>
 
-				<div ></div>
+				<div></div>
 				{/* <div className="absolute inset-0 flex translate-y-1/2 items-center gap-8 px-16 ">
 					<div className="flex h-48 w-full gap-4">
 						<div className="aspect-square h-full flex-shrink-0 rounded-full">
@@ -111,39 +112,74 @@ function no() {
 	);
 }
 
-
-function TabButton({title}: {title: string}) {
+function TabButton({ title }: { title: string }) {
 	return (
-		<div className="flex items-center justify-center h-full w-full rounded-3xl bg-gradient-to-b from-card-300 to-background p-4">
+		<div className="flex h-full w-full items-center justify-center rounded-3xl bg-gradient-to-b from-card-300 to-background p-4">
 			{title}
 		</div>
-	)
+	);
+}
+
+function Card({
+	header,
+	children,
+	footer,
+	color = "bg-card-300",
+}: {
+	header?: ReactNode;
+	children: ReactNode;
+	footer?: ReactNode;
+	color?: string;
+}) {
+	return (
+		<div className={`flex flex-col rounded-3xl ${color}`}>
+			{header && (
+				<>
+					<div className="flex flex-shrink-0 p-4 text-white font-medium ">
+						{header}
+					</div>
+					<Divider />
+				</>
+			)}
+
+			<div className="flex-1 p-6 text-background-800">{children}</div>
+
+			{footer && (
+				<>
+					<Divider />
+					<div className="flex flex-shrink-0 p-4 text-white">
+						{footer}
+					</div>
+				</>
+			)}
+		</div>
+	);
 }
 
 export default function Home() {
-	const [tab, setTab] = useState("Overview")
-	const [extended, setExtended] = useState(false)
+	const [tab, setTab] = useState("Overview");
+	const [extended, setExtended] = useState(false);
 	const tabNavRef = useRef(null) as any;
 	const originalTabNavTop = useRef(-1) as any;
-	
+
 	useEffect(() => {
 		if (originalTabNavTop.current === -1) {
-			originalTabNavTop.current = tabNavRef.current.offsetTop - tabNavRef.current.offsetHeight
+			originalTabNavTop.current =
+				tabNavRef.current.offsetTop - tabNavRef.current.offsetHeight;
 		}
 		const handleScroll = () => {
 			if (window.scrollY > originalTabNavTop.current) {
-				setExtended(true)
+				setExtended(true);
 			} else {
-				setExtended(false)
+				setExtended(false);
 			}
-		}
-		window.addEventListener("scroll", handleScroll)
-		return () => window.removeEventListener("scroll", handleScroll)
+		};
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
 	}, [tabNavRef.current]);
 
-
 	return (
-		<main className="flex w-[1250px] max-w-full justify-center flex-col gap-4">
+		<main className="flex w-[1250px] max-w-full flex-col justify-center gap-4">
 			<div className="flex w-full flex-col">
 				<div className="relative h-96 w-full overflow-hidden rounded-t-3xl">
 					<img
@@ -170,13 +206,15 @@ export default function Home() {
 							src="/pfp.png"
 						/>
 					</div>
-					<div className="flex w-full flex-col items-start gap-4 px-2 pl-4 text-white relative translate-y-[-25%]">
+					<div className="relative flex w-full translate-y-[-25%] flex-col items-start gap-4 px-2 pl-4 text-white">
 						<div className="flex items-center gap-1 rounded-3xl bg-green-600 px-1 text-[0.65rem]">
 							<div className="aspect-square h-2 w-2 rounded-full bg-green-400"></div>
 							<div>Online</div>
 						</div>
 						<div className="flex w-full flex-col gap-1">
-							<div className="text-2xl font-bold leading-5">mcharrad</div>
+							<div className="text-2xl font-bold leading-5">
+								mcharrad
+							</div>
 							<div className="flex gap-2 text-xs leading-[0.5rem]">
 								<span className="font-flag">🇲🇦</span>
 								<span>Morocco</span>
@@ -189,36 +227,26 @@ export default function Home() {
 			<div
 				ref={tabNavRef}
 				data-extended={extended}
-			 className="w-full bg-card rounded-3xl flex items-center justify-center p-2 gap-2 sticky top-8 data-[extended=true]:translate-y-full transition-all duration-300 z-30">
-				{
-					["Overview", "Friends", "Achievements", "Stats"].map((title) => (
-						<Button key={title} variant={tab === title ? "secondary" : "transparent"} onClick={() => setTab(title)}>
+				className="sticky top-8 z-30 flex w-full items-center justify-center gap-2 rounded-3xl bg-card p-2 transition-all duration-300 data-[extended=true]:translate-y-full"
+			>
+				{["Overview", "Friends", "Achievements", "Stats"].map(
+					(title) => (
+						<Button
+							key={title}
+							variant={
+								tab === title ? "secondary" : "transparent"
+							}
+							onClick={() => setTab(title)}
+						>
 							{title}
 						</Button>
-					))
-				}
+					),
+				)}
 			</div>
-			<div className="bg-card-300 h-[200vh] rounded-3xl flex p-2 gap-2">
-
-				{/* <div className="flex-1 flex-shrink-0 bg-card-100 rounded-3xl">
-
-				</div>
-				<div className="flex-1 flex-shrink-0 bg-card-200 rounded-3xl p-4">
-						<div className="flex h-16 rounded-3xl overflow-hidden relative">
-							<div className="w-1/2 h-full bg-red-400">
-								<img src="pfp.png" className="h-full w-full object-cover" />
-							</div>
-							<div className="w-1/2 h-full bg-blue-400">
-								<img src="pfp2.png" className="h-full w-full object-cover" />
-							</div>
-							<div className="absolute inset-0 via-card-300 bg-gradient-to-r z-10 from-transparent to-transparent flex justify-center items-cente">
-								<div className="text-white text-xl font-semibold flex-1 flex justify-center items-center">
-									WIN
-								</div>
-							</div>
-						</div>
-				</div> */}
-			</div>
+			<Card color="bg-card-300" header={"Overview"}>
+				fuck
+			</Card>
+			<div className="flex h-[200vh] gap-2 rounded-3xl bg-card-300 p-2"></div>
 		</main>
 	);
 }

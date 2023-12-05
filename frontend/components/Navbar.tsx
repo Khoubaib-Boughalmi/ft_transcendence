@@ -30,6 +30,8 @@ function Navigation() {
 function LoginButton() {
 	return (
 		<Button
+			as="a"
+			href="https://www.google.com"
 			startContent={<img className="h-5 w-5 invert" src="42_Logo.svg" />}
 			variant="ghost"
 		>
