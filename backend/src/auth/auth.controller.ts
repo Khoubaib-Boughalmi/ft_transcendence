@@ -16,6 +16,11 @@ export class AuthController {
 	@UseGuards(IntraAuthGuard)
 	async handle42Redirect(@Req() req, @Res() res) {
 		const { access_token } = await this.authService.login(req.user);
-		res.redirect(process.env.FRONTEND_URL + '?token=' + access_token);
+		res.cookie('access_token', access_token, {
+			httpOnly: true,
+			sameSite: 'none',
+			secure: true,
+		});
+		res.redirect(process.env.FRONTEND_URL);
 	}
 }
