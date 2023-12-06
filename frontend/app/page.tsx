@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/Button";
-import { UserPlus2, UserX2 } from "lucide-react";
+import { Car, Medal, UserPlus2, UserX2 } from "lucide-react";
 import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
 import Divider from "@/components/Divider";
 
@@ -125,17 +125,22 @@ function Card({
 	children,
 	footer,
 	color = "bg-card-300",
+	fullWidth = false,
 }: {
 	header?: ReactNode;
-	children: ReactNode;
+	children?: ReactNode;
 	footer?: ReactNode;
 	color?: string;
+	fullWidth?: boolean;
 }) {
 	return (
-		<div className={`flex flex-col rounded-3xl ${color}`}>
+		<div
+			data-full-width={fullWidth}
+			className={`flex flex-col rounded-3xl ${color} data-[full-width=true]:w-full`}
+		>
 			{header && (
 				<>
-					<div className="flex flex-shrink-0 p-4 text-white font-medium ">
+					<div className="flex flex-shrink-0 p-4 font-medium text-white ">
 						{header}
 					</div>
 					<Divider />
@@ -152,6 +157,58 @@ function Card({
 					</div>
 				</>
 			)}
+		</div>
+	);
+}
+
+function MatchHistoryCard({ user1, user2 }: any) {
+	return (
+		<div className="relative flex h-16 w-full overflow-hidden rounded-3xl bg-red-400">
+			<div className="relative flex flex-1 gap-2 overflow-hidden p-2">
+				<img
+					src={user1}
+					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm"
+				/>
+				<div className="z-10 flex items-center justify-center gap-4 text-white">
+					<div className="aspect-square h-full overflow-hidden rounded-full">
+						<img src={user1} className="h-full w-full" />
+					</div>
+					<div className="flex flex-col">
+						<span className="font-medium leading-4 text-lg">user1</span>
+
+						<span className="text-xs leading-3">
+							<span className="font-flag">🇲🇦</span>
+							<span>Morocco</span>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div className="relative flex flex-row-reverse w-full flex-1 gap-2 overflow-hidden p-2">
+				<img
+					src={user2}
+					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm"
+				/>
+				<div className="z-10 flex items-center justify-center gap-4 text-white">
+					<div className="flex flex-col">
+						<span className="font-medium leading-4 text-lg">user1</span>
+
+						<span className="text-xs leading-3">
+							<span className="font-flag">🇲🇦</span>
+							<span>Morocco</span>
+						</span>
+					</div>
+					<div className="aspect-square h-full overflow-hidden rounded-full">
+						<img src={user2} className="h-full w-full" />
+					</div>
+				</div>
+			</div>
+			<div className="absolute inset-0 flex items-center justify-center  gap-4 bg-gradient-to-r from-transparent via-green-500 to-transparent text-white">
+				5
+				<div className=" flex aspect-square items-center justify-center rounded-full bg-white/25 p-2">
+					<Medal size={28} />
+				</div>
+				10
+			</div>
 		</div>
 	);
 }
@@ -243,10 +300,24 @@ export default function Home() {
 					),
 				)}
 			</div>
-			<Card color="bg-card-300" header={"Overview"}>
-				fuck
-			</Card>
-			<div className="flex h-[200vh] gap-2 rounded-3xl bg-card-300 p-2"></div>
+			<div className="flex w-full gap-4">
+				<div className="flex aspect-square w-1/3 select-none flex-col items-center justify-between overflow-hidden rounded-3xl bg-gradient-to-tr from-yellow-800 to-yellow-400">
+					<div className="flex flex-1 flex-col items-center justify-center gap-2">
+						<span className="bg-white bg-gradient-to-tr from-primary to-secondary bg-clip-text text-[10rem] font-bold leading-[8rem] text-transparent mix-blend-plus-lighter">
+							S
+						</span>
+						<Divider />
+						<span className="text-white">Division III</span>
+						<div></div>
+					</div>
+				</div>
+				<Card
+					// header={"Match History"} 
+				fullWidth>
+					<MatchHistoryCard user1="pfp.png" user2="pfp2.png" />
+				</Card>
+			</div>
+			{/* <div className="flex h-[200vh] gap-2 rounded-3xl bg-card-300 p-2"></div> */}
 		</main>
 	);
 }
