@@ -11,6 +11,9 @@ const config: Config = {
 			fontFamily: {
 				flag: ["var(--flag)", "sans-serif"],
 			  },
+			gridTemplateRows: {
+				'matches': 'repeat(4, minmax(0, 64px))',
+			},
 			colors:
 				// {
 				// 	background: {

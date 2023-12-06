@@ -2,7 +2,8 @@
 
 import { LogIn, Search, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/Button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import PublicContext from "@/contexts/PublicContext";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -40,6 +41,24 @@ function LoginButton() {
 	);
 }
 
+function ProfileButton() {
+	return (
+		<div className="text-white text-xs flex gap-2 h-full items-center">
+			<div className="flex flex-col items-end">
+				mcharrad
+				<div className="flex items-center gap-1 rounded-3xl bg-green-600 px-1 text-[0.65rem]">
+					<div className="aspect-square h-2 w-2 rounded-full bg-green-400"></div>
+					<div>Online</div>
+				</div>
+			</div>
+			<div className="h-full aspect-square ">
+				<img src="pfp.png" className="h-full w-full rounded-full object-cover" />
+			</div>
+		</div>
+	)
+}
+
+
 function SearchBar() {
 	return (
 		<div className="flex h-full w-full items-center justify-center gap-2 rounded-3xl bg-white/10 px-4 pl-2 text-sm text-white shadow transition-all duration-300 file:h-full focus-within:ring-2 focus-within:ring-primary-400 hover:brightness-110 active:scale-95">
@@ -54,6 +73,7 @@ function SearchBar() {
 
 export function Navbar() {
 	const [solid, setSolid] = useState(false);
+	const { cookie } = useContext(PublicContext) as any;
 
 	useEffect(() => {
 		const listener = () => {
@@ -89,7 +109,10 @@ export function Navbar() {
 						<Navigation />
 					</div>
 					<div className="flex h-full flex-1 items-center justify-end gap-2">
-						<LoginButton />
+						{cookie ?
+							<ProfileButton /> :
+							<LoginButton />
+						}
 					</div>
 				</div>
 			</div>

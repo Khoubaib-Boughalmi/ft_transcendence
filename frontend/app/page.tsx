@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/Button";
-import { Car, Medal, UserPlus2, UserX2 } from "lucide-react";
+import { Car, Equal, Medal, UserPlus2, UserX2, X } from "lucide-react";
 import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
 import Divider from "@/components/Divider";
 
@@ -34,29 +34,6 @@ function PageTop() {
 						Block User
 					</Button>
 				</div>
-
-				<div></div>
-				{/* <div className="absolute inset-0 flex translate-y-1/2 items-center gap-8 px-16 ">
-					<div className="flex h-48 w-full gap-4">
-						<div className="aspect-square h-full flex-shrink-0 rounded-full">
-							<img
-								className="rounded-full object-cover"
-								src="/pfp.png"
-							/>
-						</div>
-						<div className="flex w-full flex-col items-start justify-start text-white">
-							<div className="text-xl font-bold">mcharrad</div>
-							<div className="mb-2 flex items-center gap-2 rounded-3xl bg-white/20 px-2 text-sm">
-								<div className="aspect-square h-2 w-2 rounded-full bg-green-400"></div>
-								<div>Online</div>
-							</div>
-							<div className="flex gap-2 text-sm">
-								<span className="font-flag">🇲🇦</span>
-								<span>Morocco</span>
-							</div>
-						</div>
-					</div>
-				</div> */}
 			</div>
 			<div className=" w-full overflow-hidden rounded-b-3xl bg-card-300">
 				<div className="aspect-square h-full flex-shrink-0 rounded-full ">
@@ -65,57 +42,7 @@ function PageTop() {
 						src="/pfp.png"
 					/>
 				</div>
-				{/* <div className="h-32 w-full bg-card flex">
-					{[
-						["Global Rank", "1,234"],
-						["Country Rank", "123"],
-						["Points", "1,234"],
-					].map(([title, value]) => (
-						<InfoCard key={title} title={title}>{value}</InfoCard>
-					))}
-				</div> */}
 			</div>
-		</div>
-	);
-}
-
-function InfoCard({ title, children }: { title: string; children: any }) {
-	return (
-		<div className="flex flex-1 flex-col gap-4  p-8 text-white">
-			<div className="flex items-center text-xl font-bold">{title}</div>
-			<div className="text-md flex items-center font-medium">
-				{children}
-			</div>
-		</div>
-	);
-}
-
-function no() {
-	return (
-		<main className="flex w-[1250px] max-w-full justify-center">
-			<div className="h-[300vh] w-full rounded-3xl bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent from-[-100%] to-transparent shadow-lg shadow-card/25 backdrop-blur-sm">
-				<div className="flex h-full flex-col gap-4 overflow-hidden rounded-3xl">
-					<PageTop />
-					{/* <div className="flex w-full gap-4 rounded-3xl bg-gradient-to-b from-card-300 to-background p-4">
-						{[
-							["Global Rank", "1,234"],
-							["Country Rank", "123"],
-							["Points", "1,234"],
-							["Friends", "123"],
-						].map(([title, value]) => (
-							<InfoCard title={title}>{value}</InfoCard>
-						))}
-					</div> */}
-				</div>
-			</div>
-		</main>
-	);
-}
-
-function TabButton({ title }: { title: string }) {
-	return (
-		<div className="flex h-full w-full items-center justify-center rounded-3xl bg-gradient-to-b from-card-300 to-background p-4">
-			{title}
 		</div>
 	);
 }
@@ -147,7 +74,7 @@ function Card({
 				</>
 			)}
 
-			<div className="flex-1 p-6 text-background-800">{children}</div>
+			<div className="flex-1 p-2 text-background-800">{children}</div>
 
 			{footer && (
 				<>
@@ -161,51 +88,58 @@ function Card({
 	);
 }
 
-function MatchHistoryCard({ user1, user2 }: any) {
-	return (
-		<div className="relative flex h-16 w-full overflow-hidden rounded-3xl bg-red-400">
+
+function MatchHistoryCard({ user1, user2, result }: { user1: string, user2: string, result: "win" | "lose" | "tie" }) {
+
+	const PlayerSide = ({ user, side }: { user: any, side: "left" | "right" }) => {
+		const { name, country, icon } = user;
+
+		return (
 			<div className="relative flex flex-1 gap-2 overflow-hidden p-2">
 				<img
-					src={user1}
-					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm"
+					src={icon}
+					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm brightness-50"
 				/>
-				<div className="z-10 flex items-center justify-center gap-4 text-white">
+				<div
+					data-side={side}
+					className="z-10 flex data-[side=right]:flex-row-reverse w-full items-center gap-4 text-white">
 					<div className="aspect-square h-full overflow-hidden rounded-full">
-						<img src={user1} className="h-full w-full" />
+						<img src={icon} className="h-full w-full" />
 					</div>
-					<div className="flex flex-col">
-						<span className="font-medium leading-4 text-lg">user1</span>
-
-						<span className="text-xs leading-3">
-							<span className="font-flag">🇲🇦</span>
-							<span>Morocco</span>
+					<div data-side={side} className="flex flex-col  data-[side=right]:items-end gap-0.5 items-start">
+						<span className="font-medium leading-4 text-lg">
+							{name}
+						</span>
+						<span data-side={side} className="text-[0.65rem] leading-3 flex data-[side=right]:flex-row-reverse gap-1 items-center justify-center text-background-900">
+							<span className="font-flag">{country.split(" ")[0]}</span>
+							<span>{
+								country.split(" ").slice(1).join(" ")}
+							</span>
 						</span>
 					</div>
 				</div>
 			</div>
-			<div className="relative flex flex-row-reverse w-full flex-1 gap-2 overflow-hidden p-2">
-				<img
-					src={user2}
-					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm"
-				/>
-				<div className="z-10 flex items-center justify-center gap-4 text-white">
-					<div className="flex flex-col">
-						<span className="font-medium leading-4 text-lg">user1</span>
+		)
+	}
 
-						<span className="text-xs leading-3">
-							<span className="font-flag">🇲🇦</span>
-							<span>Morocco</span>
-						</span>
-					</div>
-					<div className="aspect-square h-full overflow-hidden rounded-full">
-						<img src={user2} className="h-full w-full" />
-					</div>
-				</div>
-			</div>
-			<div className="absolute inset-0 flex items-center justify-center  gap-4 bg-gradient-to-r from-transparent via-green-500 to-transparent text-white">
+	return (
+		<div className="hover:scale-105 hover:brightness-110 brightness-90 transition-all  relative flex h-16 w-full overflow-hidden rounded-3xl bg-black">
+			<PlayerSide user={{
+				name: "mcharrad",
+				icon: "/pfp.png",
+				country: "🇨🇳 Xina"
+			}} side={"left"} />
+			<PlayerSide user={{
+				name: "mrian",
+				icon: "mrian.jpeg",
+				country: "🇲🇦 Morocco"
+			}} side={"right"} />
+			<div
+				data-result={result}
+				className="absolute inset-0 flex items-center justify-center  gap-4 bg-gradient-to-r from-transparent via-green-500 data-[result=lose]:via-red-600 data-[result=tie]:via-yellow-400 to-transparent text-white">
 				5
 				<div className=" flex aspect-square items-center justify-center rounded-full bg-white/25 p-2">
-					<Medal size={28} />
+					{result == "win" ? <Medal size={28} /> : result == 'lose' ? <X size={28} /> : <Equal size={28} />}
 				</div>
 				10
 			</div>
@@ -301,7 +235,7 @@ export default function Home() {
 				)}
 			</div>
 			<div className="flex w-full gap-4">
-				<div className="flex aspect-square w-1/3 select-none flex-col items-center justify-between overflow-hidden rounded-3xl bg-gradient-to-tr from-yellow-800 to-yellow-400">
+				<div className="flex-shrink-0 flex aspect-square h-full select-none flex-col items-center justify-between overflow-hidden rounded-3xl bg-gradient-to-tr from-yellow-800 to-yellow-400">
 					<div className="flex flex-1 flex-col items-center justify-center gap-2">
 						<span className="bg-white bg-gradient-to-tr from-primary to-secondary bg-clip-text text-[10rem] font-bold leading-[8rem] text-transparent mix-blend-plus-lighter">
 							S
@@ -313,11 +247,21 @@ export default function Home() {
 				</div>
 				<Card
 					// header={"Match History"} 
-				fullWidth>
-					<MatchHistoryCard user1="pfp.png" user2="pfp2.png" />
+					fullWidth>
+					<div className="grid grid-rows-matches grid-cols-1 gap-2 flex-col h-full relative">
+						{/* <div className="absolute inset-0 flex justify-center items-center">
+							<marquee scrollamount="100" className="text-white text-xl blur-[1px]">
+								Nothing 👍
+							</marquee>
+						</div> */}
+						<MatchHistoryCard user1="pfp.png" user2="pfp2.png" result="win" />
+							<MatchHistoryCard user1="pfp.png" user2="pfp2.png" result="lose" />
+							<MatchHistoryCard user1="pfp.png" user2="pfp2.png" result="tie" /> 
+							<MatchHistoryCard user1="pfp.png" user2="pfp2.png" result="win" />
+					</div>
 				</Card>
 			</div>
-			{/* <div className="flex h-[200vh] gap-2 rounded-3xl bg-card-300 p-2"></div> */}
+			<div className="flex h-[200vh] gap-2 rounded-3xl bg-card-300 p-2"></div>
 		</main>
 	);
 }
