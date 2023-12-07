@@ -1,16 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Profile } from 'passport-42';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService) { }
+    constructor(
+        private jwtService: JwtService,
+        private userService: UserService,
+    ) { }
 
     async validateUser(profile: Profile): Promise<any> {
         console.log(profile);
-        // Here the user should be created if it's not existent in the database otherwise it should be fetched from the database
-        // then generate a JWT token and return it
-        return { id: profile.id, username: profile.username };
+        const user = await this.userService.user({ intra_id: Number(profile.id) });
+        if (user)
+            return { id: user.id, username: user.username };
+
+        const newUser = await this.userService.createUser({
+            username: profile.username,
+            intra_id: Number(profile.id),
+            email: profile.emails[0].value,
+            country: profile._json.campus[0].country,
+        });
+        return { id: newUser.id, username: newUser.username };
     }
 
     async login(user: any) {

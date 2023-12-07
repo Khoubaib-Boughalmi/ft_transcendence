@@ -13,8 +13,9 @@ datasource db {
 
 model User {
   id       Int    @id @default(autoincrement())
+  intra_id Int    @unique
   username String @unique
   email    String @unique
   country  String
-  ranking  Int
+  ranking  Int    @default(0)
 }
