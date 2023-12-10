@@ -27,10 +27,10 @@ export default function RootLayout({
 	const cookieStore = cookies();
 
 	return (
-		<html lang="en">
-			<Providers cookie={cookieStore.get('access_token')}>
-				<body className={poppins.className + " bg-black " + flags.variable}>
-					<div className="fixed inset-0 bg-gradient-to-t from-background to-accent to-[250%] overflow-hidden -z-50">
+		<html lang="en" className="dark">
+			<body className={poppins.className + " bg-black " + flags.variable}>
+				<Providers cookie={cookieStore.get('access_token')}>
+					<div className="fixed inset-0 bg-gradient-to-t from-background to-accent to-[250%] overflow-hidden">
 						<img
 							className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
 							src="background2.png"
@@ -43,8 +43,8 @@ export default function RootLayout({
 					<div className="flex justify-center pt-28">
 						{children}
 					</div>
-				</body>
-			</Providers>
+				</Providers>
+			</body>
 		</html>
 	);
 }

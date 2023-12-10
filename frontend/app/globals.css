@@ -3,27 +3,83 @@
 @tailwind utilities;
 
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-    transition: all 1s ease 0s;
-  }
-  
-  ::-webkit-scrollbar-corner {
-    background: none;
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(127, 127, 127, 0.6);
-    background-clip: padding-box;
-    border-width: 2px;
-    border-style: solid;
-    border-color: transparent;
-    border-image: initial;
-    border-radius: 5px;
-    transition: all 1s ease 0s;
-  }
-  
-  ::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-  
+	width: 10px;
+	height: 10px;
+	transition: all 1s ease 0s;
+}
+
+::-webkit-scrollbar-corner {
+	background: none;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: rgba(127, 127, 127, 0.6);
+	background-clip: padding-box;
+	border-width: 2px;
+	border-style: solid;
+	border-color: transparent;
+	border-image: initial;
+	border-radius: 5px;
+	transition: all 1s ease 0s;
+}
+
+::-webkit-scrollbar-track {
+	background-color: transparent;
+}
+
+:root {
+	--background-default: #000000;
+	--background-100: #000000;
+	--background-200: #000000;
+	--background-300: #000000;
+	--background-400: #000000;
+	--background-500: #000000;
+	--background-600: #333333;
+	--background-700: #666666;
+	--background-800: #999999;
+	--background-900: #cccccc;
+
+	--card-default: #650000;
+	--card-100: #140000;
+	--card-200: #290000;
+	--card-300: #3d0000;
+	--card-400: #520000;
+	--card-500: #650000;
+	--card-600: #b80000;
+	--card-700: #ff0a0a;
+	--card-800: #ff5c5c;
+	--card-900: #ffadad;
+
+	--accent-default: #f03a47;
+	--accent-100: #370408;
+	--accent-200: #6e080f;
+	--accent-300: #a50c17;
+	--accent-400: #dc111e;
+	--accent-500: #f03a47;
+	--accent-600: #f36069;
+	--accent-700: #f6878f;
+	--accent-800: #f9afb4;
+	--accent-900: #fcd7da;
+
+	--primary-default: #f6ae2d;
+	--primary-100: #382502;
+	--primary-200: #704a05;
+	--primary-300: #a76f07;
+	--primary-400: #df9409;
+	--primary-500: #f6ae2d;
+	--primary-600: #f8bf57;
+	--primary-700: #facf81;
+	--primary-800: #fbdfab;
+	--primary-900: #fdefd5;
+
+	--secondary-default: #f26419;
+	--secondary-100: #321303;
+	--secondary-200: #642706;
+	--secondary-300: #963a09;
+	--secondary-400: #c84e0c;
+	--secondary-500: #f26419;
+	--secondary-600: #f48346;
+	--secondary-700: #f7a274;
+	--secondary-800: #fac1a2;
+	--secondary-900: #fce0d1;
+}

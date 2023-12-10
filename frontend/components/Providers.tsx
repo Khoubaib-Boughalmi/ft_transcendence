@@ -1,6 +1,7 @@
 "use client";
 
 import PublicContext from "@/contexts/PublicContext";
+import { NextUIProvider } from "@nextui-org/react";
 
 export default function Providers({
     cookie,
@@ -8,7 +9,9 @@ export default function Providers({
 }: any) {
     return (
         <PublicContext.Provider value={{ cookie }}>
-            {children}
+            <NextUIProvider>
+                {children}
+            </NextUIProvider>
         </PublicContext.Provider>
     )
 }

@@ -4,6 +4,7 @@ import { LogIn, Search, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useEffect, useState, useContext } from "react";
 import PublicContext from "@/contexts/PublicContext";
+import Status from "@/components/Status"
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -46,10 +47,7 @@ function ProfileButton() {
 		<div className="text-white text-xs flex gap-2 h-full items-center">
 			<div className="flex flex-col items-end">
 				mcharrad
-				<div className="flex items-center gap-1 rounded-3xl bg-green-600 px-1 text-[0.65rem]">
-					<div className="aspect-square h-2 w-2 rounded-full bg-green-400"></div>
-					<div>Online</div>
-				</div>
+				<Status />
 			</div>
 			<div className="h-full aspect-square ">
 				<img src="pfp.png" className="h-full w-full rounded-full object-cover" />

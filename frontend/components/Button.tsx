@@ -22,6 +22,7 @@ export function Button({
 			className="flex items-center justify-center gap-2 
 				rounded-3xl bg-gradient-to-t from-primary-400 to-primary-600 p-2
 				px-4 text-sm shadow
+				text-black
 				transition-all
 				duration-300
 				focus-within:ring-2 focus-within:ring-primary-400 hover:brightness-110
