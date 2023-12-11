@@ -1,4 +1,5 @@
-import React, { use } from "react";
+'use client'
+import React, { useEffect, useState } from "react";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -10,9 +11,23 @@ import {
     Filler,
     Legend,
 } from "chart.js";
-import { Line } from "react-chartjs-2";
-const style = getComputedStyle(document.body);
 
+import { Line } from "react-chartjs-2";
+
+export function useStyles() {
+    const [styles, setStyles] = useState({});
+
+    useEffect(() => {
+        const style = getComputedStyle(document.body);
+        setStyles({
+            primaryColor: style.getPropertyValue("--primary-400"),
+            cardColor: style.getPropertyValue("--card-500"),
+            backgroundColor: style.getPropertyValue("--background-900"),
+        });
+    }, []);
+
+    return styles;
+}
 
 ChartJS.register(
     CategoryScale,
@@ -23,39 +38,40 @@ ChartJS.register(
     Filler,
 );
 
-export const options = {
-    responsive: true,
-    legend: {
-        display: false,
-    },
-    scales: {
-        y: {
-            display: false,
-        },
-        x: {
-            ticks: {
-                color: style.getPropertyValue("--background-900"),
-            },
-        },
-    },
-};
-
 const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export const data = {
-    labels,
-    datasets: [
-        {
-            fill: true,
-            data: labels.map((v, i) => Math.round(Math.random() * 100)),
-            borderColor: style.getPropertyValue("--primary-400"),
-            backgroundColor: style.getPropertyValue("--card-500"),
-		},
-	],
-};
-
 export default function App() {
-	return <div>
-            <Line options={options} data={data} />
-        </div>
+    const style = useStyles() as any;
+    const data = {
+        labels,
+        datasets: [
+            {
+                fill: true,
+                data: labels.map((v, i) => Math.round(Math.random() * 100)),
+                borderColor: style.primaryColor,
+                backgroundColor: style.cardColor,
+            },
+        ],
+    };
+
+    const options = {
+        responsive: true,
+        legend: {
+            display: false,
+        },
+        scales: {
+            y: {
+                display: false,
+            },
+            x: {
+                ticks: {
+                    color: style.backgroundColor,
+                },
+            },
+        },
+    };
+
+    return <div>
+        <Line options={options} data={data} />
+    </div>
 }
