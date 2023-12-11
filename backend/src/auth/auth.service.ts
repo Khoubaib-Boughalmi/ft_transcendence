@@ -15,9 +15,9 @@ export class AuthService {
         const user = await this.userService.user({ intra_id: Number(profile.id) });
         if (user)
             return { id: user.id, username: user.username };
-
+        const newName = await this.userService.getUniqueName(profile.username);
         const newUser = await this.userService.createUser({
-            username: profile.username,
+            username: newName,
             intra_id: Number(profile.id),
             email: profile.emails[0].value,
             country: profile._json.campus[0].country,

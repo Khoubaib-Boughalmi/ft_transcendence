@@ -36,4 +36,16 @@ export class UserService {
 			where,
 		});
 	}
+
+	async getUniqueName(username: string): Promise<string> {
+		const user = await this.user({ username });
+		if (!user) return username;
+		let i = 1;
+		while (true) {
+			const newUsername = username + i;
+			const newUser = await this.user({ username: newUsername });
+			if (!newUser) return newUsername;
+			i++;
+		}
+	}
 }
