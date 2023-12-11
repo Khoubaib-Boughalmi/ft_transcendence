@@ -78,6 +78,7 @@ export function Navbar() {
 			setSolid(window.scrollY > 25);
 		};
 		window.addEventListener("scroll", listener);
+		listener();
 		return () => window.removeEventListener("scroll", listener);
 	}, []);
 
