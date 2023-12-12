@@ -206,7 +206,9 @@ function UserList({ users }: { users: User[] }) {
 					<div
 						key={i}
 						data-status={user.status}
-						className="relative flex h-16 w-full items-center gap-4 rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:brightness-[85%] @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1"
+						className="relative flex h-16 w-full items-center gap-4 rounded-xl bg-card-400 p-2 text-white @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
+						data-[status=Offline]:after:content:[''] data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50 overflow-hidden
+						"
 					>
 						<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
 							<img
@@ -828,7 +830,7 @@ function ProfileAchievements({ user }: { user: User }) {
 function ProfileStats({ user }: { user: User }) {
 	return (
 		<Card id="Stats" header="Stats">
-			<div className="flex flex-col gap-4 p-4 ">
+			<div className="flex flex-col gap-4 p-2 ">
 				<div className="grid grid-cols-4 gap-4">
 					{["Wins", "Losses", "Matches", "Ratio"].map((title) => (
 						<div
