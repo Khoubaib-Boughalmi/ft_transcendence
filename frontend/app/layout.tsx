@@ -43,6 +43,12 @@ export default function RootLayout({
 					<div className="flex justify-center pt-28">
 						{children}
 					</div>
+					{/* <footer className="relative w-full h-64  bg-card-400 bottom-0
+						after:content-[''] after:bg-gradient-to-t after:from-card-400 after:absolute after:-translate-y-full after:to-transparent
+					
+					">
+
+					</footer> */}
 				</Providers>
 			</body>
 		</html>

@@ -53,14 +53,16 @@ const labels = [
     "December"
 ];;
 
-export default function App() {
+export default function App({
+	activity
+}: any) {
 	const style = useStyles() as any;
 	const data = {
 		labels,
 		datasets: [
 			{
 				fill: true,
-				data: labels.map((v, i) => Math.round(Math.random() * 100)),
+				data: activity,
 				borderColor: style.primaryColor,
 				backgroundColor: style.cardColor,
 				tension: 0.35,
@@ -88,7 +90,7 @@ export default function App() {
 	};
 
 	return (
-		<div className="rounded-[25px] overflow-hidden" >
+		<div className="rounded-b-[25px] overflow-hidden" >
 			<Line options={options} data={data} />
 		</div>
 	);
