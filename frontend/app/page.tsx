@@ -100,6 +100,8 @@ const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
 	type: "Classic",
 	league: "Ranked",
 	map: "The Arena",
+	score1: 5,
+	score2: 0,
 }));
 
 const achievements: Achievement[] = Array.from({ length: 30 }).map((_, i) => ({
@@ -220,7 +222,7 @@ function UserList({ users }: { users: User[] }) {
 							className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${user.rank.color}`}
 						>
 							<span
-								className={`font-medium text-transparent mix-blend-plus-lighter ${user.rank.color} fuck-css`}
+								className={`text-transparent mix-blend-plus-lighter ${user.rank.color} fuck-css`}
 							>
 								{user.rank.name}
 							</span>
@@ -340,9 +342,11 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 	const PlayerSideExtendend = ({
 		user,
 		side,
+		score,
 	}: {
 		user: User;
 		side: "left" | "right";
+		score: number;
 	}) => {
 		return (
 			<div
@@ -360,7 +364,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 							className="h-full w-full"
 						/>
 					</div>
-					<div className="text-4xl text-white">5</div>
+					<div className="text-4xl text-white">{score}</div>
 				</div>
 			</div>
 		);
@@ -426,7 +430,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 						</div> */}
 						<Divider orientation="vertical" />
 						<span className="flex aspect-square h-full items-center justify-center">
-							5
+							{match.score1}
 						</span>
 						<div className=" flex aspect-square items-center justify-center rounded-full bg-white/25 p-2">
 							{match.result == "win" ? (
@@ -438,7 +442,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 							)}
 						</div>
 						<span className="flex aspect-square h-full items-center justify-center">
-							0
+							{match.score2}
 						</span>
 
 						<Divider orientation="vertical" />
@@ -477,8 +481,8 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 							)}
 						</div>
 					</div>
-					<PlayerSideExtendend user={match.user1} side="left" />
-					<PlayerSideExtendend user={match.user2} side="right" />
+					<PlayerSideExtendend user={match.user1} side="left" score={match.score1} />
+					<PlayerSideExtendend user={match.user2} side="right" score={match.score2} />
 				</div>
 				<div className="absolute inset-0 top-[35%]  z-10 flex flex-col justify-end gap-2 px-8 pb-8">
 					<div className="mb-4 flex w-full justify-between rounded-xl bg-black/25 p-2 px-4 text-white">

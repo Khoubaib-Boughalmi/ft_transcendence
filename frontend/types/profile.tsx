@@ -24,6 +24,8 @@ export type Match = {
 	type: MatchType;
 	league: MatchLeague;
 	map: string;
+	score1: number;
+	score2: number;
 };
 export type User = {
 	id: number;
