@@ -208,8 +208,8 @@ function UserList({ users }: { users: User[] }) {
 					<div
 						key={i}
 						data-status={user.status}
-						className="relative flex h-16 w-full items-center gap-4 rounded-xl bg-card-400 p-2 text-white @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
-						data-[status=Offline]:after:content:[''] data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50 overflow-hidden
+						className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50
+						@4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
 						"
 					>
 						<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
@@ -353,7 +353,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				data-side={side}
 				className="group relative w-1/2
 			after:absolute after:inset-0 after:top-1/2 after:bg-gradient-to-b after:from-transparent after:to-red-600 after:content-['']
-				group-data-[result=win]:after:to-green-600 group-data-[result=tie]:after:to-yellow-600
+				group-data-[result=tie]:after:to-yellow-600 group-data-[result=win]:after:to-green-600
 			"
 			>
 				<img src={user.banner} className="h-full w-full object-cover" />
@@ -389,9 +389,14 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 		return (
 			<div
 				data-side={side}
-				 className="group flex gap-2 flex-1 data-[side=right]:flex-row-reverse">
-				<div className={`h-full aspect-square rounded-full flex justify-center items-center ${user.rank.color}`}>
-					<div className={`text-transparent ${user.rank.color} fuck-css mix-blend-plus-lighter`}>
+				className="group flex flex-1 gap-2 data-[side=right]:flex-row-reverse"
+			>
+				<div
+					className={`flex aspect-square h-full items-center justify-center rounded-full ${user.rank.color}`}
+				>
+					<div
+						className={`text-transparent ${user.rank.color} fuck-css mix-blend-plus-lighter`}
+					>
 						{user.rank.name}
 					</div>
 				</div>
@@ -424,10 +429,6 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 						data-result={match.result}
 						className="absolute inset-0 flex items-center justify-center  gap-4 bg-gradient-to-r from-transparent via-green-500 to-transparent p-4 text-white data-[result=lose]:via-red-600 data-[result=tie]:via-yellow-400"
 					>
-						{/* <div className="flex flex-col items-end">
-							<span className="text-xs font-medium">Duration</span>
-							<span className="text-[0.6rem]">5:00</span>
-						</div> */}
 						<Divider orientation="vertical" />
 						<span className="flex aspect-square h-full items-center justify-center">
 							{match.score1}
@@ -444,30 +445,23 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 						<span className="flex aspect-square h-full items-center justify-center">
 							{match.score2}
 						</span>
-
 						<Divider orientation="vertical" />
-						{/* <div className="flex flex-col">
-								<span className="text-xs font-medium">Date</span>
-								<span className="text-[0.6rem]">
-									{new Date().toLocaleDateString()}
-								</span>
-						</div> */}
 					</div>
 				</div>
 			}
 		>
 			<div
 				data-result={match.result}
-				className="relative aspect-video w-full overflow-hidden rounded-xl bg-red-600 group
+				className="group relative aspect-video w-full overflow-hidden rounded-xl bg-red-600
 				after:absolute after:inset-0 after:top-1/2 after:bg-gradient-to-b after:from-transparent after:to-red-800 after:content-['']
-				data-[result=win]:bg-green-600 data-[result=tie]:bg-yellow-600
-				data-[result=win]:after:to-green-800 data-[result=tie]:after:to-yellow-800
+				data-[result=tie]:bg-yellow-600 data-[result=win]:bg-green-600
+				data-[result=tie]:after:to-yellow-800 data-[result=win]:after:to-green-800
 			"
 			>
 				<div
 					className="relative flex h-1/2
 						after:absolute after:inset-0 after:inset-x-[-10%] after:bg-gradient-to-r after:from-transparent after:via-red-600 after:to-transparent after:content-['']
-						group-data-[result=win]:after:via-green-600 group-data-[result=tie]:after:via-yellow-600
+						group-data-[result=tie]:after:via-yellow-600 group-data-[result=win]:after:via-green-600
 					"
 				>
 					<div className="absolute inset-0 z-10 flex items-center  justify-center p-24">
@@ -481,31 +475,29 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 							)}
 						</div>
 					</div>
-					<PlayerSideExtendend user={match.user1} side="left" score={match.score1} />
-					<PlayerSideExtendend user={match.user2} side="right" score={match.score2} />
+					<PlayerSideExtendend
+						user={match.user1}
+						side="left"
+						score={match.score1}
+					/>
+					<PlayerSideExtendend
+						user={match.user2}
+						side="right"
+						score={match.score2}
+					/>
 				</div>
 				<div className="absolute inset-0 top-[35%]  z-10 flex flex-col justify-end gap-2 px-8 pb-8">
 					<div className="mb-4 flex w-full justify-between rounded-xl bg-black/25 p-2 px-4 text-white">
 						<UserInformation user={match.user1} side="left" />
 						<UserInformation user={match.user2} side="right" />
 					</div>
-					<Information title="Type" value={
-						match.type
-					} />
-					<Information title="Map" value={
-						match.map
-					} />
-					<Information title="League" value={
-						match.league
-					} />
-					<Information title="Duration" value={
-						match.duration
-					} />
+					<Information title="Type" value={match.type} />
+					<Information title="Map" value={match.map} />
+					<Information title="League" value={match.league} />
+					<Information title="Duration" value={match.duration} />
 					<Information
 						title="Date"
-						value={
-							new Date(match.date).toLocaleDateString()
-						}
+						value={new Date(match.date).toLocaleDateString()}
 					/>
 				</div>
 			</div>

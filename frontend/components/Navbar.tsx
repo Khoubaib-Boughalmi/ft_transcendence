@@ -5,6 +5,7 @@ import { Button } from "@/components/Button";
 import { useEffect, useState, useContext } from "react";
 import PublicContext from "@/contexts/PublicContext";
 import Status from "@/components/Status"
+import Input from "@/components/Input";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -59,13 +60,7 @@ function ProfileButton() {
 
 function SearchBar() {
 	return (
-		<div className="flex h-full w-full items-center justify-center gap-2 rounded-3xl bg-white/10 px-4 pl-2 text-sm text-white shadow transition-all duration-300 file:h-full focus-within:ring-2 focus-within:ring-primary-400 hover:brightness-110 active:scale-95">
-			<Search className="h-2/4 text-white/50" />
-			<input
-				className="flex-1 bg-transparent text-white placeholder-white/50 outline-none"
-				placeholder="Search"
-			/>
-		</div>
+		<Input startContent={<Search className="text-background-800" />} placeholder="Search" />
 	);
 }
 
