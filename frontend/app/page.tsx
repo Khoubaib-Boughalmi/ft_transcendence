@@ -10,10 +10,14 @@ import {
 	ModalBody,
 	ModalFooter,
 	useDisclosure,
+	Tooltip,
 } from "@nextui-org/react";
 import Chart from "@/components/Chart";
 import Card from "@/components/Card";
 import { Rank, User, Match, Achievement, Status } from "@/types/profile";
+import UserHover from "@/components/UserHover";
+import { getFlag } from "@/lib/utils";
+import { RANKS } from "@/lib/utils";
 
 function NoData() {
 	return (
@@ -22,29 +26,6 @@ function NoData() {
 		</div>
 	);
 }
-
-const ranks: Rank[] = [
-	{
-		name: "D",
-		color: "bronze",
-	},
-	{
-		name: "C",
-		color: "silver",
-	},
-	{
-		name: "B",
-		color: "gold",
-	},
-	{
-		name: "A",
-		color: "platinum",
-	},
-	{
-		name: "S",
-		color: "diamond",
-	},
-];
 
 const activities = [100, 0, 5, 10, 15, 20, 0, 0, 0, 0, 12, 18];
 
@@ -60,7 +41,7 @@ const user1: User = {
 	losses: 0,
 	matches: 0,
 	achievements_percentage: 0,
-	rank: ranks[0],
+	rank: RANKS[0],
 	division: "I",
 	status: "Online",
 
@@ -81,7 +62,7 @@ const user2: User = {
 	losses: 5,
 	matches: 15,
 	achievements_percentage: 50,
-	rank: ranks[0],
+	rank: RANKS[0],
 	division: "II",
 	status: "Offline",
 
@@ -146,17 +127,6 @@ user1.achievements = achievements;
 user2.history = history;
 user2.achievements = achievements;
 
-function getFlag(country: string) {
-	const FLAGS: {
-		[key: string]: string;
-	} = {
-		Morocco: "🇲🇦",
-		China: "🇨🇳",
-	};
-
-	return FLAGS[country] ?? "🏳️‍🌈";
-}
-
 function LevelBar({
 	level,
 	percentage,
@@ -205,33 +175,34 @@ function UserList({ users }: { users: User[] }) {
 			{users.length == 0 && <NoData />}
 			<div className="flex flex-col flex-wrap gap-2 @4xl:grid @4xl:grid-cols-7">
 				{users.map((user, i) => (
-					<div
-						key={i}
-						data-status={user.status}
-						className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50
-						@4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
-						"
-					>
-						<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
-							<img
-								src={user.profile_picture}
-								className="h-full w-full object-cover"
-							/>
-						</div>
+					<Tooltip content={<UserHover user={user} />} key={i}>
 						<div
-							className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${user.rank.color}`}
+							data-status={user.status}
+							className="flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:content:[''] relative data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50
+							@4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
+							"
 						>
-							<span
-								className={`text-transparent mix-blend-plus-lighter ${user.rank.color} fuck-css`}
+							<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
+								<img
+									src={user.profile_picture}
+									className="h-full w-full object-cover"
+								/>
+							</div>
+							<div
+								className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${user.rank.color}`}
 							>
-								{user.rank.name}
-							</span>
+								<span
+									className={`text-transparent mix-blend-plus-lighter ${user.rank.color} fuck-css`}
+								>
+									{user.rank.name}
+								</span>
+							</div>
+							<div className="flex flex-col items-start text-sm text-white @4xl:items-center ">
+								{user.username}
+								<Status status={user.status} size="sm" />
+							</div>
 						</div>
-						<div className="flex flex-col items-start text-sm text-white @4xl:items-center ">
-							{user.username}
-							<Status status={user.status} size="sm" />
-						</div>
-					</div>
+					</Tooltip>
 				))}
 			</div>
 		</div>

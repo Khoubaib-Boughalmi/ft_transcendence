@@ -48,7 +48,7 @@ function ProfileButton() {
 		<div className="text-white text-xs flex gap-2 h-full items-center">
 			<div className="flex flex-col items-end">
 				mcharrad
-				<Status />
+				<Status status="Online" />
 			</div>
 			<div className="h-full aspect-square ">
 				<img src="pfp.png" className="h-full w-full rounded-full object-cover" />

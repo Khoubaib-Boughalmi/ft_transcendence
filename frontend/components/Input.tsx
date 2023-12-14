@@ -1,13 +1,34 @@
 "use client";
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from "tailwind-merge";
 
-export default function Input({classNames, startContent, ...props }: { classNames?: { container?: string, input?: string }, startContent?: React.ReactNode } & React.InputHTMLAttributes<HTMLInputElement>) {
+export default function Input({
+	classNames,
+	startContent,
+	disabled,
+	...props
+}: {
+	classNames?: { container?: string; input?: string };
+	startContent?: React.ReactNode;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
 	return (
-		<div className={twMerge("flex h-full w-full items-center justify-center gap-2 rounded-3xl bg-white/10 px-4 pl-2 text-sm text-white shadow transition-all duration-300 file:h-full focus-within:ring-2 focus-within:ring-primary-400 hover:brightness-110 active:scale-95", classNames?.container)}>
+		<div
+			data-disabled={disabled == true}
+			className={twMerge(
+				`flex h-full w-full items-center overflow-hidden justify-center gap-2 rounded-3xl bg-white/10 px-4 pl-2 text-sm text-white shadow transition-all duration-300 file:data-[disabled=false]:h-full focus-within:data-[disabled=false]:ring-2 focus-within:data-[disabled=false]:ring-primary-400 hover:data-[disabled=false]:brightness-110 active:data-[disabled=false]:scale-95
+				data-[disabled=true]:after:content:[''] relative data-[disabled=true]:after:absolute data-[disabled=true]:after:inset-0 data-[disabled=true]:after:bg-black/40
+				`,
+				classNames?.container,
+			)}
+		>
 			{startContent}
 			<input
-				className={twMerge("flex-1 bg-transparent text-white placeholder-white/50 outline-none min-w-0", classNames?.input)}
-				{...props} />
+				disabled={disabled == true}
+				className={twMerge(
+					"min-w-0 flex-1 bg-transparent text-white placeholder-white/50 outline-none",
+					classNames?.input,
+				)}
+				{...props}
+			/>
 		</div>
 	);
 }
