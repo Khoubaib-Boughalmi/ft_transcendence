@@ -11,25 +11,29 @@ export function getFlag(country: string) {
 	return FLAGS[country] ?? "🏳️‍🌈";
 }
 
-export const RANKS: Rank[] = [
-	{
-		name: "D",
-		color: "bronze",
-	},
-	{
-		name: "C",
-		color: "silver",
-	},
-	{
-		name: "B",
-		color: "gold",
-	},
-	{
-		name: "A",
-		color: "platinum",
-	},
-	{
-		name: "S",
-		color: "diamond",
-	},
-];
+export function getRank(rank: number) {
+	const RANKS: Rank[] = [
+		{
+			name: "D",
+			color: "bronze",
+		},
+		{
+			name: "C",
+			color: "silver",
+		},
+		{
+			name: "B",
+			color: "gold",
+		},
+		{
+			name: "A",
+			color: "platinum",
+		},
+		{
+			name: "S",
+			color: "diamond",
+		},
+	];
+
+	return RANKS[rank] ?? RANKS[0];
+}

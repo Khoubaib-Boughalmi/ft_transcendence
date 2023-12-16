@@ -1,5 +1,5 @@
 import { User } from "@/types/profile";
-import { getFlag } from "@/lib/utils";
+import { getFlag, getRank } from "@/lib/utils";
 import Status from "./Status";
 import Divider from "./Divider";
 
@@ -13,7 +13,7 @@ export default function UserHover({ user }: { user: User }) {
 			</div>
 			<div className="flex h-8 w-full gap-2 rounded-b-xl bg-card-300">
 				<img
-					src={user.profile_picture}
+					src={user.avatar}
 					className="aspect-square h-[200%] flex-shrink-0 -translate-y-1/2 rounded-full object-cover"
 					/>
 				<div className="relative flex flex-1 flex-col justify-center text-sm leading-3 text-white">
@@ -29,12 +29,12 @@ export default function UserHover({ user }: { user: User }) {
 			<Status status={user.status} size="sm" />
 			<div className="flex w-full gap-2">
 				<div
-					className={`aspect-square h-16 shrink-0 overflow-hidden rounded-xl bg-red-500 ${user.rank.color} flex items-center justify-center`}
+					className={`aspect-square h-16 shrink-0 overflow-hidden rounded-xl bg-red-500 ${getRank(user.rank).color} flex items-center justify-center`}
 				>
 					<div
-						className={`${user.rank.color} fuck-css text-3xl text-transparent mix-blend-plus-lighter`}
+						className={`${getRank(user.rank).color} fuck-css text-3xl text-transparent mix-blend-plus-lighter`}
 					>
-						{user.rank.name}
+						{getRank(user.rank).name}
 					</div>
 				</div>
 				<div className="flex flex-col w-full gap-2">

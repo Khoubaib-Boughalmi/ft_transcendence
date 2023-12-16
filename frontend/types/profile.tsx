@@ -30,7 +30,7 @@ export type Match = {
 export type User = {
 	id: number;
 	username: string;
-	profile_picture: string;
+	avatar: string;
 	banner: string;
 	country: string;
 	level: number;
@@ -41,8 +41,10 @@ export type User = {
 	wins: number;
 	losses: number;
 	matches: number;
-	rank: Rank;
+	rank: number;
 	division: string;
 	status: Status;
 	activity: number[];
+	friends: User[];
+	two_factor: boolean;
 };

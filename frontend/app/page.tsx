@@ -1,23 +1,16 @@
 "use client";
 import { Button } from "@/components/Button";
 import { Equal, Expand, Medal, UserPlus2, UserX2, X } from "lucide-react";
-import { ComponentProps, ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Divider from "@/components/Divider";
-import {
-	Modal,
-	ModalContent,
-	ModalHeader,
-	ModalBody,
-	ModalFooter,
-	useDisclosure,
-	Tooltip,
-} from "@nextui-org/react";
+import { useDisclosure, Tooltip } from "@nextui-org/react";
 import Chart from "@/components/Chart";
 import Card from "@/components/Card";
-import { Rank, User, Match, Achievement, Status } from "@/types/profile";
+import { User, Match, Achievement, Status } from "@/types/profile";
 import UserHover from "@/components/UserHover";
-import { getFlag } from "@/lib/utils";
-import { RANKS } from "@/lib/utils";
+import { getFlag, getRank } from "@/lib/utils";
+import { user1, user2 } from "@/mocks/profile";
+import ModalSet from "@/components/ModalSet";
 
 function NoData() {
 	return (
@@ -26,74 +19,6 @@ function NoData() {
 		</div>
 	);
 }
-
-const activities = [100, 0, 5, 10, 15, 20, 0, 0, 0, 0, 12, 18];
-
-const user1: User = {
-	id: 1,
-	username: "mcharrad",
-	profile_picture: "/pfp.png",
-	banner: "/background2.png",
-	country: "Morocco",
-	level: 1,
-	level_percentage: 0,
-	wins: 0,
-	losses: 0,
-	matches: 0,
-	achievements_percentage: 0,
-	rank: RANKS[0],
-	division: "I",
-	status: "Online",
-
-	history: [] as Match[],
-	achievements: [] as Achievement[],
-	activity: Array.from({ length: 12 }).map((_, i) => 0) as number[],
-};
-
-const user2: User = {
-	id: 2,
-	username: "mrian",
-	profile_picture: "/mrian.jpeg",
-	banner: "/background2.png",
-	country: "China",
-	level: 1,
-	level_percentage: 50,
-	wins: 10,
-	losses: 5,
-	matches: 15,
-	achievements_percentage: 50,
-	rank: RANKS[0],
-	division: "II",
-	status: "Offline",
-
-	history: [] as Match[],
-	achievements: [] as Achievement[],
-	activity: activities,
-};
-
-const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
-	id: i,
-	user1: user1,
-	user2: user2,
-	result: ["win", "lose", "tie"][i % 3] as any,
-	duration: 300,
-	date: new Date(),
-	type: "Classic",
-	league: "Ranked",
-	map: "The Arena",
-	score1: 5,
-	score2: 0,
-}));
-
-const achievements: Achievement[] = Array.from({ length: 30 }).map((_, i) => ({
-	id: i,
-	name: "Achievement " + i,
-	description:
-		"Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, voluptatibus.",
-	icon: "/pfp.png",
-	date: new Date(),
-	score: 100,
-}));
 
 function Status({
 	status,
@@ -122,10 +47,6 @@ function Status({
 	);
 }
 
-user1.history = history;
-user1.achievements = achievements;
-user2.history = history;
-user2.achievements = achievements;
 
 function LevelBar({
 	level,
@@ -178,23 +99,23 @@ function UserList({ users }: { users: User[] }) {
 					<Tooltip content={<UserHover user={user} />} key={i}>
 						<div
 							data-status={user.status}
-							className="flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:content:[''] relative data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50
+							className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50
 							@4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
 							"
 						>
 							<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
 								<img
-									src={user.profile_picture}
+									src={user.avatar}
 									className="h-full w-full object-cover"
 								/>
 							</div>
 							<div
-								className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${user.rank.color}`}
+								className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${getRank(user.rank).color}`}
 							>
 								<span
-									className={`text-transparent mix-blend-plus-lighter ${user.rank.color} fuck-css`}
+									className={`text-transparent mix-blend-plus-lighter ${getRank(user.rank).color} fuck-css`}
 								>
-									{user.rank.name}
+									{getRank(user.rank).name}
 								</span>
 							</div>
 							<div className="flex flex-col items-start text-sm text-white @4xl:items-center ">
@@ -206,59 +127,6 @@ function UserList({ users }: { users: User[] }) {
 				))}
 			</div>
 		</div>
-	);
-}
-
-function ModalSet({
-	children,
-	trigger,
-	title,
-	isOpen,
-	onOpenChange,
-	onClose,
-	size,
-}: {
-	children?: ReactNode;
-	trigger?: ReactNode;
-	title?: ReactNode;
-	isOpen: boolean;
-	onOpenChange: ComponentProps<typeof Modal>["onOpenChange"];
-	onClose: ComponentProps<typeof Modal>["onClose"];
-	size?: ComponentProps<typeof Modal>["size"];
-}) {
-	return (
-		<>
-			<Modal
-				isOpen={isOpen}
-				onOpenChange={onOpenChange}
-				scrollBehavior="outside"
-				hideCloseButton
-				placement="center"
-				size={size ?? "4xl"}
-			>
-				<ModalContent className="bg-transparent shadow-none">
-					<Card
-						header={
-							<div className="flex w-full items-center justify-between">
-								{title}
-								<div className="ml-auto">
-									<Button
-										iconOnly
-										startContent={<X />}
-										variant="danger"
-										onClick={onClose}
-									></Button>
-								</div>
-							</div>
-						}
-						fullWidth
-					>
-						{children}
-					</Card>
-				</ModalContent>
-			</Modal>
-			{trigger}
-		</>
 	);
 }
 
@@ -284,7 +152,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				>
 					<div className="aspect-square h-full overflow-hidden rounded-full">
 						<img
-							src={user.profile_picture}
+							src={user.avatar}
 							className="h-full w-full"
 						/>
 					</div>
@@ -331,7 +199,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				<div className="absolute inset-0 z-10 flex items-center justify-between p-16 group-data-[side=right]:flex-row-reverse">
 					<div className="aspect-square h-full overflow-hidden rounded-full">
 						<img
-							src={user.profile_picture}
+							src={user.avatar}
 							className="h-full w-full"
 						/>
 					</div>
@@ -363,12 +231,12 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				className="group flex flex-1 gap-2 data-[side=right]:flex-row-reverse"
 			>
 				<div
-					className={`flex aspect-square h-full items-center justify-center rounded-full ${user.rank.color}`}
+					className={`flex aspect-square h-full items-center justify-center rounded-full ${getRank(user.rank).color}`}
 				>
 					<div
-						className={`text-transparent ${user.rank.color} fuck-css mix-blend-plus-lighter`}
+						className={`text-transparent ${getRank(user.rank).color} fuck-css mix-blend-plus-lighter`}
 					>
-						{user.rank.name}
+						{getRank(user.rank).name}
 					</div>
 				</div>
 				<div className="flex flex-col">
@@ -500,6 +368,7 @@ function MatchHistoryCard({ user }: { user: User }) {
 			footer={
 				<div className="flex w-full justify-end">
 					<ModalSet
+						scrollBehavior="outside"
 						onClose={onClose}
 						isOpen={isOpen}
 						onOpenChange={onOpenChange}
@@ -526,11 +395,6 @@ function MatchHistoryCard({ user }: { user: User }) {
 
 function ProfileFriends({ user }: { user: User }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-	const friends = Array.from({ length: 10 })
-		.map((_, i) => ({
-			...(i % 2 == 0 ? user1 : user2),
-		}))
-		.sort((user1, user2) => (user1.status == "Offline" ? 1 : -1));
 
 	return (
 		<Card
@@ -539,6 +403,7 @@ function ProfileFriends({ user }: { user: User }) {
 			footer={
 				<div className="flex w-full justify-end">
 					<ModalSet
+						scrollBehavior="outside"
 						onClose={onClose}
 						isOpen={isOpen}
 						onOpenChange={onOpenChange}
@@ -553,13 +418,13 @@ function ProfileFriends({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<UserList users={friends} />
+						<UserList users={user.friends!} />
 					</ModalSet>
 				</div>
 			}
 			fullWidth
 		>
-			<UserList users={friends.slice(0, 7)} />
+			<UserList users={user.friends!.slice(0, 7)} />
 		</Card>
 	);
 }
@@ -646,7 +511,7 @@ function ProfileTop({ user }: { user: User }) {
 				<div className="aspect-square h-[150%]">
 					<img
 						className="-translate-y-1/2 rounded-full object-cover"
-						src={user.profile_picture}
+						src={user.avatar}
 					/>
 				</div>
 				<div className="relative flex w-full translate-y-[-25%] flex-col items-start gap-4 px-2 pl-4 text-white">
@@ -676,13 +541,13 @@ function ProfileGaming({ user }: { user: User }) {
 	return (
 		<div id="Overview" className="flex w-full flex-col gap-4 lg:flex-row">
 			<div
-				className={`z-10 flex aspect-video h-auto w-full flex-shrink-0 select-none flex-col items-center justify-between overflow-hidden rounded-3xl lg:aspect-square lg:h-full lg:w-auto ${user.rank.color} `}
+				className={`z-10 flex aspect-video h-auto w-full flex-shrink-0 select-none flex-col items-center justify-between overflow-hidden rounded-3xl lg:aspect-square lg:h-full lg:w-auto ${getRank(user.rank).color} `}
 			>
 				<div className="flex flex-1 flex-col items-center justify-center gap-2">
 					<span
-						className={`text-[10rem] font-bold leading-[8rem] text-transparent mix-blend-plus-lighter ${user.rank.color} fuck-css`}
+						className={`text-[10rem] font-bold leading-[8rem] text-transparent mix-blend-plus-lighter ${getRank(user.rank).color} fuck-css`}
 					>
-						{user.rank.name}
+						{getRank(user.rank).name}
 					</span>
 					<Divider />
 					<span className="text-white">Division {user.division}</span>
@@ -744,9 +609,11 @@ function ProfileAchievements({ user }: { user: User }) {
 	return (
 		<Card
 			id="Achievements"
+
 			footer={
 				<div className="flex w-full justify-end">
 					<ModalSet
+						scrollBehavior="outside"
 						onClose={onClose}
 						isOpen={isOpen}
 						onOpenChange={onOpenChange}

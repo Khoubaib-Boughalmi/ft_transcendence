@@ -1,44 +1,139 @@
 "use client";
-
 import Card from "@/components/Card";
 import Divider from "@/components/Divider";
 import Input from "@/components/Input";
 import UserHover from "@/components/UserHover";
-import { Select, SelectItem, extendVariants } from "@nextui-org/react";
-import { Rank, User, Match, Achievement, Status } from "@/types/profile";
-import { RANKS, getFlag } from "@/lib/utils";
+import { useDisclosure } from "@nextui-org/react";
+import { User } from "@/types/profile";
+import { getFlag } from "@/lib/utils";
 import { Button } from "@/components/Button";
+import Link from "next/link";
+import { user1 } from "@/mocks/profile";
+import ModalSet from "@/components/ModalSet";
+import { useRef } from "react";
 
-// const NewSelect = extendVariants(Select, {
-// 	variants: {
-// 		color: {
-// 			primary: {
+function UploadButton({
+	children,
+	name,
+	...props
+}: React.ComponentProps<typeof Button> & {
+	name: string;
+}) {
+	const ref = useRef<HTMLLabelElement>(null);
 
-// 			}
-// 		}
-// 	}
-// });
+	return (
+		<>
+			<form className="hidden">
+				<input type="file" name={name} id={name} className="hidden" />
+				<label ref={ref} htmlFor={name}></label>
+			</form>
+			<Button
+				{...props}
+				onClick={() => {
+					if (ref.current) ref.current.click();
+				}}
+			>
+				{children}
+			</Button>
+		</>
+	);
+}
 
-const user1: User = {
-	id: 1,
-	username: "mcharrad",
-	profile_picture: "/pfp.png",
-	banner: "/background2.png",
-	country: "Morocco",
-	level: 1,
-	level_percentage: 0,
-	wins: 0,
-	losses: 0,
-	matches: 0,
-	achievements_percentage: 0,
-	rank: RANKS[0],
-	division: "I",
-	status: "Online",
+function DisableTwoFactorAuthentication({ user }: { user: User }) {
+	const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
 
-	history: [] as Match[],
-	achievements: [] as Achievement[],
-	activity: Array.from({ length: 12 }).map((_, i) => 0) as number[],
-};
+	return (
+		<ModalSet
+			isOpen={isOpen}
+			onOpenChange={onOpenChange}
+			onClose={onClose}
+			size="2xl"
+			footer={
+				<div className="flex w-full justify-end">
+					<Button variant="danger">Confirm</Button>
+				</div>
+			}
+			trigger={
+				<Button onClick={onOpen} variant="danger">
+					Disable two-factor authentication
+				</Button>
+			}
+			title="Are you sure you want to disable two-factor
+					authentication?"
+		>
+			<div className="p-4">
+				Two-factor authentication adds an additional layer of security
+				to your account by requiring more than just a password to sign
+				in. We highly recommend that you keep two-factor authentication
+				enabled on your account. If you need to change your
+				configuration, or generate new recovery codes, you can do that
+				in the settings below.
+			</div>
+		</ModalSet>
+	);
+}
+
+function EnableTwoFactorAuthentication({ user }: { user: User }) {
+	const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
+
+	return (
+		<ModalSet
+			isOpen={isOpen}
+			onOpenChange={onOpenChange}
+			onClose={onClose}
+			size="4xl"
+			footer={
+				<div className="flex w-full justify-end">
+					<Button variant="danger">Confirm</Button>
+				</div>
+			}
+			trigger={
+				<Button onClick={onOpen} variant="secondary">
+					Enable two-factor authentication
+				</Button>
+			}
+			title="Enable two-factor authentication (2FA)"
+		>
+			<div className="flex flex-col gap-2 p-4">
+				<div className="text-xl font-medium text-white">
+					Setup authenticator app
+				</div>
+				<div>
+					Authenticator apps and browser extensions like 1Password,
+					Authy, Microsoft Authenticator, etc. generate one-time
+					passwords that are used as a second factor to verify your
+					identity when prompted during sign-in.
+				</div>
+				<div className="mt-4 text-white">Scan the QR code</div>
+				<div>
+					Use an authenticator app or browser extension to scan.
+				</div>
+				<div className="mt-4 aspect-square w-1/4 rounded-xl bg-white p-4">
+					<img src="qr.svg" className="h-full w-full object-cover" />
+				</div>
+				<div className="mt-4 text-white">Verify code from the app</div>
+				<Input
+					placeholder="Enter code"
+					classNames={{
+						container: "p-4",
+					}}
+				/>
+			</div>
+		</ModalSet>
+	);
+}
+
+function TwoFactorAuthenticationToggle({ user }: { user: User }) {
+	return (
+		<>
+			{user.two_factor == false ? (
+				<EnableTwoFactorAuthentication user={user} />
+			) : (
+				<DisableTwoFactorAuthentication user={user} />
+			)}
+		</>
+	);
+}
 
 export default function Settings() {
 	const SettingSection = ({
@@ -56,6 +151,8 @@ export default function Settings() {
 		);
 	};
 
+	const session = user1;
+
 	return (
 		<main className="mb-12 flex w-[1000px] max-w-full flex-col justify-center gap-4">
 			<Card
@@ -66,11 +163,11 @@ export default function Settings() {
 					</div>
 				}
 			>
-				<div className="grid grid-cols-2 gap-8 p-6">
+				<div className="grid grid-cols-2 gap-8 p-4">
 					<div className="flex w-full flex-col items-start gap-6">
 						<SettingSection title="Username">
 							<Input
-								defaultValue={user1.username}
+								defaultValue={session.username}
 								classNames={{ container: "p-4 h-auto" }}
 								placeholder="Username"
 							/>
@@ -78,55 +175,68 @@ export default function Settings() {
 						<Divider />
 						<SettingSection title="Country">
 							<Input
-								defaultValue={
-									getFlag(user1.country) + "  " + user1.country
+								startContent={
+									<span className="font-flag">
+										{getFlag(session.country)}
+									</span>
 								}
+								defaultValue={session.country}
 								classNames={{ container: "p-4 h-auto" }}
 								placeholder="Country"
-								disabled	
+								disabled
 							/>
 						</SettingSection>
 						<Divider />
-						<SettingSection title="Profile Picture">
+						<SettingSection title="Avatar">
 							<div className="flex gap-2">
-								<Button variant="secondary">
-									Upload Profile Picture
-								</Button>
+								<UploadButton name="avatar" variant="secondary">
+									Upload Avatar
+								</UploadButton>
 								<Button variant="transparent">
-									Delete Profile Picture
+									Delete Avatar
 								</Button>
 							</div>
 						</SettingSection>
+						<Divider />
 						<SettingSection title="Banner">
 							<div className="flex gap-2">
-								<Button variant="secondary">
+								<UploadButton name="banner" variant="secondary">
 									Upload Banner
-								</Button>
+								</UploadButton>
 								<Button variant="transparent">
 									Delete Banner
 								</Button>
 							</div>
 						</SettingSection>
-						<Divider />
 					</div>
 					<div className="flex items-center justify-center rounded-xl bg-black text-white ">
-						<UserHover user={user1} />
+						<UserHover user={session} />
 					</div>
 				</div>
-
-				{/* <div className="p-4 flex flex-col items-start gap-4">
-					<div className="w-full">
-						<div className="bg-white w-full h-96	 rounded-xl overflow-hidden">
-							<img src="background2.png" className="h-full w-full object-cover"/>
-						</div>
-						<div className="w-full mr-auto h-16 relative">
-							<div className="h-[200%] aspect-square -translate-y-1/2 rounded-full overflow-hidden">
-								<img src="pfp.png" className="h-full w-full aspect-square object-cover" />
+				<div className="flex flex-col gap-8 p-4">
+					<Divider />
+					<SettingSection title="Two-factor authentication">
+						<div className="my-12 flex flex-col items-center justify-center gap-4">
+							<div className="text-xl font-medium text-white">
+								{session.two_factor == false
+									? "Two-factor authentication is not enabled"
+									: "Two-factor authentication is enabled"}
 							</div>
+							<div className="w-3/4 text-center">
+								Two-factor authentication adds an additional
+								layer of security to your account by requiring
+								more than just a password to sign in.
+							</div>
+							<TwoFactorAuthenticationToggle user={session} />
+							<Link
+								className="text-sm text-[rgb(80,153,255)]"
+								href="https://datatracker.ietf.org/doc/html/rfc6238"
+							>
+								Learn more
+							</Link>
 						</div>
-					</div>
-					<Divider />	
-				</div> */}
+					</SettingSection>
+				</div>
 			</Card>
 		</main>
 	);
