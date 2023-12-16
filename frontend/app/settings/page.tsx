@@ -11,6 +11,7 @@ import Link from "next/link";
 import { user1 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import { useRef } from "react";
+import { Lock, Unlock } from "lucide-react";
 
 function UploadButton({
 	children,
@@ -217,7 +218,8 @@ export default function Settings() {
 					<Divider />
 					<SettingSection title="Two-factor authentication">
 						<div className="my-12 flex flex-col items-center justify-center gap-4">
-							<div className="text-xl font-medium text-white">
+							{session.two_factor == false ? <Unlock /> : <Lock />}
+							<div className="text-xl font-medium text-white text-center">
 								{session.two_factor == false
 									? "Two-factor authentication is not enabled"
 									: "Two-factor authentication is enabled"}

@@ -96,7 +96,11 @@ function UserList({ users }: { users: User[] }) {
 			{users.length == 0 && <NoData />}
 			<div className="flex flex-col flex-wrap gap-2 @4xl:grid @4xl:grid-cols-7">
 				{users.map((user, i) => (
-					<Tooltip content={<UserHover user={user} />} key={i}>
+					<Tooltip 
+						classNames={{
+							content: "p-2 rounded-xl",
+						}}
+						content={<UserHover user={user} />} key={i}>
 						<div
 							data-status={user.status}
 							className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50

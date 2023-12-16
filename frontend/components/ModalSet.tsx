@@ -38,9 +38,10 @@ export default function ModalSet({
 								<div className="ml-auto">
 									<Button
 										iconOnly
-										startContent={<X />}
+										startContent={<X size={12} />}
 										variant="danger"
 										onClick={onClose}
+										className="p-1.5"
 									></Button>
 								</div>
 							</div>
