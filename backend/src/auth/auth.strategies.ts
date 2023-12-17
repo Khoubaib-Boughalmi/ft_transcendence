@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Strategy, Profile } from 'passport-42';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Strategy as IntraBaseStrategy, Profile } from 'passport-42';
+import { Strategy as JwtBaseStrategy, ExtractJwt } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 
 @Injectable()
-export class IntraStrategy extends PassportStrategy(Strategy) {
+export class IntraStrategy extends PassportStrategy(IntraBaseStrategy) {
 	constructor(private authService: AuthService) {
 		super({
 			clientID: process.env.INTRA_CLIENT_ID,
@@ -13,7 +14,29 @@ export class IntraStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 
-    async validate(accessToken: string, refreshToken: string, profile: Profile) {
+	async validate(accessToken: string, refreshToken: string, profile: Profile) {
 		return this.authService.validateUser(profile);
+	}
+}
+
+const cookieExtractor = (req: any): string | null => {
+	let token = null;
+	if (req && req.cookies) {
+		token = req.cookies.access_token;
+	}
+	return token;
+};
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(JwtBaseStrategy) {
+	constructor(private readonly authService: AuthService) {
+		super({
+			jwtFromRequest: cookieExtractor,
+			secretOrKey: process.env.JWT_SECRET,
+		});
+	}
+
+	validate(payload) {
+		return this.authService.validateJwt(payload);
 	}
 }

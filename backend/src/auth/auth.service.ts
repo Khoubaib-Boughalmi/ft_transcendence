@@ -25,6 +25,12 @@ export class AuthService {
         return { id: newUser.id, username: newUser.username };
     }
 
+    async validateJwt(jwtPayload: any): Promise<any> {
+        const user = await this.userService.user({ id: jwtPayload.id });
+        if (!user) return null;
+        return { id: user.id, username: user.username };
+    }
+
     async login(user: any) {
         const payload = { id: user.id, username: user.username };
         return {

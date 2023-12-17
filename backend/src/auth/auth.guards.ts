@@ -10,10 +10,10 @@ export class IntraAuthGuard extends AuthGuard('42') {
 	}
 }
 
-@Injectable()
-export class AuthenticatedGuard implements CanActivate {
-	async canActivate(context: ExecutionContext): Promise<any> {
-		const req = context.switchToHttp().getRequest();
-		return req.isAuthenticated();
+export class JwtGuard extends AuthGuard('jwt') {
+	async canActivate(context: ExecutionContext) {
+		const activate = (await super.canActivate(context)) as boolean;
+		const request = context.switchToHttp().getRequest();
+		return activate;
 	}
 }
