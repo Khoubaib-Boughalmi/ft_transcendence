@@ -48,4 +48,20 @@ export class UserService {
 			i++;
 		}
 	}
+
+	async getProfileFull(username: string): Promise<User | null> {
+		return this.prisma.user.findUnique({
+			where: { username },
+		});
+	}
+
+	async getProfileMini(username: string): Promise<User | null> {
+		const user = this.getProfileFull(username);
+		return user;
+	}
+
+	async getProfileMicro(username: string): Promise<User | null> {
+		const user = this.getProfileFull(username);
+		return user;
+	}
 }
