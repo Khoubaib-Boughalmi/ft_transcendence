@@ -15,6 +15,7 @@ import PublicContext from "@/contexts/PublicContext";
 import { SuperSkeleton } from "@/components/SuperSkeleton";
 import Status from "@/components/Status";
 import useSWR from "swr";
+import Error from "next/error";
 
 const ProfileContext = createContext({});
 
@@ -738,10 +739,13 @@ function ProfileStats({ user }: { user: User }) {
 
 export default function Home({ params }: any) {
 	const { session } = useContext(PublicContext) as any;
-	const { data: user, isLoading: userLoading } = useSWR(`/api/profile/${params.username}`, fetcher) as { data: User, isLoading: boolean };
+	const { data: user, isLoading: userLoading, error: userError } = useSWR(`/user/profile/${params.username}`, fetcher) as { data: User, isLoading: boolean, error: any };
 	const falseUser = { ...user1, ...user };
 
 	console.log({userLoading});
+
+	if (userError)
+		return <Error statusCode={401} />;
 
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full flex-col justify-center gap-4 select-none">
