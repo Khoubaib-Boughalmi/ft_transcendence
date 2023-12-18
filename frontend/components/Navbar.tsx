@@ -38,7 +38,7 @@ function LoginButton() {
 		<Button
 			as="a"
 			href="http://localhost:3000/api/auth/intra/login"
-			startContent={<img className="h-5 w-5 invert" src="42_Logo.svg" />}
+			startContent={<img className="h-5 w-5 invert" src="/42_Logo.svg" />}
 			variant="ghost"
 		>
 			Sign in
