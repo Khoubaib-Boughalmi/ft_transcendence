@@ -55,7 +55,7 @@ function ProfileButton({ user }: { user: User }) {
 			</div>
 			<div className="aspect-square h-full ">
 				<img
-					src="pfp.png"
+					src="/pfp.png"
 					className="h-full w-full rounded-full object-cover"
 				/>
 			</div>

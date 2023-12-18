@@ -21,7 +21,7 @@ export const user1: User = {
 	history: [],
 	achievements: [],
 	activity: activities,
-	two_factor: true,
+	two_factor: false,
 };
 
 export const user2: User = {

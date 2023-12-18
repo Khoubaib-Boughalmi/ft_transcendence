@@ -33,7 +33,7 @@ export default function RootLayout({
 					<div className="fixed inset-0 bg-gradient-to-t from-background to-accent to-[250%] overflow-hidden">
 						<img
 							className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
-							src="background2.png"
+							src="/background2.png"
 						/>
 						<div className="absolute bottom-0 h-full bg-gradient-to-t from-black to-transparent w-full from-50%">
 
