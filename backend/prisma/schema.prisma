@@ -6,15 +6,27 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  intra_id Int    @unique
-  username String @unique
-  email    String @unique
-  country  String
-  ranking  Int    @default(0)
+  id              Int     @id @default(autoincrement())
+  intra_id        Int     @unique
+  username        String  @unique
+  email           String  @unique
+  // 
+  country         String
+  avatar          String
+  banner          String
+  level           Int     @default(0)
+  achievements    Int[]   @default([])
+  history         Int[]   @default([])
+  rank            Int     @default(0)
+  division        String  @default("D")
+  // friends          User[] @relation("Friends")
+  // friend_requests  User[] @relation("FriendRequests")
+  // blocked_users    User[] @relation("BlockedUsers")
+  two_factor      Boolean @default(false)
+  two_factor_code String?
 }

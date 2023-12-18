@@ -11,7 +11,6 @@ export class AuthService {
     ) { }
 
     async validateUser(profile: Profile): Promise<any> {
-        console.log(profile);
         const user = await this.userService.user({ intra_id: Number(profile.id) });
         if (user)
             return { id: user.id, username: user.username };
@@ -21,6 +20,8 @@ export class AuthService {
             intra_id: Number(profile.id),
             email: profile.emails[0].value,
             country: profile._json.campus[0].country,
+            avatar: profile._json.image.link,
+            banner: '/background2.png',
         });
         return { id: newUser.id, username: newUser.username };
     }
