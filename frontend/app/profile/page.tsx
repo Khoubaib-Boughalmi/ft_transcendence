@@ -6,10 +6,10 @@ import Error from "next/error";
 import PublicContext from "@/contexts/PublicContext";
 
 export default function Page() {
-	const { session } = useContext(PublicContext) as any;
+	const { session, sessionLoading } = useContext(PublicContext) as any;
     const router = useRouter();
 
-    if (session)
+    if (session && !sessionLoading)
         redirect("/profile/" + session.username);
 
     return <Error statusCode={401} />	

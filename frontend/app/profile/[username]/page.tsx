@@ -1,19 +1,22 @@
 "use client";
 import { Button } from "@/components/Button";
 import { Equal, Expand, Medal, UserPlus2, UserX2, X } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, createContext } from "react";
 import Divider from "@/components/Divider";
 import { useDisclosure, Tooltip, Skeleton } from "@nextui-org/react";
 import Chart from "@/components/Chart";
 import Card from "@/components/Card";
 import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
-import { getFlag, getRank } from "@/lib/utils";
+import { fetcher, getFlag, getRank } from "@/lib/utils";
 import { user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import PublicContext from "@/contexts/PublicContext";
 import { SuperSkeleton } from "@/components/SuperSkeleton";
 import Status from "@/components/Status";
+import useSWR from "swr";
+
+const ProfileContext = createContext({});
 
 function NoData() {
 	return (
@@ -24,11 +27,11 @@ function NoData() {
 }
 
 function SessionLoadingSkeleton() {
-	const { sessionLoading } = useContext(PublicContext) as any;
+	const { userLoading } = useContext(ProfileContext) as any;
 
 	return (
 		<SuperSkeleton
-			isLoaded={!sessionLoading}
+			isLoaded={!userLoading}
 			className="absolute inset-0 z-40 rounded-3xl"
 			classNames={{
 				base: "after:dark:bg-card-300 before:dark:bg-card-300 dark:bg-card-300",
@@ -733,17 +736,23 @@ function ProfileStats({ user }: { user: User }) {
 	);
 }
 
-export default function Home() {
-	const { session, sessionLoading } = useContext(PublicContext) as any;
+export default function Home({ params }: any) {
+	const { session } = useContext(PublicContext) as any;
+	const { data: user, isLoading: userLoading } = useSWR(`/api/profile/${params.username}`, fetcher) as { data: User, isLoading: boolean };
+	const falseUser = { ...user1, ...user };
+
+	console.log({userLoading});
 
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full flex-col justify-center gap-4 select-none">
-			<ProfileTop user={session} />
-			<ProfileNavigation />
-			<ProfileGaming user={session} />
-			<ProfileFriends user={session} />
-			<ProfileAchievements user={session} />
-			<ProfileStats user={session} />
+			<ProfileContext.Provider value={{ userLoading }}>
+				<ProfileTop user={falseUser} />
+				<ProfileNavigation />
+				<ProfileGaming user={falseUser} />
+				<ProfileFriends user={falseUser} />
+				<ProfileAchievements user={falseUser} />
+				<ProfileStats user={falseUser} />
+			</ProfileContext.Provider>
 		</main>
 	);
 }
