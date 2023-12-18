@@ -124,4 +124,12 @@
 
 .fuck-css {
 	background-clip: text;
+	font-weight: bolder;
+}
+
+img {
+	user-select: none;
+	-webkit-user-drag: none;
+	-moz-user-drag: none;
+	-ms-user-drag: none;
 }

@@ -1,16 +1,19 @@
 "use client";
 import { Button } from "@/components/Button";
 import { Equal, Expand, Medal, UserPlus2, UserX2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Divider from "@/components/Divider";
-import { useDisclosure, Tooltip } from "@nextui-org/react";
+import { useDisclosure, Tooltip, Skeleton } from "@nextui-org/react";
 import Chart from "@/components/Chart";
 import Card from "@/components/Card";
-import { User, Match, Achievement, Status } from "@/types/profile";
+import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
 import { getFlag, getRank } from "@/lib/utils";
 import { user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
+import PublicContext from "@/contexts/PublicContext";
+import { SuperSkeleton } from "@/components/SuperSkeleton";
+import Status from "@/components/Status";
 
 function NoData() {
 	return (
@@ -20,33 +23,19 @@ function NoData() {
 	);
 }
 
-function Status({
-	status,
-	size,
-}: {
-	status: Status;
-	size?: "sm" | "md" | "lg";
-}) {
+function SessionLoadingSkeleton() {
+	const { sessionLoading } = useContext(PublicContext) as any;
+
 	return (
-		<div
-			data-size={size}
-			data-status={status}
-			className="group flex items-center gap-1 rounded-3xl bg-green-600 
-				px-1
-				text-[0.65rem]
-				 data-[status=Busy]:bg-red-600 data-[status=Offline]:bg-gray-600 data-[size=sm]:text-[0.55rem]"
-		>
-			<div
-				className="aspect-square h-2 w-2 rounded-full
-				bg-green-400
-				group-data-[status=Busy]:bg-red-400
-				 group-data-[status=Offline]:bg-gray-400"
-			></div>
-			<div className="group-data-[size=sm]:leading-4">{status}</div>
-		</div>
+		<SuperSkeleton
+			isLoaded={!sessionLoading}
+			className="absolute inset-0 z-40 rounded-3xl"
+			classNames={{
+				base: "after:dark:bg-card-300 before:dark:bg-card-300 dark:bg-card-300",
+			}}
+		/>
 	);
 }
-
 
 function LevelBar({
 	level,
@@ -90,44 +79,59 @@ function AchievementScore({
 	);
 }
 
+function UserListEntry({ user }: { user: User }) {
+	const ref = useRef<HTMLDivElement>(null);
+
+	return (
+		<Tooltip
+			classNames={{
+				content: "p-2 rounded-xl",
+			}}
+			content={<UserHover user={user} />}
+			placement={(ref.current?.offsetWidth || 0) > 150 ? "top" : "right"}
+		>
+			<div
+				data-status={user.status}
+				ref={ref}
+				className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white transition-all duration-300 hover:scale-105
+							hover:bg-card-500 hover:shadow-lg data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50 @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
+							"
+			>
+				<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
+					<img
+						src={user.avatar}
+						className="h-full w-full object-cover"
+					/>
+				</div>
+				<div
+					className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${
+						getRank(user.rank).color
+					}`}
+				>
+					<span
+						className={`text-transparent mix-blend-plus-lighter ${
+							getRank(user.rank).color
+						} fuck-css`}
+					>
+						{getRank(user.rank).name}
+					</span>
+				</div>
+				<div className="flex flex-col items-start text-sm text-white @4xl:items-center select-all">
+					{user.username}
+					<Status status={user.status} size="sm" />
+				</div>
+			</div>
+		</Tooltip>
+	);
+}
+
 function UserList({ users }: { users: User[] }) {
 	return (
 		<div className="w-full p-2 @container">
 			{users.length == 0 && <NoData />}
 			<div className="flex flex-col flex-wrap gap-2 @4xl:grid @4xl:grid-cols-7">
 				{users.map((user, i) => (
-					<Tooltip 
-						classNames={{
-							content: "p-2 rounded-xl",
-						}}
-						content={<UserHover user={user} />} key={i}>
-						<div
-							data-status={user.status}
-							className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50
-							@4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
-							"
-						>
-							<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
-								<img
-									src={user.avatar}
-									className="h-full w-full object-cover"
-								/>
-							</div>
-							<div
-								className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${getRank(user.rank).color}`}
-							>
-								<span
-									className={`text-transparent mix-blend-plus-lighter ${getRank(user.rank).color} fuck-css`}
-								>
-									{getRank(user.rank).name}
-								</span>
-							</div>
-							<div className="flex flex-col items-start text-sm text-white @4xl:items-center ">
-								{user.username}
-								<Status status={user.status} size="sm" />
-							</div>
-						</div>
-					</Tooltip>
+					<UserListEntry key={i} user={user} />
 				))}
 			</div>
 		</div>
@@ -155,16 +159,13 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 					className="z-10 flex w-full items-center gap-4 text-white data-[side=right]:flex-row-reverse"
 				>
 					<div className="aspect-square h-full overflow-hidden rounded-full">
-						<img
-							src={user.avatar}
-							className="h-full w-full"
-						/>
+						<img src={user.avatar} className="h-full w-full" />
 					</div>
 					<div
 						data-side={side}
 						className="flex flex-col  items-start gap-0.5 data-[side=right]:items-end"
 					>
-						<span className="text-lg font-medium leading-4">
+						<span className="text-lg font-medium leading-4 select-all">
 							{user.username}
 						</span>
 						<span
@@ -202,10 +203,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				<img src={user.banner} className="h-full w-full object-cover" />
 				<div className="absolute inset-0 z-10 flex items-center justify-between p-16 group-data-[side=right]:flex-row-reverse">
 					<div className="aspect-square h-full overflow-hidden rounded-full">
-						<img
-							src={user.avatar}
-							className="h-full w-full"
-						/>
+						<img src={user.avatar} className="h-full w-full" />
 					</div>
 					<div className="text-4xl text-white">{score}</div>
 				</div>
@@ -215,7 +213,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 
 	const Information = ({ title, value }: any) => {
 		return (
-			<div className="flex items-center justify-between rounded-full bg-white/25 p-1 px-4 text-xs text-white">
+			<div className="flex items-center justify-between rounded-full bg-white/10 p-1 px-4 text-xs text-white">
 				<span>{title}</span>
 				<span className="text-sm">{value}</span>
 			</div>
@@ -235,16 +233,20 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				className="group flex flex-1 gap-2 data-[side=right]:flex-row-reverse"
 			>
 				<div
-					className={`flex aspect-square h-full items-center justify-center rounded-full ${getRank(user.rank).color}`}
+					className={`flex aspect-square h-full items-center justify-center rounded-full ${
+						getRank(user.rank).color
+					}`}
 				>
 					<div
-						className={`text-transparent ${getRank(user.rank).color} fuck-css mix-blend-plus-lighter`}
+						className={`text-transparent ${
+							getRank(user.rank).color
+						} fuck-css mix-blend-plus-lighter`}
 					>
 						{getRank(user.rank).name}
 					</div>
 				</div>
 				<div className="flex flex-col">
-					<span className="leading-4">{user.username}</span>
+					<span className="leading-4 select-all">{user.username}</span>
 					<span className="flex gap-2 text-[0.55rem] leading-3 group-data-[side=right]:flex-row-reverse">
 						<span className="font-flag">
 							{getFlag(user.country)}
@@ -264,7 +266,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 			trigger={
 				<div
 					onClick={onOpen}
-					className="relative flex h-16 w-full  cursor-pointer select-none overflow-hidden rounded-3xl bg-black brightness-90 transition-all @container hover:scale-105 hover:brightness-110"
+					className="relative flex h-16 w-full  cursor-pointer overflow-hidden rounded-3xl bg-black brightness-90 transition-all @container hover:scale-105 hover:brightness-110"
 				>
 					<PlayerSide user={match.user1} side={"left"} />
 					<PlayerSide user={match.user2} side={"right"} />
@@ -330,7 +332,7 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 					/>
 				</div>
 				<div className="absolute inset-0 top-[35%]  z-10 flex flex-col justify-end gap-2 px-8 pb-8">
-					<div className="mb-4 flex w-full justify-between rounded-xl bg-black/25 p-2 px-4 text-white">
+					<div className="mb-4 flex w-full justify-between rounded-full bg-black/25 p-2 px-2 text-white">
 						<UserInformation user={match.user1} side="left" />
 						<UserInformation user={match.user2} side="right" />
 					</div>
@@ -390,6 +392,8 @@ function MatchHistoryCard({ user }: { user: User }) {
 					</ModalSet>
 				</div>
 			}
+			className="relative"
+			skeleton={<SessionLoadingSkeleton />}
 			fullWidth
 		>
 			<MatchHistoryList history={user.history.slice(0, 3)} />
@@ -404,6 +408,8 @@ function ProfileFriends({ user }: { user: User }) {
 		<Card
 			id="Friends"
 			header={"Friends"}
+			className="relative"
+			skeleton={<SessionLoadingSkeleton />}
 			footer={
 				<div className="flex w-full justify-end">
 					<ModalSet
@@ -498,7 +504,8 @@ function ProfileNavigation() {
 
 function ProfileTop({ user }: { user: User }) {
 	return (
-		<div className="flex w-full flex-col">
+		<div className="relative flex w-full flex-col">
+			<SessionLoadingSkeleton />
 			<div className="relative h-96 w-full overflow-hidden rounded-t-3xl">
 				<img src={user.banner} className="h-full w-full object-cover" />
 				<div className="absolute inset-0 z-10 flex items-end justify-end gap-2 p-8">
@@ -521,7 +528,7 @@ function ProfileTop({ user }: { user: User }) {
 				<div className="relative flex w-full translate-y-[-25%] flex-col items-start gap-4 px-2 pl-4 text-white">
 					<Status status={user.status} />
 					<div className="flex w-full flex-col gap-2">
-						<div className="text-3xl font-bold leading-5">
+						<div className="text-3xl font-bold leading-5 select-all">
 							{user.username}
 						</div>
 						<div className="flex gap-2 text-xs leading-[0.5rem]">
@@ -545,11 +552,15 @@ function ProfileGaming({ user }: { user: User }) {
 	return (
 		<div id="Overview" className="flex w-full flex-col gap-4 lg:flex-row">
 			<div
-				className={`z-10 flex aspect-video h-auto w-full flex-shrink-0 select-none flex-col items-center justify-between overflow-hidden rounded-3xl lg:aspect-square lg:h-full lg:w-auto ${getRank(user.rank).color} `}
+				className={`z-10 flex aspect-video h-auto w-full flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-3xl lg:aspect-square lg:h-full lg:w-auto ${
+					getRank(user.rank).color
+				} relative `}
 			>
 				<div className="flex flex-1 flex-col items-center justify-center gap-2">
 					<span
-						className={`text-[10rem] font-bold leading-[8rem] text-transparent mix-blend-plus-lighter ${getRank(user.rank).color} fuck-css`}
+						className={`text-[10rem] font-bold leading-[8rem] text-transparent mix-blend-plus-lighter ${
+							getRank(user.rank).color
+						} fuck-css`}
 					>
 						{getRank(user.rank).name}
 					</span>
@@ -557,6 +568,7 @@ function ProfileGaming({ user }: { user: User }) {
 					<span className="text-white">Division {user.division}</span>
 					<div></div>
 				</div>
+				<SessionLoadingSkeleton />
 			</div>
 			<MatchHistoryCard user={user} />
 		</div>
@@ -613,7 +625,8 @@ function ProfileAchievements({ user }: { user: User }) {
 	return (
 		<Card
 			id="Achievements"
-
+			className="relative"
+			skeleton={<SessionLoadingSkeleton />}
 			footer={
 				<div className="flex w-full justify-end">
 					<ModalSet
@@ -667,7 +680,12 @@ function ProfileAchievements({ user }: { user: User }) {
 
 function ProfileStats({ user }: { user: User }) {
 	return (
-		<Card id="Stats" header="Stats">
+		<Card
+			className="relative"
+			skeleton={<SessionLoadingSkeleton />}
+			id="Stats"
+			header="Stats"
+		>
 			<div className="flex flex-col gap-4 p-2 ">
 				<div className="grid grid-cols-4 gap-4">
 					{["Wins", "Losses", "Matches", "Ratio"].map((title) => (
@@ -716,10 +734,10 @@ function ProfileStats({ user }: { user: User }) {
 }
 
 export default function Home() {
-	const session: User = user1;
+	const { session, sessionLoading } = useContext(PublicContext) as any;
 
 	return (
-		<main className="mb-12 flex w-[1250px] max-w-full flex-col justify-center gap-4">
+		<main className="relative mb-12 flex w-[1250px] max-w-full flex-col justify-center gap-4 select-none">
 			<ProfileTop user={session} />
 			<ProfileNavigation />
 			<ProfileGaming user={session} />

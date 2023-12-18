@@ -4,7 +4,7 @@ const activities = [100, 0, 5, 10, 15, 20, 0, 0, 0, 0, 12, 18];
 
 export const user1: User = {
 	id: 1,
-	username: "mcharrad",
+	username: "user1",
 	avatar: "/pfp.png",
 	banner: "/background2.png",
 	country: "Morocco",

@@ -1,23 +1,28 @@
 "use client";
 import { ReactNode } from "react";
 import Divider from "@/components/Divider";
+import { twMerge } from "tailwind-merge";
 
 export default function Card({
-	header, children, footer, color = "bg-card-300", fullWidth = false, ...props
+	header, children, footer, color = "bg-card-300", fullWidth = false, className, skeleton, ...props
 }: {
 	header?: ReactNode;
 	children?: ReactNode;
 	footer?: ReactNode;
 	color?: string;
 	fullWidth?: boolean;
+	className?: string;
+	skeleton?: ReactNode;
 	[key: string]: any;
 }) {
 	return (
 		<div
 			{...props}
 			data-full-width={fullWidth}
-			className={`flex flex-col rounded-3xl ${color} z-10 data-[full-width=true]:w-full`}
+			className={twMerge(`flex flex-col rounded-3xl ${color} z-10 data-[full-width=true]:w-full`, className
+			)}
 		>
+			{skeleton}
 			{header && (
 				<>
 					<div className="flex flex-shrink-0 p-4 font-medium text-white ">

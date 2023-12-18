@@ -3,7 +3,7 @@ export type Rank = {
 	name: string;
 	color: "bronze" | "silver" | "gold" | "platinum" | "diamond";
 };
-export type Status = "Online" | "Offline" | "Busy";
+export type StatusType = "Online" | "Offline" | "Busy";
 export type MatchType = "Classic" | "Power"
 export type MatchLeague = "Casual" | "Ranked" | "Tournament"
 export type Achievement = {
@@ -43,7 +43,7 @@ export type User = {
 	matches: number;
 	rank: number;
 	division: string;
-	status: Status;
+	status: StatusType;
 	activity: number[];
 	friends: User[];
 	two_factor: boolean;

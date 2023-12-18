@@ -1,5 +1,17 @@
 import { twMerge } from "tailwind-merge";
 
+type ButtonProps = {
+	children?: React.ReactNode;
+	iconOnly?: boolean;
+	startContent?: React.ReactNode;
+	variant?: "default" | "secondary" | "danger" | "transparent" | "ghost";
+	as?: "button" | "a";
+	className?: string;
+} & (
+	| React.ButtonHTMLAttributes<HTMLButtonElement>
+	| React.AnchorHTMLAttributes<HTMLAnchorElement>
+);
+
 export function Button({
 	children,
 	iconOnly = false,
@@ -8,15 +20,7 @@ export function Button({
 	as: As = "button",
 	className,
 	...props
-}: {
-	children?: any;
-	iconOnly?: boolean;
-	startContent?: React.ReactNode;
-	variant?: "default" | "secondary" | "danger" | "transparent" | "ghost";
-	as?: "button" | "a";
-	className?: string;
-} & React.HTMLAttributes<HTMLButtonElement | HTMLAnchorElement>)
-{
+}: ButtonProps) {
 	return (
 		<As
 			className={twMerge(
@@ -37,7 +41,7 @@ export function Button({
 				iconOnly && "p-2",
 				className
 			)}
-			{...props}
+			{...props as React.ButtonHTMLAttributes<HTMLButtonElement> & React.AnchorHTMLAttributes<HTMLAnchorElement>}
 		>
 			{startContent}
 			{children}

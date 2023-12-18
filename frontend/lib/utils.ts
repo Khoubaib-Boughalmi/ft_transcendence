@@ -1,4 +1,5 @@
-import { Rank, User, Match, Achievement, Status } from "@/types/profile";
+import { Rank, User, Match, Achievement, StatusType } from "@/types/profile";
+import axios from "@/lib/axios";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -36,4 +37,14 @@ export function getRank(rank: number) {
 	];
 
 	return RANKS[rank] ?? RANKS[0];
+}
+
+export function makeForm(data: any) {
+	const formData = new FormData();
+	Object.keys(data).forEach(key => formData.append(key, data[key]));
+	return formData;
+}
+
+export function fetcher<T>(url: string) {
+	return axios.get<T>(url).then(res => res.data);
 }

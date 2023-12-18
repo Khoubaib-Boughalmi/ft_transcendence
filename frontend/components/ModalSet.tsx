@@ -30,7 +30,7 @@ export default function ModalSet({
 				size={size ?? "4xl"}
 				{...modalProps}
 			>
-				<ModalContent className="bg-transparent shadow-none">
+				<ModalContent className="bg-transparent shadow-none select-none">
 					<Card
 						header={
 							<div className="flex w-full items-center justify-between">
