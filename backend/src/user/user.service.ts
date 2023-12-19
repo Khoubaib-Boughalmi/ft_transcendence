@@ -136,4 +136,21 @@ export class UserService {
 			...rest,
 		}
 	}
+
+	async gainExp(id: string, exp: number): Promise<void> {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+		});
+		if (!user) return;
+
+		const newExp = user.level_exp + exp;
+		const updateData = newExp < 1000
+			? { level_exp: newExp }
+			: { level: user.level + 1, level_exp: newExp - 1000 };
+
+		await this.prisma.user.update({
+			where: { id },
+			data: updateData,
+		});
+	}
 }
