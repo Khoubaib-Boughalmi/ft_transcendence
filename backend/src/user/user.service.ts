@@ -85,10 +85,10 @@ export class UserService {
 		}
 	}
 
-	async getProfileFull(username: string): Promise<UserProfileFull | null> {
-		const user = await this.prisma.user.findUnique({
-			where: { username },
-		});
+	async getProfileFull(
+		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+	): Promise<UserProfileFull | null> {
+		const user = await this.user(userWhereUniqueInput);
 		if (!user) return null;
 		// Find matches with ids in user.history
 		const matches = await this.prisma.gameMatch.findMany({
@@ -119,8 +119,8 @@ export class UserService {
 		};
 	}
 
-	async getProfileMini(username: string): Promise<UserProfileMini | null> {
-		const user = await this.getProfileFull(username);
+	async getProfileMini(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<UserProfileMini | null> {
+		const user = await this.getProfileFull(userWhereUniqueInput);
 		if (!user) return null;
 		const { two_factor, ...rest } = user;
 		return {
@@ -128,8 +128,8 @@ export class UserService {
 		}
 	}
 
-	async getProfileMicro(username: string): Promise<UserProfileMini | null> {
-		const user = await this.getProfileFull(username);
+	async getProfileMicro(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<UserProfileMini | null> {
+		const user = await this.getProfileFull(userWhereUniqueInput);
 		if (!user) return null;
 		const { two_factor, ...rest } = user;
 		return {

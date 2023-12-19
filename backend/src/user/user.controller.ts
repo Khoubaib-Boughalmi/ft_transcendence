@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IsLowercase, IsOptional, Length } from 'class-validator';
 import { JwtGuard } from 'src/auth/auth.guards';
@@ -21,9 +21,9 @@ export class UserController {
     async getProfile(@Req() req, @Param() params: ProfileDTO) {
         // If no username is provided, return the profile of the logged in user
         if (!params.username) {
-            return await this.userService.getProfileFull(req.user.username);
+            return await this.userService.getProfileFull({ id: req.user.id });
         }
         // Otherwise, return the profile of the provided username
-        return await this.userService.getProfileMini(params.username);
+        return await this.userService.getProfileMini({ username: params.username });
     }
 }
