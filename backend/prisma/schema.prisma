@@ -10,23 +10,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model GameMatch {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Game info
+  player1_id    String
+  player2_id    String
+  player1_score Int
+  player2_score Int
+  winner_id     String
+  duration      Int
+  game_type     String
+  game_league   String
+  game_map      String
+}
+
 model User {
-  id              Int     @id @default(autoincrement())
-  intra_id        Int     @unique
-  username        String  @unique
-  email           String  @unique
-  // 
-  country         String
-  avatar          String
-  banner          String
-  level           Int     @default(0)
-  achievements    Int[]   @default([])
-  history         Int[]   @default([])
-  rank            Int     @default(0)
-  division        String  @default("D")
-  // friends          User[] @relation("Friends")
-  // friend_requests  User[] @relation("FriendRequests")
-  // blocked_users    User[] @relation("BlockedUsers")
-  two_factor      Boolean @default(false)
-  two_factor_code String?
+  // Identification
+  id         String   @id @default(uuid())
+  intra_id   Int      @unique
+  username   String   @unique
+  email      String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Profile info
+  country      String
+  avatar       String
+  banner       String
+  level        Int         @default(0)
+  level_exp    Int         @default(0)
+  achievements Int[]       @default([])
+  history      String[]    @default([])
+  rank         Int         @default(0)
+  division     String      @default("D")
+
+  // Two factor auth
+  two_factor        Boolean @default(false)
+  two_factor_secret String?
+
+  // Relations
+  friends           User[] @relation("friends")
+  friendOf          User[] @relation("friends")
+  friend_requests   User[] @relation("FriendRequests")
+  friend_requestsOf User[] @relation("FriendRequests")
+  blocked_users     User[] @relation("BlockedUsers")
+  blocked_usersOf   User[] @relation("BlockedUsers")
 }
