@@ -12,6 +12,7 @@ import { user1 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import { useRef } from "react";
 import { Lock, Unlock } from "lucide-react";
+import SuperImage from "@/components/SuperImage";
 
 function UploadButton({
 	children,
@@ -109,8 +110,8 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 				<div>
 					Use an authenticator app or browser extension to scan.
 				</div>
-				<div className="mt-4 aspect-square w-1/4 rounded-xl bg-white p-4">
-					<img src="qr.svg" className="h-full w-full object-cover" />
+				<div className="mt-4 aspect-square w-1/4 rounded-xl bg-white p-4 relative">
+					<SuperImage src="qr.svg" className="h-full w-full object-cover" />
 				</div>
 				<div className="mt-4 text-white">Verify code from the app</div>
 				<Input

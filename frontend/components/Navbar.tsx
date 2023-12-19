@@ -9,6 +9,7 @@ import Input from "@/components/Input";
 import { User } from "@/types/profile";
 import { Skeleton } from "@nextui-org/react";
 import { SuperSkeleton } from "./SuperSkeleton";
+import SuperImage from "./SuperImage";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -38,7 +39,7 @@ function LoginButton() {
 		<Button
 			as="a"
 			href="http://localhost:3000/api/auth/intra/login"
-			startContent={<img className="h-5 w-5 invert" src="/42_Logo.svg" />}
+			startContent={<SuperImage className="h-5 w-5 invert" src="/42_Logo.svg" />}
 			variant="ghost"
 		>
 			Sign in
@@ -53,9 +54,9 @@ function ProfileButton({ user }: { user: User }) {
 				{user.username}
 				<Status status="Online" />
 			</div>
-			<div className="aspect-square h-full ">
-				<img
-					src="/pfp.png"
+			<div className="aspect-square h-full relative">
+				<SuperImage
+					src={user.avatar}
 					className="h-full w-full rounded-full object-cover"
 				/>
 			</div>

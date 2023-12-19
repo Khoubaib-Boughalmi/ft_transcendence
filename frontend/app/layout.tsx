@@ -6,6 +6,7 @@ import localFont from 'next/font/local';
 import { cookies } from 'next/headers'
 import PublicContext from "@/contexts/PublicContext";
 import Providers from "@/components/Providers";
+import SuperImage from "@/components/SuperImage";
 
 const flags = localFont({ src: "../public/TwemojiCountryFlags.woff2", variable: "--flag" })
 
@@ -31,7 +32,7 @@ export default function RootLayout({
 			<body className={poppins.className + " bg-black " + flags.variable}>
 				<Providers cookie={cookieStore.get('access_token')}>
 					<div className="fixed inset-0 bg-gradient-to-t from-background to-accent to-[250%] overflow-hidden">
-						<img
+						<SuperImage
 							className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
 							src="/background2.png"
 						/>

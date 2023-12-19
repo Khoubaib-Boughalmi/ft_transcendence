@@ -2,17 +2,18 @@ import { User } from "@/types/profile";
 import { getFlag, getRank } from "@/lib/utils";
 import Status from "./Status";
 import Divider from "./Divider";
+import SuperImage from "./SuperImage";
 
 export default function UserHover({ user }: { user: User }) {
 	return (
 		<div className="flex w-48 flex-col gap-2">
 			<div className="w-full flex-col">
 
-			<div className="aspect-video w-full overflow-hidden rounded-t-xl">
-				<img src={user.banner} className="h-full w-full object-cover" />
+			<div className="aspect-video w-full overflow-hidden rounded-t-xl relative">
+				<SuperImage src={user.banner} className="h-full w-full object-cover" />
 			</div>
-			<div className="flex h-8 w-full gap-2 rounded-b-xl bg-card-300">
-				<img
+			<div className="flex h-8 w-full gap-2 rounded-b-xl bg-card-300 relative">
+				<SuperImage
 					src={user.avatar}
 					className="aspect-square h-[200%] flex-shrink-0 -translate-y-1/2 rounded-full object-cover"
 					/>

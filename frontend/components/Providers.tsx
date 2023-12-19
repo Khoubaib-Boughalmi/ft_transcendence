@@ -5,17 +5,18 @@ import { NextUIProvider } from "@nextui-org/react";
 import axios from "@/lib/axios";
 import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
-import { user1 } from "@/mocks/profile";
+import { dummyUser } from "@/mocks/profile";
+
+const loadedImages = new Set<string>();
 
 export default function Providers({
     cookie,
     children
 }: any) {
     const { data: session, isLoading: sessionLoading } = useSWR("/user/profile", fetcher);
-
     return (
-        <PublicContext.Provider value={{ cookie, sessionLoading, session: {
-            ...user1,
+        <PublicContext.Provider value={{ loadedImages, cookie, sessionLoading, session: {
+            ...dummyUser,
             ...session as any
         } }}>
             <NextUIProvider>

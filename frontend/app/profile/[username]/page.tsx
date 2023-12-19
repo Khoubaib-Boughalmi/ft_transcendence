@@ -9,13 +9,14 @@ import Card from "@/components/Card";
 import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
 import { fetcher, getFlag, getRank } from "@/lib/utils";
-import { user1, user2 } from "@/mocks/profile";
+import { dummyUser, user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import PublicContext from "@/contexts/PublicContext";
 import { SuperSkeleton } from "@/components/SuperSkeleton";
 import Status from "@/components/Status";
 import useSWR from "swr";
 import Error from "next/error";
+import SuperImage from "@/components/SuperImage";
 
 const ProfileContext = createContext({});
 
@@ -101,8 +102,8 @@ function UserListEntry({ user }: { user: User }) {
 							hover:bg-card-500 hover:shadow-lg data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50 @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
 							"
 			>
-				<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5">
-					<img
+				<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5 relative">
+					<SuperImage
 						src={user.avatar}
 						className="h-full w-full object-cover"
 					/>
@@ -154,16 +155,17 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 	}) => {
 		return (
 			<div className="relative flex flex-1 gap-2 overflow-hidden p-2">
-				<img
+
+				<SuperImage
 					src={user.banner}
 					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm brightness-50"
-				/>
+					/>
 				<div
 					data-side={side}
 					className="z-10 flex w-full items-center gap-4 text-white data-[side=right]:flex-row-reverse"
 				>
-					<div className="aspect-square h-full overflow-hidden rounded-full">
-						<img src={user.avatar} className="h-full w-full" />
+					<div className="aspect-square h-full overflow-hidden rounded-full relative">
+						<SuperImage src={user.avatar} className="h-full w-full" />
 					</div>
 					<div
 						data-side={side}
@@ -204,10 +206,10 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				group-data-[result=tie]:after:to-yellow-600 group-data-[result=win]:after:to-green-600
 			"
 			>
-				<img src={user.banner} className="h-full w-full object-cover" />
+				<SuperImage src={user.banner} className="h-full w-full object-cover" />
 				<div className="absolute inset-0 z-10 flex items-center justify-between p-16 group-data-[side=right]:flex-row-reverse">
-					<div className="aspect-square h-full overflow-hidden rounded-full">
-						<img src={user.avatar} className="h-full w-full" />
+					<div className="aspect-square h-full overflow-hidden rounded-full relative">
+						<SuperImage src={user.avatar} className="h-full w-full" />
 					</div>
 					<div className="text-4xl text-white">{score}</div>
 				</div>
@@ -511,7 +513,7 @@ function ProfileTop({ user }: { user: User }) {
 		<div className="relative flex w-full flex-col">
 			<SessionLoadingSkeleton />
 			<div className="relative h-96 w-full overflow-hidden rounded-t-3xl">
-				<img src={user.banner} className="h-full w-full object-cover" />
+				<SuperImage src={user.banner} className="h-full w-full object-cover" />
 				<div className="absolute inset-0 z-10 flex items-end justify-end gap-2 p-8">
 					<Button startContent={<UserPlus2 />} variant="secondary">
 						Add Friend
@@ -523,9 +525,9 @@ function ProfileTop({ user }: { user: User }) {
 				<div className="absolute inset-0 bg-gradient-to-t from-card-300"></div>
 			</div>
 			<div className="z-10 flex h-24 w-full rounded-b-3xl bg-card-300 px-8">
-				<div className="aspect-square h-[150%]">
-					<img
-						className="-translate-y-1/2 rounded-full object-cover"
+				<div className="aspect-square h-[150%] relative">
+					<SuperImage
+						className="-translate-y-1/2 rounded-full object-cover w-full h-full"
 						src={user.avatar}
 					/>
 				</div>
@@ -587,7 +589,7 @@ function AchievementsEntry({ achievement }: { achievement: Achievement }) {
 							justify-center
 							rounded-full after:absolute after:inset-0 after:translate-x-1/2 after:bg-gradient-to-r after:from-transparent after:via-card-400 after:to-transparent after:content-['']"
 			>
-				<img
+				<SuperImage
 					src={achievement.icon}
 					className="h-full w-full object-cover"
 				/>
@@ -740,7 +742,7 @@ function ProfileStats({ user }: { user: User }) {
 export default function Home({ params }: any) {
 	const { session } = useContext(PublicContext) as any;
 	const { data: user, isLoading: userLoading, error: userError } = useSWR(`/user/profile/${params.username}`, fetcher) as { data: User, isLoading: boolean, error: any };
-	const falseUser = { ...user1, ...user };
+	const falseUser = { ...user1, ...user};
 
 	console.log({userLoading});
 

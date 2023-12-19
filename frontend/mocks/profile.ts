@@ -74,3 +74,27 @@ user1.friends = friends;
 user2.history = history;
 user2.achievements = achievements;
 user2.friends = friends;
+
+
+
+export const dummyUser: User = {
+	id: 1,
+	username: "",
+	avatar: "/placeholder.png",
+	banner: "/placeholder.png",
+	country: "",
+	level: 1,
+	level_percentage: 0,
+	wins: 0,
+	losses: 0,
+	matches: 0,
+	achievements_percentage: 0,
+	rank: 0,
+	division: "I",
+	status: "Online",
+	friends: [],
+	history: [],
+	achievements: [],
+	activity: [],
+	two_factor: false,
+};
