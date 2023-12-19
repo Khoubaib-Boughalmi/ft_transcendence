@@ -73,6 +73,24 @@ export class UserService {
 		});
 	}
 
+	async isRelationExists(
+		user_id: string,
+		friend_id: string,
+		relation: 'friends' | 'blocked',
+	): Promise<boolean> {
+		const relationExists = await this.prisma.user.findUnique({
+			where: { id: user_id },
+			include: {
+				[relation]: {
+					where: {
+						id: friend_id,
+					},
+				},
+			},
+		});
+		return !!relationExists;
+	}
+
 	async getUniqueName(username: string): Promise<string> {
 		const user = await this.user({ username });
 		if (!user) return username;
@@ -151,6 +169,19 @@ export class UserService {
 		await this.prisma.user.update({
 			where: { id },
 			data: updateData,
+		});
+	}
+
+	async addFriend(user_id: string, friend_id: string): Promise<void> {
+		await this.prisma.user.update({
+			where: { id: user_id },
+			data: {
+				friends: {
+					connect: {
+						id: friend_id,
+					},
+				},
+			},
 		});
 	}
 }
