@@ -121,6 +121,7 @@ export class UserService {
 
 	async getProfileMini(username: string): Promise<UserProfileMini | null> {
 		const user = await this.getProfileFull(username);
+		if (!user) return null;
 		const { two_factor, ...rest } = user;
 		return {
 			...rest,
@@ -129,6 +130,7 @@ export class UserService {
 
 	async getProfileMicro(username: string): Promise<UserProfileMini | null> {
 		const user = await this.getProfileFull(username);
+		if (!user) return null;
 		const { two_factor, ...rest } = user;
 		return {
 			...rest,
