@@ -17,6 +17,10 @@ import * as Joi from 'joi';
 				INTRA_CALLBACK_URL: Joi.string().required(),
 				JWT_SECRET: Joi.string().required(),
 				DATABASE_URL: Joi.string().required(),
+				AWS_ACCESS_ID: Joi.string().required(),
+				AWS_ACCESS_SECRET: Joi.string().required(),
+				AWS_S3_BUCKET: Joi.string().required(),
+				AWS_S3_REGION: Joi.string().required(),
 			}),
 			validationOptions: {
 				abortEarly: true,
