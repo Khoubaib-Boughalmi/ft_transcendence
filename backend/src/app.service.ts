@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { S3, S3Client } from "@aws-sdk/client-s3";
+import { S3 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AppService {
 
@@ -19,7 +19,7 @@ export class AppService {
 			params: {
 				ACL: 'public-read',
 				Bucket: process.env.AWS_S3_BUCKET,
-				Key: `${Date.now().toString()}-${file.originalname} `,
+				Key: uuidv4(),
 				Body: file.buffer,
 			},
 		}).done();
