@@ -16,7 +16,8 @@ import {
 } from "@nextui-org/react";
 import { SuperSkeleton } from "./SuperSkeleton";
 import SuperImage from "./SuperImage";
-import {SuperDropdown, SuperDropdownItem} from "./SuperDropdown";
+import { SuperDropdown, SuperDropdownItem } from "./SuperDropdown";
+import { useRouter } from "next/navigation";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -55,6 +56,8 @@ function LoginButton() {
 }
 
 function ProfileButton({ user }: { user: User }) {
+	const router = useRouter();
+
 	return (
 		<SuperDropdown>
 			<DropdownTrigger>
@@ -71,10 +74,23 @@ function ProfileButton({ user }: { user: User }) {
 					</div>
 				</div>
 			</DropdownTrigger>
-			<DropdownMenu>
-				<SuperDropdownItem>Profile</SuperDropdownItem>
-				<SuperDropdownItem>Settings</SuperDropdownItem>
-				<SuperDropdownItem color="danger">Logout</SuperDropdownItem>
+			<DropdownMenu
+				onAction={(item) => {
+					if (item == "profile") {
+						router.push("/profile");
+					} else if (item == "settings") {
+						router.push("/settings");
+					} else if (item == "chat") {
+						router.push("/chat");
+					}
+				}}
+			>
+				<SuperDropdownItem key="profile">Profile</SuperDropdownItem>
+				<SuperDropdownItem key="settings">Settings</SuperDropdownItem>
+				<SuperDropdownItem key="chat">Chat</SuperDropdownItem>
+				<SuperDropdownItem color="danger" key="logout">
+					Logout
+				</SuperDropdownItem>
 			</DropdownMenu>
 		</SuperDropdown>
 	);
@@ -97,6 +113,7 @@ export function Navbar() {
 
 	useEffect(() => {
 		const listener = () => {
+			console.log("setting scroll listener");
 			setSolid(window.scrollY > 25);
 		};
 		window.addEventListener("scroll", listener);

@@ -11,6 +11,7 @@ export default function SuperImage({ src, className, ...props }: any) {
 	const imgRef = useRef<HTMLImageElement>(null);
 
 	const updateLoadedImages = () => {
+		if (!loadedImages.includes(src))
 		setLoadedImages((prev: string[]) => [...prev, src].filter((v, i, a) => a.indexOf(v) === i));
 	};
 
@@ -36,7 +37,7 @@ export default function SuperImage({ src, className, ...props }: any) {
 			/>
 			<div
 				className={twMerge(
-					"absolute inset-0 bg-card-200 opacity-100 transition-opacity duration-500 delay-1000",
+					"absolute inset-0 bg-card-200 opacity-100 transition-opacity duration-500",
 					className,
 					loaded && "opacity-0",
 				)}
