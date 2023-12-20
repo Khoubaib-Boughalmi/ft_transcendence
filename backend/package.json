@@ -34,6 +34,7 @@
     "cookie-parser": "^1.4.6",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
+    "magic-bytes.js": "^1.7.0",
     "nestjs-form-data": "^1.9.4",
     "passport": "^0.7.0",
     "passport-42": "^1.2.6",

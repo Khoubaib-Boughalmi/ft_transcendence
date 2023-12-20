@@ -1,10 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IsLowercase, IsOptional, IsUUID, Length } from 'class-validator';
 import { JwtGuard } from 'src/auth/auth.guards';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppService } from 'src/app.service';
 import { FormDataRequest } from 'nestjs-form-data';
+import { diskStorage, memoryStorage } from 'multer';
+import { extname } from 'path';
+import filetypeinfo from 'magic-bytes.js';
 
 export class ProfileDTO {
     @IsLowercase()
@@ -16,6 +19,19 @@ export class AddFriendDTO {
     @IsUUID()
     id: string;
 }
+
+export const multerConfig = {
+	storage: memoryStorage(),
+	fileFilter: (req, file, callback) => {
+		if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/))
+			callback(new UnsupportedMediaTypeException(), false);
+		else
+			callback(null, true);
+	},
+	limits: {
+		fileSize: 1024 * 1024 * 5, // 5MB
+	},
+};
 
 @Controller('user')
 export class UserController {
@@ -47,18 +63,30 @@ export class UserController {
     }
 
     @UseGuards(JwtGuard)
-    @UseInterceptors(FileInterceptor('avatar'))
+    @UseInterceptors(FileInterceptor('avatar', multerConfig))
     @Post('settings/upload-avatar')
     async updateSettingsUploadAvatar(@Req() req, @UploadedFile() file: Express.Multer.File) {
+        // Validate the magic bytes
+        const fileType = filetypeinfo(file.buffer);
+		const isImage = fileType.some(({ typename }) => ['png', 'gif', 'jpg', 'jpeg'].includes(typename));
+		if (!isImage)
+			throw new UnsupportedMediaTypeException();
+        // Upload to S3
         const res = await this.appService.s3_upload(file);
         await this.userService.updateUser({ where: { id: req.user.id }, data: { avatar: res } });
         return { message: 'Avatar updated' };
     }
 
     @UseGuards(JwtGuard)
-    @UseInterceptors(FileInterceptor('banner'))
+    @UseInterceptors(FileInterceptor('banner', multerConfig))
     @Post('settings/upload-banner')
     async updateSettingsUploadBanner(@Req() req, @UploadedFile() file: Express.Multer.File) {
+        // Validate the magic bytes
+        const fileType = filetypeinfo(file.buffer);
+		const isImage = fileType.some(({ typename }) => ['png', 'gif', 'jpg', 'jpeg'].includes(typename));
+		if (!isImage)
+			throw new UnsupportedMediaTypeException();
+        // Upload to S3
         const res = await this.appService.s3_upload(file);
         await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: res } });
         return { message: 'Banner updated' };
