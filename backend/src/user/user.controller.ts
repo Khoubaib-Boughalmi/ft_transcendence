@@ -4,6 +4,7 @@ import { IsLowercase, IsOptional, IsUUID, Length } from 'class-validator';
 import { JwtGuard } from 'src/auth/auth.guards';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppService } from 'src/app.service';
+import { FormDataRequest } from 'nestjs-form-data';
 
 export class ProfileDTO {
     @IsLowercase()
@@ -36,6 +37,7 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Post('settings/update')
+    @FormDataRequest()
     async updateSettings(@Req() req, @Body() body: ProfileDTO) {
         const alreadyExists = await this.userService.user({ username: body.username });
         if (alreadyExists)
