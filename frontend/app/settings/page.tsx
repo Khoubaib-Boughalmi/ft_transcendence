@@ -5,7 +5,7 @@ import Input from "@/components/Input";
 import UserHover from "@/components/UserHover";
 import { useDisclosure } from "@nextui-org/react";
 import { User } from "@/types/profile";
-import { getFlag } from "@/lib/utils";
+import { getFlag, makeForm } from "@/lib/utils";
 import { Button } from "@/components/Button";
 import Link from "next/link";
 import { user1 } from "@/mocks/profile";
@@ -13,6 +13,7 @@ import ModalSet from "@/components/ModalSet";
 import { useRef } from "react";
 import { Lock, Unlock } from "lucide-react";
 import SuperImage from "@/components/SuperImage";
+import axios from "@/lib/axios";
 
 function UploadButton({
 	children,
@@ -23,9 +24,17 @@ function UploadButton({
 }) {
 	const ref = useRef<HTMLLabelElement>(null);
 
+	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
+		const formData = new FormData(e.currentTarget);
+		const file = formData.get(name);
+		if (file) {
+			const response = await axios.post(`/user/settings/upload-${name}`, formData);
+		}
+	}
+
 	return (
 		<>
-			<form className="hidden">
+			<form  onChange={handleUpload} className="hidden">
 				<input type="file" name={name} id={name} className="hidden" />
 				<label ref={ref} htmlFor={name}></label>
 			</form>
