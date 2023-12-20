@@ -7,38 +7,36 @@ import Image from "next/image";
 import PublicContext from "@/contexts/PublicContext";
 
 export default function SuperImage({ src, className, ...props }: any) {
-	const { loadedImages } = useContext(PublicContext) as any;
-	const [_, setLoadedImagesState] = useState([...loadedImages]) as any;
+	const { loadedImages, setLoadedImages } = useContext(PublicContext) as any;
 	const imgRef = useRef<HTMLImageElement>(null);
 
 	const updateLoadedImages = () => {
-		loadedImages.add(src);
-		setLoadedImagesState((prevImages: any) => [...prevImages, src]);
+		setLoadedImages((prev: string[]) => [...prev, src].filter((v, i, a) => a.indexOf(v) === i));
 	};
 
 	useEffect(() => {
 		if (imgRef.current && imgRef.current.complete) updateLoadedImages();	
 	}, [src]);
 
-	const loaded = loadedImages.has(src);
-
-	console.log(loadedImages);
+	const loaded = loadedImages.includes(src);
 
 	return (
 		<>
 			<img
 				ref={imgRef}
 				src={src}
+				key={src}	
 				className={twMerge(
 					className,
 					!className.includes("absolute") && `relative`,
+					"bg-card-200"
 				)}
 				onLoad={updateLoadedImages}
 				{...props}
 			/>
 			<div
 				className={twMerge(
-					"absolute inset-0 bg-card-200 opacity-100 transition-opacity duration-500",
+					"absolute inset-0 bg-card-200 opacity-100 transition-opacity duration-500 delay-1000",
 					className,
 					loaded && "opacity-0",
 				)}

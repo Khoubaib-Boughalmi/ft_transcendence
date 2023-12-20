@@ -17,16 +17,10 @@ import Status from "@/components/Status";
 import useSWR from "swr";
 import Error from "next/error";
 import SuperImage from "@/components/SuperImage";
+import NoData from "@/components/NoData";
+import UserList from "@/components/UserList"
 
 const ProfileContext = createContext({});
-
-function NoData() {
-	return (
-		<div className="flex h-32 max-h-full w-full items-center justify-center text-white opacity-50">
-			no maidens?
-		</div>
-	);
-}
 
 function SessionLoadingSkeleton() {
 	const { userLoading } = useContext(ProfileContext) as any;
@@ -84,64 +78,6 @@ function AchievementScore({
 	);
 }
 
-function UserListEntry({ user }: { user: User }) {
-	const ref = useRef<HTMLDivElement>(null);
-
-	return (
-		<Tooltip
-			classNames={{
-				content: "p-2 rounded-xl",
-			}}
-			content={<UserHover user={user} />}
-			placement={(ref.current?.offsetWidth || 0) > 150 ? "top" : "right"}
-		>
-			<div
-				data-status={user.status}
-				ref={ref}
-				className="data-[status=Offline]:after:content:[''] relative flex h-16 w-full items-center gap-4 overflow-hidden rounded-xl bg-card-400 p-2 text-white transition-all duration-300 hover:scale-105
-							hover:bg-card-500 hover:shadow-lg data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50 @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
-							"
-			>
-				<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5 relative">
-					<SuperImage
-						src={user.avatar}
-						className="h-full w-full object-cover"
-					/>
-				</div>
-				<div
-					className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full text-xl shadow-sm shadow-black @4xl:left-[20%] @4xl:right-auto @4xl:top-[10%] @4xl:h-6 @4xl:w-6 @4xl:text-base  ${
-						getRank(user.rank).color
-					}`}
-				>
-					<span
-						className={`text-transparent mix-blend-plus-lighter ${
-							getRank(user.rank).color
-						} fuck-css`}
-					>
-						{getRank(user.rank).name}
-					</span>
-				</div>
-				<div className="flex flex-col items-start text-sm text-white @4xl:items-center select-all">
-					{user.username}
-					<Status status={user.status} size="sm" />
-				</div>
-			</div>
-		</Tooltip>
-	);
-}
-
-function UserList({ users }: { users: User[] }) {
-	return (
-		<div className="w-full p-2 @container">
-			{users.length == 0 && <NoData />}
-			<div className="flex flex-col flex-wrap gap-2 @4xl:grid @4xl:grid-cols-7">
-				{users.map((user, i) => (
-					<UserListEntry key={i} user={user} />
-				))}
-			</div>
-		</div>
-	);
-}
 
 function MatchHistoryEntry({ match }: { match: Match }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();

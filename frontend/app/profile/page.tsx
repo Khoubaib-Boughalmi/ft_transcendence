@@ -7,10 +7,11 @@ import PublicContext from "@/contexts/PublicContext";
 
 export default function Page() {
 	const { session, sessionLoading } = useContext(PublicContext) as any;
-    const router = useRouter();
+	const router = useRouter();
 
-    if (session && !sessionLoading)
-        redirect("/profile/" + session.username);
+	if (session && !sessionLoading) redirect("/profile/" + session.username);
 
-    return <Error statusCode={401} />	
+	if (!sessionLoading) return <Error statusCode={401} />;
+
+	return null;
 }

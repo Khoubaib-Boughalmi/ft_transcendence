@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "../components/Navbar";
-import localFont from 'next/font/local';
-import { cookies } from 'next/headers'
+import localFont from "next/font/local";
+import { cookies } from "next/headers";
 import PublicContext from "@/contexts/PublicContext";
 import Providers from "@/components/Providers";
 import SuperImage from "@/components/SuperImage";
 
-const flags = localFont({ src: "../public/TwemojiCountryFlags.woff2", variable: "--flag" })
+const flags = localFont({
+	src: "../public/TwemojiCountryFlags.woff2",
+	variable: "--flag",
+});
 
 const poppins = Poppins({
 	subsets: ["latin"],
@@ -30,19 +33,19 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="dark">
 			<body className={poppins.className + " bg-black " + flags.variable}>
-				<Providers cookie={cookieStore.get('access_token')}>
-					<div className="fixed inset-0 bg-gradient-to-t from-background to-accent to-[250%] overflow-hidden">
-						<SuperImage
-							className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
-							src="/background2.png"
-						/>
-						<div className="absolute bottom-0 h-full bg-gradient-to-t from-black to-transparent w-full from-50%">
-
+				<Providers cookie={cookieStore.get("access_token")}>
+					<div className="min-w-screen min-h-screen grid grid-cols-1">
+						<div className="fixed inset-0 overflow-hidden bg-gradient-to-t from-background to-accent to-[250%]">
+							<SuperImage
+								className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
+								src="/background2.png"
+							/>
+							<div className="absolute bottom-0 h-full w-full bg-gradient-to-t from-black from-50% to-transparent"></div>
 						</div>
-					</div>
-					<Navbar />
-					<div className="flex justify-center pt-28">
-						{children}
+						<Navbar />
+						<div className="z-10 flex h-full w-full justify-center pt-28">
+							{children}
+						</div>
 					</div>
 					{/* <footer className="relative w-full h-64  bg-card-400 bottom-0
 						after:content-[''] after:bg-gradient-to-t after:from-card-400 after:absolute after:-translate-y-full after:to-transparent

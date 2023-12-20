@@ -7,9 +7,16 @@ import PublicContext from "@/contexts/PublicContext";
 import Status from "@/components/Status";
 import Input from "@/components/Input";
 import { User } from "@/types/profile";
-import { Skeleton } from "@nextui-org/react";
+import {
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	Skeleton,
+} from "@nextui-org/react";
 import { SuperSkeleton } from "./SuperSkeleton";
 import SuperImage from "./SuperImage";
+import {SuperDropdown, SuperDropdownItem} from "./SuperDropdown";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -39,7 +46,7 @@ function LoginButton() {
 		<Button
 			as="a"
 			href="http://localhost:3000/api/auth/intra/login"
-			startContent={<SuperImage className="h-5 w-5 invert" src="/42_Logo.svg" />}
+			startContent={<img className="h-5 w-5 invert" src="/42_Logo.svg" />}
 			variant="ghost"
 		>
 			Sign in
@@ -49,18 +56,27 @@ function LoginButton() {
 
 function ProfileButton({ user }: { user: User }) {
 	return (
-		<div className="flex h-full items-center gap-2 text-xs text-white">
-			<div className="flex flex-col items-end">
-				{user.username}
-				<Status status="Online" />
-			</div>
-			<div className="aspect-square h-full relative">
-				<SuperImage
-					src={user.avatar}
-					className="h-full w-full rounded-full object-cover"
-				/>
-			</div>
-		</div>
+		<SuperDropdown>
+			<DropdownTrigger>
+				<div className="flex h-full items-center gap-2 text-xs text-white">
+					<div className="flex flex-col items-end">
+						{user.username}
+						<Status status="Online" />
+					</div>
+					<div className="relative aspect-square h-full">
+						<SuperImage
+							src={user.avatar}
+							className="h-full w-full rounded-full object-cover"
+						/>
+					</div>
+				</div>
+			</DropdownTrigger>
+			<DropdownMenu>
+				<SuperDropdownItem>Profile</SuperDropdownItem>
+				<SuperDropdownItem>Settings</SuperDropdownItem>
+				<SuperDropdownItem color="danger">Logout</SuperDropdownItem>
+			</DropdownMenu>
+		</SuperDropdown>
 	);
 }
 

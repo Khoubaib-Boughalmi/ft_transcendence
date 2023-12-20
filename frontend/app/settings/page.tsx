@@ -3,17 +3,19 @@ import Card from "@/components/Card";
 import Divider from "@/components/Divider";
 import Input from "@/components/Input";
 import UserHover from "@/components/UserHover";
-import { useDisclosure } from "@nextui-org/react";
+import { Spinner, useDisclosure } from "@nextui-org/react";
 import { User } from "@/types/profile";
 import { getFlag, makeForm } from "@/lib/utils";
 import { Button } from "@/components/Button";
 import Link from "next/link";
 import { user1 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
-import { useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { Lock, Unlock } from "lucide-react";
 import SuperImage from "@/components/SuperImage";
 import axios from "@/lib/axios";
+import PublicContext from "@/contexts/PublicContext";
+import { useSWRConfig } from "swr";
 
 function UploadButton({
 	children,
@@ -23,23 +25,34 @@ function UploadButton({
 	name: string;
 }) {
 	const ref = useRef<HTMLLabelElement>(null);
+	const formRef = useRef<HTMLFormElement>(null);
+	const [loading, setLoading] = useState(false);
+	const { sessionMutate } = useContext(PublicContext) as any;
 
 	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
 		const formData = new FormData(e.currentTarget);
 		const file = formData.get(name);
 		if (file) {
-			const response = await axios.post(`/user/settings/upload-${name}`, formData);
+			setLoading(true);
+			const response = await axios.post(
+				`/user/settings/upload-${name}`,
+				formData,
+			);
+			await sessionMutate();
+			setLoading(false);
 		}
-	}
+		formRef.current?.reset();
+	};
 
 	return (
 		<>
-			<form  onChange={handleUpload} className="hidden">
+			<form ref={formRef} onChange={handleUpload} className="hidden">
 				<input type="file" name={name} id={name} className="hidden" />
 				<label ref={ref} htmlFor={name}></label>
 			</form>
 			<Button
 				{...props}
+				loading={loading}
 				onClick={() => {
 					if (ref.current) ref.current.click();
 				}}
@@ -119,8 +132,11 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 				<div>
 					Use an authenticator app or browser extension to scan.
 				</div>
-				<div className="mt-4 aspect-square w-1/4 rounded-xl bg-white p-4 relative">
-					<SuperImage src="qr.svg" className="h-full w-full object-cover" />
+				<div className="relative mt-4 aspect-square w-1/4 rounded-xl bg-white p-4">
+					<SuperImage
+						src="qr.svg"
+						className="h-full w-full object-cover"
+					/>
 				</div>
 				<div className="mt-4 text-white">Verify code from the app</div>
 				<Input
@@ -146,23 +162,39 @@ function TwoFactorAuthenticationToggle({ user }: { user: User }) {
 	);
 }
 
+function SettingSection({
+	title,
+	children,
+}: {
+	title: string;
+	children: React.ReactNode;
+}) {
+	return (
+		<div className="flex w-full flex-col gap-2">
+			<div className="text-sm">{title}</div>
+			{children}
+		</div>
+	);
+}
+
 export default function Settings() {
-	const SettingSection = ({
-		title,
-		children,
-	}: {
-		title: string;
-		children: React.ReactNode;
-	}) => {
-		return (
-			<div className="flex w-full flex-col gap-2">
-				<div className="text-sm">{title}</div>
-				{children}
-			</div>
+	const { session, sessionMutate } = useContext(PublicContext) as any;
+	const [username, setUsername] = useState(session.username);
+	const [loading, setLoading] = useState(false);
+
+	const handleSave = async () => {
+		setLoading(true);
+		const response = await axios.post(
+			`/user/settings/update`,
+			makeForm({
+				username,
+			}),
 		);
+		await sessionMutate();
+		setLoading(false);
 	};
 
-	const session = user1;
+	console.log(session.username);
 
 	return (
 		<main className="mb-12 flex w-[1000px] max-w-full flex-col justify-center gap-4">
@@ -170,7 +202,13 @@ export default function Settings() {
 				header={<div className="text-xl">Settings</div>}
 				footer={
 					<div className="flex w-full justify-end">
-						<Button>Save Changes</Button>
+						<Button
+							loading={loading}
+							onClick={handleSave}
+							disabled={username == session.username}
+						>
+							Save Changes
+						</Button>
 					</div>
 				}
 			>
@@ -178,9 +216,10 @@ export default function Settings() {
 					<div className="flex w-full flex-col items-start gap-6">
 						<SettingSection title="Username">
 							<Input
-								defaultValue={session.username}
+								name="username"
+								placeholder={session.username}
+								onChange={(e) => setUsername(e.target.value)}
 								classNames={{ container: "p-4 h-auto" }}
-								placeholder="Username"
 							/>
 						</SettingSection>
 						<Divider />
@@ -228,8 +267,12 @@ export default function Settings() {
 					<Divider />
 					<SettingSection title="Two-factor authentication">
 						<div className="my-12 flex flex-col items-center justify-center gap-4">
-							{session.two_factor == false ? <Unlock /> : <Lock />}
-							<div className="text-xl font-medium text-white text-center">
+							{session.two_factor == false ? (
+								<Unlock />
+							) : (
+								<Lock />
+							)}
+							<div className="text-center text-xl font-medium text-white">
 								{session.two_factor == false
 									? "Two-factor authentication is not enabled"
 									: "Two-factor authentication is enabled"}
