@@ -1,4 +1,4 @@
-import { Controller, Req, Res, Get, UseGuards, Body } from '@nestjs/common';
+import { Controller, Req, Res, Get, UseGuards, Body, HttpException, Post } from '@nestjs/common';
 import { IntraAuthGuard, JwtGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 import { authenticator } from "otplib";
@@ -43,7 +43,7 @@ export class AuthController {
 	async generate2faSecret(@Req() req) {
 		const user = await this.userService.user({ id: req.user.id });
 		if (user.two_factor) {
-			return '2FA is already enabled';
+			throw new HttpException('2FA is already enabled', 400);
 		}
 		const secret = authenticator.generateSecret();
 		const otpauthUrl = authenticator.keyuri(user.username, process.env.APP_NAME, secret);
@@ -54,17 +54,17 @@ export class AuthController {
 		return toDataURL(otpauthUrl);
 	}
 
-	@Get('2fa/enable')
+	@Post('2fa/enable')
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
     async enable2fa(@Req() req, @Body() body: Enable2faDTO) {
 		const user = await this.userService.user({ id: req.user.id });
 		if (user.two_factor) {
-			return '2FA is already enabled';
+			throw new HttpException('2FA is already enabled', 400);
 		}
 		const isValid = authenticator.verify({ token: body.otp, secret: user.two_factor_secret });
 		if (!isValid) {
-			return 'Invalid OTP';
+			throw new HttpException('Invalid OTP', 400);
 		}
 		await this.userService.updateUser({
 			where: { id: req.user.id },
@@ -73,12 +73,12 @@ export class AuthController {
 		return '2FA enabled';
 	}
 
-	@Get('2fa/disable')
+	@Post('2fa/disable')
 	@UseGuards(JwtGuard)
 	async disable2fa(@Req() req) {
 		const user = await this.userService.user({ id: req.user.id });
 		if (!user.two_factor) {
-			return '2FA is already disabled';
+			throw new HttpException('2FA is already disabled', 400);
 		}
 		await this.userService.updateUser({
 			where: { id: req.user.id },
@@ -87,7 +87,7 @@ export class AuthController {
 		return '2FA disabled';
 	}
 
-	@Get('2fa/login')
+	@Post('2fa/login')
 	@UseGuards(JwtGuard)
 	async login2fa(@Req() req) {
 	}
