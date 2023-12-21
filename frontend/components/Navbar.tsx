@@ -107,7 +107,7 @@ function SearchBar() {
 
 export function Navbar() {
 	const [solid, setSolid] = useState(false);
-	const { cookie, session, sessionLoading } = useContext(
+	const { accessToken, session, sessionLoading } = useContext(
 		PublicContext,
 	) as any;
 
@@ -155,7 +155,7 @@ export function Navbar() {
 								isLoaded={!sessionLoading}
 								className="absolute inset-y-0 right-0 z-10 w-36 rounded-full "
 							/>
-							{cookie ? (
+							{accessToken ? (
 								<ProfileButton user={session} />
 							) : (
 								<LoginButton />

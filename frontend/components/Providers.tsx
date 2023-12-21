@@ -11,14 +11,16 @@ import { useState } from "react";
 const loadedImages = new Set<string>();
 
 export default function Providers({
-    cookie,
+    accessToken,
     children
 }: any) {
     const { data: session, isLoading: sessionLoading, mutate: sessionMutate } = useSWR("/user/profile", fetcher);
     const [loadedImages, setLoadedImages] = useState<string[]>([]);
 
+    console.log("SESSION: ", session);
+
     return (
-        <PublicContext.Provider value={{ loadedImages, sessionMutate, setLoadedImages, cookie, sessionLoading, session: {
+        <PublicContext.Provider value={{ loadedImages, sessionMutate, setLoadedImages, accessToken, sessionLoading, session: {
             ...dummyUser,
             ...session as any
         } }}>

@@ -123,6 +123,7 @@
 }
 
 .fuck-css {
+	user-select: none;
 	background-clip: text;
 	font-weight: bolder;
 }

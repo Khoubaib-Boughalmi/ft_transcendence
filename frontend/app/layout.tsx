@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import PublicContext from "@/contexts/PublicContext";
 import Providers from "@/components/Providers";
 import SuperImage from "@/components/SuperImage";
+import TwoFactorAuthenticationGuard from "@/components/TwoFactorAuthenticationGuard";
 
 const flags = localFont({
 	src: "../public/TwemojiCountryFlags.woff2",
@@ -29,12 +30,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	const cookieStore = cookies();
+	const accessToken = cookieStore.get("access_token");
 
 	return (
 		<html lang="en" className="dark">
 			<body className={poppins.className + " bg-black " + flags.variable}>
-				<Providers cookie={cookieStore.get("access_token")}>
-					<div className="min-w-screen min-h-screen grid grid-cols-1">
+				<Providers accessToken={accessToken}>
+					<div className="min-w-screen grid min-h-screen grid-cols-1">
 						<div className="fixed inset-0 overflow-hidden bg-gradient-to-t from-background to-accent to-[250%]">
 							<SuperImage
 								className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
@@ -44,7 +46,9 @@ export default function RootLayout({
 						</div>
 						<Navbar />
 						<div className="z-10 flex h-full w-full justify-center pt-28">
-							{children}
+							<TwoFactorAuthenticationGuard>
+								{children}
+							</TwoFactorAuthenticationGuard>
 						</div>
 					</div>
 					{/* <footer className="relative w-full h-64  bg-card-400 bottom-0

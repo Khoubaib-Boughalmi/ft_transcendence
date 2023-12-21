@@ -7,6 +7,7 @@ import { twMerge } from "tailwind-merge";
 import UserList from "@/components/UserList";
 import { user1, user2 } from "@/mocks/profile";
 import { Textarea } from "@nextui-org/react";
+import Input from "@/components/Input";
 
 function ChatIcon() {
 	return (
@@ -87,7 +88,7 @@ export default function Page() {
 
 
 	return (
-		<div suppressHydrationWarning className="relative z-10 mb-12 w-5/6 rounded-3xl bg-card-500">
+		<div suppressHydrationWarning className="relative z-10 mb-12 w-5/6 rounded-3xl bg-card-500 overflow-hidden">
 			<div className="flex h-full w-64 flex-col overflow-hidden rounded-l-3xl bg-card-300">
 				<div className="relative flex-1">
 					<div className="absolute inset-0 overflow-y-scroll">
@@ -143,15 +144,11 @@ export default function Page() {
 								</div>
 							</div>
 						</div>
-						<div className="w-full flex-shrink-0 bg-card-500 p-2">
-							<Textarea classNames={{
-								input: "!bg-card-300",
-								inputWrapper: "!bg-card-300",
-							}} 
-							/>
+						<div className="w-full flex-shrink-0 bg-card-500 p-4 h-20">
+							<Input />
 						</div>
 					</div>
-					<div className="no-scrollbar h-full w-80 flex-shrink-0 overflow-y-scroll rounded-r-3xl bg-card-300">
+					<div className="no-scrollbar h-full w-64 flex-shrink-0 overflow-y-scroll rounded-r-3xl bg-card-300">
 						<UserList
 							classNames={{
 								container: "p-0",

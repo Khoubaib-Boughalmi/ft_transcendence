@@ -5,17 +5,17 @@ import Input from "@/components/Input";
 import UserHover from "@/components/UserHover";
 import { Spinner, useDisclosure } from "@nextui-org/react";
 import { User } from "@/types/profile";
-import { getFlag, makeForm } from "@/lib/utils";
+import { fetcher, getFlag, makeForm } from "@/lib/utils";
 import { Button } from "@/components/Button";
 import Link from "next/link";
 import { user1 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Lock, Unlock } from "lucide-react";
 import SuperImage from "@/components/SuperImage";
 import axios from "@/lib/axios";
 import PublicContext from "@/contexts/PublicContext";
-import { useSWRConfig } from "swr";
+import useSWR, { useSWRConfig } from "swr";
 
 function UploadButton({
 	children,
@@ -65,6 +65,19 @@ function UploadButton({
 
 function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
+	const [loading, setLoading] = useState(false);
+	const { session, sessionMutate } = useContext(PublicContext) as any;
+
+	const handleDisable = async () => {
+		setLoading(true);
+		try {
+			const response = await axios.post(`/auth/2fa/disable`);
+			await sessionMutate();
+			onClose();
+		}
+		catch (e) {}
+		setLoading(false);
+	}
 
 	return (
 		<ModalSet
@@ -74,7 +87,7 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 			size="2xl"
 			footer={
 				<div className="flex w-full justify-end">
-					<Button variant="danger">Confirm</Button>
+					<Button onClick={handleDisable} loading={loading} variant="danger">Confirm</Button>
 				</div>
 			}
 			trigger={
@@ -97,8 +110,66 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	);
 }
 
+function TwoFactorAuthenticationSetup({ user, disabled }: { user: User, disabled: boolean }) {
+	const { data, isLoading } = useSWR("/auth/2fa/generate", fetcher) as any;
+
+	return (
+		<>
+			<div className="text-xl font-medium text-white">
+				Setup authenticator app
+			</div>
+			<div>
+				Authenticator apps and browser extensions like 1Password, Authy,
+				Microsoft Authenticator, etc. generate one-time passwords that
+				are used as a second factor to verify your identity when
+				prompted during sign-in.
+			</div>
+			<div className="mt-4 text-white">Scan the QR code</div>
+			<div>Use an authenticator app or browser extension to scan.</div>
+			<div className="relative mt-4 aspect-square w-1/4 overflow-hidden rounded-xl bg-white">
+				{data && (
+					<SuperImage
+						src={data}
+						className="h-full w-full object-cover"
+					/>
+				)}
+			</div>
+			<div className="mt-4 text-white">Verify code from the app</div>
+			<Input
+				disabled={disabled}
+				name="otp"
+				placeholder="Enter code"
+				classNames={{
+					container: "p-4",
+				}}
+			/>
+		</>
+	);
+}
+
 function EnableTwoFactorAuthentication({ user }: { user: User }) {
+	const { session, sessionMutate } = useContext(PublicContext) as any;
 	const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
+	const [loading, setLoading] = useState(false);
+	const submitRef = useRef<HTMLButtonElement>(null);
+
+	const submitOTP = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.currentTarget);
+		const otp = formData.get("otp");
+		if (otp) {
+			try {
+				setLoading(true);
+				const response = await axios.post(
+					`/auth/2fa/enable`,
+					makeForm({ otp }),
+				);
+				await sessionMutate();
+				onClose();
+			} catch (e) {}
+			setLoading(false);
+		}
+	};
 
 	return (
 		<ModalSet
@@ -108,7 +179,13 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 			size="4xl"
 			footer={
 				<div className="flex w-full justify-end">
-					<Button variant="danger">Confirm</Button>
+					<Button
+						onClick={() => submitRef?.current?.click()}
+						loading={loading}
+						variant="danger"
+					>
+						Confirm
+					</Button>
 				</div>
 			}
 			trigger={
@@ -118,34 +195,15 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 			}
 			title="Enable two-factor authentication (2FA)"
 		>
-			<div className="flex flex-col gap-2 p-4">
-				<div className="text-xl font-medium text-white">
-					Setup authenticator app
-				</div>
-				<div>
-					Authenticator apps and browser extensions like 1Password,
-					Authy, Microsoft Authenticator, etc. generate one-time
-					passwords that are used as a second factor to verify your
-					identity when prompted during sign-in.
-				</div>
-				<div className="mt-4 text-white">Scan the QR code</div>
-				<div>
-					Use an authenticator app or browser extension to scan.
-				</div>
-				<div className="relative mt-4 aspect-square w-1/4 rounded-xl bg-white p-4">
-					<SuperImage
-						src="qr.svg"
-						className="h-full w-full object-cover"
-					/>
-				</div>
-				<div className="mt-4 text-white">Verify code from the app</div>
-				<Input
-					placeholder="Enter code"
-					classNames={{
-						container: "p-4",
-					}}
-				/>
-			</div>
+			<form onSubmit={submitOTP} className="flex flex-col gap-2 p-4">
+				<TwoFactorAuthenticationSetup user={user} disabled={loading} />
+				<button
+					ref={submitRef}
+					type="submit"
+					id="submit-otp"
+					className="hidden"
+				></button>
+			</form>
 		</ModalSet>
 	);
 }
