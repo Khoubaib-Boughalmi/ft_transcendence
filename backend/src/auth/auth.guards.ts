@@ -17,3 +17,11 @@ export class JwtGuard extends AuthGuard('jwt') {
 		return activate;
 	}
 }
+
+export class JwtNo2faGuard extends AuthGuard('jwt-no-2fa') {
+	async canActivate(context: ExecutionContext) {
+		const activate = (await super.canActivate(context)) as boolean;
+		const request = context.switchToHttp().getRequest();
+		return activate;
+	}
+}

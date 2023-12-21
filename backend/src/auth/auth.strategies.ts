@@ -42,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(JwtBaseStrategy) {
 }
 
 @Injectable()
-export class JwtNo2faStrategy extends PassportStrategy(JwtBaseStrategy) {
+export class JwtNo2faStrategy extends PassportStrategy(JwtBaseStrategy, 'jwt-no-2fa') {
 	constructor(private readonly authService: AuthService) {
 		super({
 			jwtFromRequest: cookieExtractor,

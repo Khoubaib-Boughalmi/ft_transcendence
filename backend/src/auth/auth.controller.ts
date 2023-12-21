@@ -1,13 +1,11 @@
 import { Controller, Req, Res, Get, UseGuards, Body, HttpException, Post } from '@nestjs/common';
-import { IntraAuthGuard, JwtGuard } from './auth.guards';
+import { IntraAuthGuard, JwtGuard, JwtNo2faGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 import { authenticator } from "otplib";
 import { toDataURL } from 'qrcode';
 import { UserService } from 'src/user/user.service';
 import { FormDataRequest } from 'nestjs-form-data';
 import { IsString } from 'class-validator';
-import { JwtNo2faStrategy } from './auth.strategies';
-
 
 export class Enable2faDTO {
 	@IsString()
@@ -90,7 +88,7 @@ export class AuthController {
 	}
 
 	@Post('2fa/login')
-	@UseGuards(JwtNo2faStrategy)
+	@UseGuards(JwtNo2faGuard)
 	async login2fa(@Req() req, @Res() res, @Body() body: Enable2faDTO) {
         const user = await this.userService.user({ id: req.user.id });
 		if (!user.two_factor) {
