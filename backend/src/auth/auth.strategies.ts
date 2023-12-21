@@ -28,7 +28,7 @@ const cookieExtractor = (req: any): string | null => {
 };
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(JwtBaseStrategy) {
+export class JwtStrategy extends PassportStrategy(JwtBaseStrategy, 'jwt') {
 	constructor(private readonly authService: AuthService) {
 		super({
 			jwtFromRequest: cookieExtractor,

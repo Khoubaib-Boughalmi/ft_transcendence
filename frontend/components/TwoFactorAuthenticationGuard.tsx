@@ -15,7 +15,7 @@ export default function Guard({ children }: { children: React.ReactNode}) {
 	const { session, sessionMutate, accessToken } = useContext(PublicContext) as any;
     const [loading, setLoading] = useState(false);
 	const submitRef = useRef<HTMLButtonElement>(null);
-    const payload = jwt?.decode(accessToken.value) as any;
+    const payload = jwt?.decode(accessToken?.value) as any;
     const allowed = payload?.two_factor_passed === true;
 
     const handleRequest = async (e: React.FormEvent<HTMLFormElement>) => {

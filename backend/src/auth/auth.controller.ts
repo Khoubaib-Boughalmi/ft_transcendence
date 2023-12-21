@@ -89,6 +89,7 @@ export class AuthController {
 
 	@Post('2fa/login')
 	@UseGuards(JwtNo2faGuard)
+	@FormDataRequest()
 	async login2fa(@Req() req, @Res() res, @Body() body: Enable2faDTO) {
         const user = await this.userService.user({ id: req.user.id });
 		if (!user.two_factor) {
@@ -104,6 +105,6 @@ export class AuthController {
 			sameSite: 'none',
 			secure: true,
 		});
-		res.redirect(process.env.FRONTEND_URL);
+		res.send();
 	}
 }
