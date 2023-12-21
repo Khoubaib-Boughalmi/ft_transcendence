@@ -37,6 +37,20 @@ export class JwtStrategy extends PassportStrategy(JwtBaseStrategy) {
 	}
 
 	validate(payload) {
-		return this.authService.validateJwt(payload);
+		return this.authService.validateJwt(payload, true);
+	}
+}
+
+@Injectable()
+export class JwtNo2faStrategy extends PassportStrategy(JwtBaseStrategy) {
+	constructor(private readonly authService: AuthService) {
+		super({
+			jwtFromRequest: cookieExtractor,
+			secretOrKey: process.env.JWT_SECRET,
+		});
+	}
+
+	validate(payload) {
+		return this.authService.validateJwt(payload, false);
 	}
 }

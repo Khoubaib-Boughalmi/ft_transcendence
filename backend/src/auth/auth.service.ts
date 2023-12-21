@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import { Profile } from 'passport-42';
 import { UserService } from 'src/user/user.service';
 
@@ -23,17 +24,25 @@ export class AuthService {
             avatar: profile._json.image.link,
             banner: '/background2.png',
         });
-        return { id: newUser.id };
+        return { id: newUser.id, two_factor_passed: user.two_factor ? false : true };
     }
 
-    async validateJwt(jwtPayload: any): Promise<any> {
+    async validateJwt(jwtPayload: any, two_factor_verify: boolean): Promise<any> {
         const user = await this.userService.user({ id: jwtPayload.id });
         if (!user) return null;
-        return { id: user.id };
+        if (two_factor_verify && user.two_factor && !jwtPayload.two_factor_passed) return null;
+        return { id: user.id, two_factor_passed: jwtPayload.two_factor_passed };
     }
 
-    async login(user: any) {
-        const payload = { id: user.id };
+    async login(user: User) {
+        const payload = { id: user.id, two_factor_passed: user.two_factor ? false : true };
+        return {
+            access_token: this.jwtService.sign(payload),
+        };
+    }
+
+    async login2fa(user: User) {
+        const payload = { id: user.id, two_factor_passed: true };
         return {
             access_token: this.jwtService.sign(payload),
         };

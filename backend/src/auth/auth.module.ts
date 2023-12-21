@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-import { IntraStrategy, JwtStrategy } from './auth.strategies';
+import { IntraStrategy, JwtNo2faStrategy, JwtStrategy } from './auth.strategies';
 import { AuthSerializer } from './auth.serializer';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -20,6 +20,6 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
         NestjsFormDataModule,
     ],
     controllers: [AuthController],
-    providers: [AuthService, IntraStrategy, JwtStrategy, AuthSerializer],
+    providers: [AuthService, IntraStrategy, JwtStrategy, JwtNo2faStrategy, AuthSerializer],
 })
 export class AuthModule { }

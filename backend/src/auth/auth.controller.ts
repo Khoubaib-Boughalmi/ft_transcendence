@@ -6,6 +6,7 @@ import { toDataURL } from 'qrcode';
 import { UserService } from 'src/user/user.service';
 import { FormDataRequest } from 'nestjs-form-data';
 import { IsString } from 'class-validator';
+import { JwtNo2faStrategy } from './auth.strategies';
 
 
 export class Enable2faDTO {
@@ -29,7 +30,8 @@ export class AuthController {
 	@Get('intra/redirect')
 	@UseGuards(IntraAuthGuard)
 	async handle42Redirect(@Req() req, @Res() res) {
-		const { access_token } = await this.authService.login(req.user);
+        const user = await this.userService.user({ id: req.user.id });
+		const { access_token } = await this.authService.login(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
 			sameSite: 'none',
@@ -88,7 +90,22 @@ export class AuthController {
 	}
 
 	@Post('2fa/login')
-	@UseGuards(JwtGuard)
-	async login2fa(@Req() req) {
+	@UseGuards(JwtNo2faStrategy)
+	async login2fa(@Req() req, @Res() res, @Body() body: Enable2faDTO) {
+        const user = await this.userService.user({ id: req.user.id });
+		if (!user.two_factor) {
+			throw new HttpException('2FA is not enabled', 400);
+		}
+		const isValid = authenticator.verify({ token: body.otp, secret: user.two_factor_secret });
+		if (!isValid) {
+			throw new HttpException('Invalid OTP', 400);
+		}
+		const { access_token } = await this.authService.login2fa(user);
+		res.cookie('access_token', access_token, {
+			httpOnly: true,
+			sameSite: 'none',
+			secure: true,
+		});
+		res.redirect(process.env.FRONTEND_URL);
 	}
 }
