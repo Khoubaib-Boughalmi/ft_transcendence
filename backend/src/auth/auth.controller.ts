@@ -2,7 +2,7 @@ import { Controller, Req, Res, Get, UseGuards, Body } from '@nestjs/common';
 import { IntraAuthGuard, JwtGuard } from './auth.guards';
 import { AuthService } from './auth.service';
 import { authenticator } from "otplib";
-import { toFileStream } from 'qrcode';
+import { toDataURL } from 'qrcode';
 import { UserService } from 'src/user/user.service';
 import { FormDataRequest } from 'nestjs-form-data';
 import { IsString } from 'class-validator';
@@ -40,7 +40,7 @@ export class AuthController {
 
 	@Get('2fa/generate')
 	@UseGuards(JwtGuard)
-	async generate2faSecret(@Req() req, @Res() response) {
+	async generate2faSecret(@Req() req) {
 		const user = await this.userService.user({ id: req.user.id });
 		if (user.two_factor) {
 			return '2FA is already enabled';
@@ -51,8 +51,7 @@ export class AuthController {
 			where: { id: req.user.id },
 			data: { two_factor_secret: secret },
 		});
-		response.setHeader('Content-Type', 'image/png');
-		return toFileStream(response, otpauthUrl);
+		return toDataURL(otpauthUrl);
 	}
 
 	@Get('2fa/enable')
