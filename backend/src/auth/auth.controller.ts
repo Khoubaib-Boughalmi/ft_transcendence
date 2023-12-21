@@ -1,10 +1,24 @@
-import { Controller, Req, Res, Get, UseGuards } from '@nestjs/common';
-import { IntraAuthGuard } from './auth.guards';
+import { Controller, Req, Res, Get, UseGuards, Body } from '@nestjs/common';
+import { IntraAuthGuard, JwtGuard } from './auth.guards';
 import { AuthService } from './auth.service';
+import { authenticator } from "otplib";
+import { toFileStream } from 'qrcode';
+import { UserService } from 'src/user/user.service';
+import { FormDataRequest } from 'nestjs-form-data';
+import { IsString } from 'class-validator';
+
+
+export class Enable2faDTO {
+	@IsString()
+	otp: string;
+}
 
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService) { }
+	constructor(
+		private authService: AuthService,
+		private userService: UserService,
+	) { }
 
 	@Get('intra/login')
 	@UseGuards(IntraAuthGuard)
@@ -22,5 +36,60 @@ export class AuthController {
 			secure: true,
 		});
 		res.redirect(process.env.FRONTEND_URL);
+	}
+
+	@Get('2fa/generate')
+	@UseGuards(JwtGuard)
+	async generate2faSecret(@Req() req, @Res() response) {
+		const user = await this.userService.user({ id: req.user.id });
+		if (user.two_factor) {
+			return '2FA is already enabled';
+		}
+		const secret = authenticator.generateSecret();
+		const otpauthUrl = authenticator.keyuri(user.username, process.env.APP_NAME, secret);
+		await this.userService.updateUser({
+			where: { id: req.user.id },
+			data: { two_factor_secret: secret },
+		});
+		response.setHeader('Content-Type', 'image/png');
+		return toFileStream(response, otpauthUrl);
+	}
+
+	@Get('2fa/enable')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+    async enable2fa(@Req() req, @Body() body: Enable2faDTO) {
+		const user = await this.userService.user({ id: req.user.id });
+		if (user.two_factor) {
+			return '2FA is already enabled';
+		}
+		const isValid = authenticator.verify({ token: body.otp, secret: user.two_factor_secret });
+		if (!isValid) {
+			return 'Invalid OTP';
+		}
+		await this.userService.updateUser({
+			where: { id: req.user.id },
+			data: { two_factor: true },
+		});
+		return '2FA enabled';
+	}
+
+	@Get('2fa/disable')
+	@UseGuards(JwtGuard)
+	async disable2fa(@Req() req) {
+		const user = await this.userService.user({ id: req.user.id });
+		if (!user.two_factor) {
+			return '2FA is already disabled';
+		}
+		await this.userService.updateUser({
+			where: { id: req.user.id },
+			data: { two_factor: false },
+		});
+		return '2FA disabled';
+	}
+
+	@Get('2fa/login')
+	@UseGuards(JwtGuard)
+	async login2fa(@Req() req) {
 	}
 }

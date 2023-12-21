@@ -36,10 +36,12 @@
     "jsonwebtoken": "^9.0.2",
     "magic-bytes.js": "^1.7.0",
     "nestjs-form-data": "^1.9.4",
+    "otplib": "^12.0.1",
     "passport": "^0.7.0",
     "passport-42": "^1.2.6",
     "passport-http-bearer": "^1.0.1",
     "passport-jwt": "^4.0.1",
+    "qrcode": "^1.5.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "uuid": "^9.0.1"

@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { UserModule } from 'src/user/user.module';
+import { NestjsFormDataModule } from 'nestjs-form-data';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { UserModule } from 'src/user/user.module';
                 signOptions: { expiresIn: '10h' },
             }),
         }),
+        NestjsFormDataModule,
     ],
     controllers: [AuthController],
     providers: [AuthService, IntraStrategy, JwtStrategy, AuthSerializer],
