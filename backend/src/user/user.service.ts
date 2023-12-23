@@ -252,38 +252,38 @@ export class UserService {
 		return friend ? true : false;
 	}
 
-	async getFriends(user_id: string): Promise<UserProfileMini[]> {
+	async getFriends(user_id: string): Promise<UserProfileMicro[]> {
 		const friends = await this.prisma.friends.findMany({
 			where: {
 				user1_id: user_id,
 			},
 		});
 		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMini({ id: friend.user2_id });
+			return await this.getProfileMicro({ id: friend.user2_id });
 		}));
 		return friendsProfiles;
 	}
 
-	async getFriendRequests(user_id: string): Promise<UserProfileMini[]> {
+	async getFriendRequests(user_id: string): Promise<UserProfileMicro[]> {
 		const friends = await this.prisma.friendRequests.findMany({
 			where: {
 				user2_id: user_id,
 			},
 		});
 		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMini({ id: friend.user1_id });
+			return await this.getProfileMicro({ id: friend.user1_id });
 		}));
 		return friendsProfiles;
 	}
 
-	async getBlockedUsers(user_id: string): Promise<UserProfileMini[]> {
+	async getBlockedUsers(user_id: string): Promise<UserProfileMicro[]> {
 		const friends = await this.prisma.blockedUsers.findMany({
 			where: {
 				user1_id: user_id,
 			},
 		});
 		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMini({ id: friend.user2_id });
+			return await this.getProfileMicro({ id: friend.user2_id });
 		}));
 		return friendsProfiles;
 	}
