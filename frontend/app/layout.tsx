@@ -8,6 +8,7 @@ import PublicContext from "@/contexts/PublicContext";
 import Providers from "@/components/Providers";
 import SuperImage from "@/components/SuperImage";
 import TwoFactorAuthenticationGuard from "@/components/TwoFactorAuthenticationGuard";
+import LoginGuard from "@/components/LoginGuard";
 
 const flags = localFont({
 	src: "../public/TwemojiCountryFlags.woff2",
@@ -44,12 +45,14 @@ export default function RootLayout({
 							/>
 							<div className="absolute bottom-0 h-full w-full bg-gradient-to-t from-black from-50% to-transparent"></div>
 						</div>
-						<Navbar />
-						<div className="z-10 flex h-full w-full justify-center pt-28">
-							<TwoFactorAuthenticationGuard>
-								{children}
-							</TwoFactorAuthenticationGuard>
-						</div>
+						<LoginGuard>
+							<Navbar />
+							<div className="z-10 flex h-full w-full justify-center pt-28">
+								<TwoFactorAuthenticationGuard>
+									{children}
+								</TwoFactorAuthenticationGuard>
+							</div>
+						</LoginGuard>
 					</div>
 					{/* <footer className="relative w-full h-64  bg-card-400 bottom-0
 						after:content-[''] after:bg-gradient-to-t after:from-card-400 after:absolute after:-translate-y-full after:to-transparent

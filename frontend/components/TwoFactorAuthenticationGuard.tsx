@@ -9,10 +9,11 @@ import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import axios from "@/lib/axios";
 import { makeForm } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export default function Guard({ children }: { children: React.ReactNode}) {
-
-	const { session, sessionMutate, accessToken } = useContext(PublicContext) as any;
+	const router = useRouter();
+	const { session, sessionMutate, accessToken, fullMutate } = useContext(PublicContext) as any;
     const [loading, setLoading] = useState(false);
 	const submitRef = useRef<HTMLButtonElement>(null);
     const payload = jwt?.decode(accessToken?.value) as any;
@@ -28,7 +29,8 @@ export default function Guard({ children }: { children: React.ReactNode}) {
 			try {
 				setLoading(true);
 				await axios.post("/auth/2fa/login", formData);
-				await sessionMutate();
+				await fullMutate();
+				router.refresh();
 			}
 			catch (e) {
 				console.log(e);

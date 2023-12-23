@@ -18,6 +18,8 @@ import { SuperSkeleton } from "./SuperSkeleton";
 import SuperImage from "./SuperImage";
 import { SuperDropdown, SuperDropdownItem } from "./SuperDropdown";
 import { useRouter } from "next/navigation";
+import { cookies } from "next/headers";
+import axios from "@/lib/axios";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -57,6 +59,7 @@ function LoginButton() {
 
 function ProfileButton({ user }: { user: User }) {
 	const router = useRouter();
+	const { sessionMutate, fullMutate } = useContext(PublicContext) as any;
 
 	return (
 		<SuperDropdown>
@@ -82,6 +85,11 @@ function ProfileButton({ user }: { user: User }) {
 						router.push("/settings");
 					} else if (item == "chat") {
 						router.push("/chat");
+					} else if (item == "logout") {
+						axios.get("/auth/logout").then(async () => {
+							await fullMutate();
+							router.refresh();
+						});
 					}
 				}}
 			>

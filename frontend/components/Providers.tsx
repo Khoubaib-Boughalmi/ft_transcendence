@@ -10,23 +10,52 @@ import { useState } from "react";
 
 const loadedImages = new Set<string>();
 
-export default function Providers({
-    accessToken,
-    children
-}: any) {
-    const { data: session, isLoading: sessionLoading, mutate: sessionMutate } = useSWR("/user/profile", fetcher);
-    const [loadedImages, setLoadedImages] = useState<string[]>([]);
+export default function Providers({ accessToken, children }: any) {
+	const noRefresh = {
+		shouldRetryOnError: false,
+		errorRetryCount: 0,
+		revalidateOnFocus: false,
+	};
 
-    console.log("SESSION: ", session);
+	const {
+		data: session,
+		isLoading: sessionLoading,
+		mutate: sessionMutate,
+	} = useSWR("/user/profile", fetcher, noRefresh);
+	const {
+		data: verified,
+		isLoading: verifiedLoading,
+		mutate: verifiedMutate,
+	} = useSWR("/auth/verify", fetcher, noRefresh);
+	const [loadedImages, setLoadedImages] = useState<string[]>([]);
 
-    return (
-        <PublicContext.Provider value={{ loadedImages, sessionMutate, setLoadedImages, accessToken, sessionLoading, session: {
-            ...dummyUser,
-            ...session as any
-        } }}>
-            <NextUIProvider>
-                {children}
-            </NextUIProvider>
-        </PublicContext.Provider>
-    )
+	console.log({
+		session,
+		sessionLoading,
+		verified,
+		verifiedLoading,
+		accessToken,
+	});
+
+	return (
+		<PublicContext.Provider
+			value={{
+				loadedImages,
+				sessionMutate,
+				setLoadedImages,
+				accessToken,
+				sessionLoading,
+				verifiedLoading,
+				verified,
+				fullMutate: () =>
+					Promise.all([sessionMutate(), verifiedMutate()]),
+				session: {
+					...dummyUser,
+					...(session as any),
+				},
+			}}
+		>
+			<NextUIProvider>{children}</NextUIProvider>
+		</PublicContext.Provider>
+	);
 }

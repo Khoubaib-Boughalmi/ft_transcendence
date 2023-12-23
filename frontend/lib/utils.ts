@@ -45,6 +45,12 @@ export function makeForm(data: any) {
 	return formData;
 }
 
-export function fetcher<T>(url: string) {
-	return axios.get<T>(url).then(res => res.data);
+export async function fetcher<T>(url: string) {
+	try {
+		const res = await axios.get<T>(url);
+		return res.data;
+	}
+	catch (err) {
+		return null
+	}
 }
