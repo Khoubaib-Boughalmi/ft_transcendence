@@ -22,13 +22,13 @@ export type UserProfile = {
 export type UserProfileMicro = UserProfile;
 
 export type UserProfileMini = UserProfile & {
-	friends: UserProfileMini[];
+	friends: UserProfileMicro[];
 };
 
 export type UserProfileFull = UserProfileMini & {
 	two_factor: boolean;
-	friend_requests: UserProfileMini[];
-	blocked_users: UserProfileMini[];
+	friend_requests: UserProfileMicro[];
+	blocked_users: UserProfileMicro[];
 };
 @Injectable()
 export class UserService {
