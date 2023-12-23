@@ -267,7 +267,7 @@ export class UserService {
 	async getFriendRequests(user_id: string): Promise<UserProfileMicro[]> {
 		const friends = await this.prisma.friendRequests.findMany({
 			where: {
-				user2_id: user_id,
+				user1_id: user_id,
 			},
 		});
 		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
