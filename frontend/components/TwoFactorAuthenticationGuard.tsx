@@ -10,14 +10,13 @@ import jwt from "jsonwebtoken";
 import axios from "@/lib/axios";
 import { makeForm } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function Guard({ children }: { children: React.ReactNode}) {
 	const router = useRouter();
-	const { session, sessionMutate, accessToken, fullMutate } = useContext(PublicContext) as any;
+	const { session, sessionMutate, accessToken, fullMutate, twoFactorAuthenticated } = useContext(PublicContext) as any;
     const [loading, setLoading] = useState(false);
 	const submitRef = useRef<HTMLButtonElement>(null);
-    const payload = jwt?.decode(accessToken?.value) as any;
-    const allowed = payload?.two_factor_passed === true;
 
     const handleRequest = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -30,20 +29,19 @@ export default function Guard({ children }: { children: React.ReactNode}) {
 				setLoading(true);
 				await axios.post("/auth/2fa/login", formData);
 				await fullMutate();
+				toast.success("Successfully authenticated");
 				router.refresh();
 			}
 			catch (e) {
-				console.log(e);
+				toast.error("Invalid code");
 			}
 			setLoading(false);
 		}
     }
 
-    console.log(payload, accessToken);
-
 	return (
 		<>
-			{allowed ? (
+			{twoFactorAuthenticated ? (
 				children
 			) : (
 				<div className="h-full w-full flex justify-center items-center">

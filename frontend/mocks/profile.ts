@@ -4,7 +4,7 @@ const activities = [100, 0, 5, 10, 15, 20, 0, 0, 0, 0, 12, 18];
 
 export const user1: User = {
 	id: 1,
-	username: "user1",
+	username: "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
 	avatar: "/pfp.png",
 	banner: "/background2.png",
 	country: "Morocco",
@@ -22,6 +22,8 @@ export const user1: User = {
 	achievements: [],
 	activity: activities,
 	two_factor: false,
+	friend_requests: [],
+	blocked_users: [],
 };
 
 export const user2: User = {
@@ -60,7 +62,7 @@ const achievements: Achievement[] = Array.from({ length: 30 }).map((_, i) => ({
 	score: 100,
 }));
 
-const friends: User[] = Array.from({ length: 10 })
+const friends: any[] = Array.from({ length: 10 })
 	.map((_, i) => ({
 		...(i % 2 == 0 ? user1 : user2),
 		friends: [],
@@ -97,4 +99,6 @@ export const dummyUser: User = {
 	achievements: [],
 	activity: [],
 	two_factor: false,
+	friend_requests: [],
+	blocked_users: [],
 };

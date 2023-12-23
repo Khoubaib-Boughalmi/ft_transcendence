@@ -21,11 +21,11 @@ export default function ({ children }: any) {
 			{verified ? (
 				<>{children}</>
 			) : (
-				<div className="z-10 flex flex-col items-center justify-center gap-14 select-none">
-					<div className="text-[10vw] leading-[7.5vw] bg-gradient-to-r from-emerald-500 to-lime-600 bg-clip-text text-transparent">
-						Pregonanto
+				<div className="z-10 flex flex-col items-center justify-center gap-14 select-none text-[0.75em]">
+					<div className="text-[15em] bg-gradient-to-t from-primary to-secondary-800 bg-clip-text text-transparent">
+						long enough
 					</div>
-					<div className="text-[1vw] font-light text-foreground-600">
+					<div className="text-[1.25em] font-light text-foreground-600 -mt-12">
 						An interactive gaming platform for the 1337 community. All rights reserved 2023 ©.
 					</div>
 					<Button

@@ -27,6 +27,39 @@ export type Match = {
 	score1: number;
 	score2: number;
 };
+
+
+// 
+	export type UserProfile = {
+		id: string;
+		username: string;
+		email: string;
+		createdAt: Date;
+		avatar: string;
+		banner: string;
+		country: string;
+		level: number;
+		level_percentage: number;
+		wins: number;
+		losses: number;
+		matches: number;
+		rank: number;
+		division: string;
+	};
+
+	export type UserProfileMicro = UserProfile;
+
+	export type UserProfileMini = UserProfile & {
+		friends: UserProfileMicro[];
+	};
+
+	export type UserProfileFull = UserProfileMini & {
+		two_factor: boolean;
+		friend_requests: UserProfileMicro[];
+		blocked_users: UserProfileMicro[];
+	};
+// 
+
 export type User = {
 	id: number;
 	username: string;
@@ -46,5 +79,8 @@ export type User = {
 	status: StatusType;
 	activity: number[];
 	friends: User[];
+	friend_requests: User[];
+	blocked_users: User[];
 	two_factor: boolean;
+	
 };

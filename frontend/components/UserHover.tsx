@@ -19,7 +19,7 @@ export default function UserHover({ user }: { user: User }) {
 					/>
 				<div className="relative flex flex-1 flex-col justify-center text-sm leading-3 text-white">
 					<div className="absolute inset-0 flex -translate-y-full items-end pb-2"></div>
-					<span className="text-xs leading-3" >{user.username}</span>
+					<span className="text-xs leading-3 truncate pr-2 w-28" >{user.username}</span>
 					<span className="flex gap-1 text-[0.5rem]">
 						<span>{getFlag(user.country)}</span>
 						<span>{user.country}</span>

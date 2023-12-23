@@ -28,7 +28,7 @@ function UserListEntry({ user, classNames }: { user: User, classNames?: ClassNam
 							hover:bg-card-500 hover:shadow-lg data-[status=Offline]:after:absolute data-[status=Offline]:after:inset-0 data-[status=Offline]:after:bg-black/50 @4xl:aspect-square @4xl:h-auto @4xl:flex-col @4xl:justify-center @4xl:gap-1
 							`, classNames?.entry)}
 			>
-				<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5 relative">
+				<div className="aspect-square h-full overflow-hidden rounded-full @4xl:h-3/5 relative flex-shrink-0">
 					<SuperImage
 						src={user.avatar}
 						className="h-full w-full object-cover"
@@ -47,8 +47,15 @@ function UserListEntry({ user, classNames }: { user: User, classNames?: ClassNam
 						{getRank(user.rank).name}
 					</span>
 				</div>
-				<div className="flex flex-col items-start text-sm text-white @4xl:items-center select-all">
-					{user.username}
+				<div className="flex flex-col items-start text-sm text-white @4xl:items-center select-all w-full">
+					<div className="truncate w-full relative h-6">
+						<div className="absolute inset-0	">
+							<div className="truncate @4xl:text-center @4xl:px-4 pr-16">
+
+							{user.username}
+							</div>
+						</div>
+					</div>
 					<Status status={user.status} size="sm" />
 				</div>
 			</div>

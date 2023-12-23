@@ -38,7 +38,7 @@ function MessageListEntry({ message }: any) {
 	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
 
 	return (
-		<div className="flex gap-4 px-8">
+		<div className="flex gap-4 px-4">
 			<div className={twMerge("relative h-12 w-12 flex-shrink-0", message.noAvatar && "h-0 opacity-0")}>
 				<SuperImage
 					src={message.user.avatar}
@@ -47,8 +47,11 @@ function MessageListEntry({ message }: any) {
 			</div>
 			<div className={twMerge("jsutify-end flex flex-col", message.noAvatar && "-mt-4")}>
 				<div className={twMerge("flex items-center gap-2 text-sm text-foreground-600", message.noAvatar && "hidden")}>
+					<div className="line-clamp-1">
+
 					{message.user.username}
-					<div suppressHydrationWarning className="text-xs text-foreground-500">
+					</div>
+					<div suppressHydrationWarning className="text-xs text-foreground-500 flex-shrink-0">
 						{dateStr + " at " + time}
 					</div>
 				</div>
@@ -88,7 +91,7 @@ export default function Page() {
 
 
 	return (
-		<div suppressHydrationWarning className="relative z-10 mb-12 w-5/6 rounded-3xl bg-card-500 overflow-hidden">
+		<div suppressHydrationWarning className="relative z-10 mb-12 w-5/6 rounded-3xl overflow-hidden">
 			<div className="flex h-full w-64 flex-col overflow-hidden rounded-l-3xl bg-card-300">
 				<div className="relative flex-1">
 					<div className="absolute inset-0 overflow-y-scroll">
@@ -135,7 +138,7 @@ export default function Page() {
 						</div>
 						<div className="relative flex-1">
 							<div className="absolute inset-0 overflow-y-scroll">
-								<div suppressHydrationWarning className="flex min-h-full flex-col-reverse gap-4 py-8 pl-2">
+								<div suppressHydrationWarning className="flex min-h-full flex-col-reverse gap-4 py-4 pl-2">
 									{messages.map((message) => (
 										<MessageListEntry
 											message={message}

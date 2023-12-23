@@ -11,11 +11,12 @@ import Link from "next/link";
 import { user1 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Lock, Unlock } from "lucide-react";
+import { Lock, Trash, Trash2, Unlock } from "lucide-react";
 import SuperImage from "@/components/SuperImage";
 import axios from "@/lib/axios";
 import PublicContext from "@/contexts/PublicContext";
 import useSWR, { useSWRConfig } from "swr";
+import toast from "react-hot-toast";
 
 function UploadButton({
 	children,
@@ -34,11 +35,16 @@ function UploadButton({
 		const file = formData.get(name);
 		if (file) {
 			setLoading(true);
-			const response = await axios.post(
-				`/user/settings/upload-${name}`,
-				formData,
-			);
-			await sessionMutate();
+			try {
+				const response = await axios.post(
+					`/user/settings/upload-${name}`,
+					formData,
+				);
+				await sessionMutate();
+				toast.success(`Successfully changed ${name}`);
+			} catch (e) {
+				toast.error(`Failed to change ${name}`);
+			}
 			setLoading(false);
 		}
 		formRef.current?.reset();
@@ -73,11 +79,13 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 		try {
 			const response = await axios.post(`/auth/2fa/disable`);
 			await sessionMutate();
+			toast.success(`Successfully disabled two-factor authentication (rip bozo)`);
 			onClose();
+		} catch (e) {
+			toast.error(`Failed to disable two-factor authentication`);
 		}
-		catch (e) {}
 		setLoading(false);
-	}
+	};
 
 	return (
 		<ModalSet
@@ -87,7 +95,13 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 			size="2xl"
 			footer={
 				<div className="flex w-full justify-end">
-					<Button onClick={handleDisable} loading={loading} variant="danger">Confirm</Button>
+					<Button
+						onClick={handleDisable}
+						loading={loading}
+						variant="danger"
+					>
+						Confirm
+					</Button>
 				</div>
 			}
 			trigger={
@@ -110,7 +124,13 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	);
 }
 
-function TwoFactorAuthenticationSetup({ user, disabled }: { user: User, disabled: boolean }) {
+function TwoFactorAuthenticationSetup({
+	user,
+	disabled,
+}: {
+	user: User;
+	disabled: boolean;
+}) {
 	const { data, isLoading } = useSWR("/auth/2fa/generate", fetcher) as any;
 
 	return (
@@ -165,8 +185,11 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 					makeForm({ otp }),
 				);
 				await sessionMutate();
+				toast.success(`Successfully enabled two-factor authentication`);
 				onClose();
-			} catch (e) {}
+			} catch (e) {
+				toast.error(`Invalid code`);
+			}
 			setLoading(false);
 		}
 	};
@@ -195,7 +218,11 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 			}
 			title="Enable two-factor authentication (2FA)"
 		>
-			<form onSubmit={submitOTP} className="flex flex-col gap-2 p-4">
+			<form
+				autoComplete="off"
+				onSubmit={submitOTP}
+				className="flex flex-col gap-2 p-4"
+			>
 				<TwoFactorAuthenticationSetup user={user} disabled={loading} />
 				<button
 					ref={submitRef}
@@ -217,6 +244,43 @@ function TwoFactorAuthenticationToggle({ user }: { user: User }) {
 				<DisableTwoFactorAuthentication user={user} />
 			)}
 		</>
+	);
+}
+
+function DeleteButton({
+	type,
+	children,
+}: {
+	type: "avatar" | "banner";
+	children?: React.ReactNode;
+}) {
+	const [loading, setLoading] = useState(false);
+	const { sessionMutate } = useContext(PublicContext) as any;
+
+	const handleImageDelete = async () => {
+		setLoading(true);
+		try {
+
+			const response = await axios.post(`/user/settings/delete-${type}`);
+			await sessionMutate();
+			toast.success(`Successfully deleted ${type}`);
+		}
+		catch (e) {
+			toast.error(`Failed to delete ${type}`);
+		}
+		setLoading(false);
+	};
+
+	return (
+		<Button
+			loading={loading}
+			onClick={handleImageDelete}
+			variant="transparent"
+			iconOnly
+		>
+			<Trash2 />
+			{children}
+		</Button>
 	);
 }
 
@@ -242,13 +306,18 @@ export default function Settings() {
 
 	const handleSave = async () => {
 		setLoading(true);
-		const response = await axios.post(
-			`/user/settings/update`,
-			makeForm({
-				username,
-			}),
-		);
-		await sessionMutate();
+		try {
+			const response = await axios.post(
+				`/user/settings/update`,
+				makeForm({
+					username,
+				}),
+			);
+			await sessionMutate();
+			toast.success(`Successfully updated settings`);
+		} catch (e) {
+			toast.error(`Failed to update settings`);
+		}
 		setLoading(false);
 	};
 
@@ -274,6 +343,7 @@ export default function Settings() {
 					<div className="flex w-full flex-col items-start gap-6">
 						<SettingSection title="Username">
 							<Input
+								autoComplete="off"
 								name="username"
 								placeholder={session.username}
 								onChange={(e) => setUsername(e.target.value)}
@@ -300,9 +370,9 @@ export default function Settings() {
 								<UploadButton name="avatar" variant="secondary">
 									Upload Avatar
 								</UploadButton>
-								<Button variant="transparent">
-									Delete Avatar
-								</Button>
+								<DeleteButton type="avatar">
+									{/* Delete Avatar */}
+								</DeleteButton>
 							</div>
 						</SettingSection>
 						<Divider />
@@ -311,9 +381,9 @@ export default function Settings() {
 								<UploadButton name="banner" variant="secondary">
 									Upload Banner
 								</UploadButton>
-								<Button variant="transparent">
-									Delete Banner
-								</Button>
+								<DeleteButton type="banner">
+									{/* Delete Banner */}
+								</DeleteButton>
 							</div>
 						</SettingSection>
 					</div>

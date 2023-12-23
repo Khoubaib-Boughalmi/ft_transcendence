@@ -8,7 +8,7 @@ import Chart from "@/components/Chart";
 import Card from "@/components/Card";
 import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
-import { fetcher, getFlag, getRank } from "@/lib/utils";
+import { fetcher, getFlag, getRank, makeForm } from "@/lib/utils";
 import { dummyUser, user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import PublicContext from "@/contexts/PublicContext";
@@ -18,7 +18,9 @@ import useSWR from "swr";
 import Error from "next/error";
 import SuperImage from "@/components/SuperImage";
 import NoData from "@/components/NoData";
-import UserList from "@/components/UserList"
+import UserList from "@/components/UserList";
+import axios from "@/lib/axios";
+import toast from "react-hot-toast";
 
 const ProfileContext = createContext({});
 
@@ -78,7 +80,6 @@ function AchievementScore({
 	);
 }
 
-
 function MatchHistoryEntry({ match }: { match: Match }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -90,30 +91,26 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 		side: "left" | "right";
 	}) => {
 		return (
-			<div className="relative flex flex-1 gap-2 overflow-hidden p-2">
-
+			<div
+				data-side={side}
+				className="group relative flex flex-1 gap-2 overflow-hidden p-2"
+			>
 				<SuperImage
 					src={user.banner}
 					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm brightness-50"
-					/>
-				<div
-					data-side={side}
-					className="z-10 flex w-full items-center gap-4 text-white data-[side=right]:flex-row-reverse"
-				>
-					<div className="aspect-square h-full overflow-hidden rounded-full relative">
-						<SuperImage src={user.avatar} className="h-full w-full" />
+				/>
+				<div className="z-10 flex w-full items-center gap-4 text-white group-data-[side=right]:flex-row-reverse">
+					<div className="relative aspect-square h-full flex-shrink-0 overflow-hidden rounded-full">
+						<SuperImage
+							src={user.avatar}
+							className="h-full w-full"
+						/>
 					</div>
-					<div
-						data-side={side}
-						className="flex flex-col  items-start gap-0.5 data-[side=right]:items-end"
-					>
-						<span className="text-lg font-medium leading-4 select-all">
+					<div className="flex w-2/4  flex-col items-start gap-0.5 group-data-[side=right]:items-end">
+						<span className="w-full select-all truncate text-lg font-medium leading-4 group-data-[side=right]:text-right">
 							{user.username}
 						</span>
-						<span
-							data-side={side}
-							className="flex items-center justify-center gap-1 text-[0.65rem] leading-3 text-background-900 data-[side=right]:flex-row-reverse"
-						>
+						<span className="flex items-center justify-center gap-1 text-[0.65rem] leading-3 text-background-900 group-data-[side=right]:flex-row-reverse">
 							<span className="font-flag">
 								{getFlag(user.country)}
 							</span>
@@ -142,10 +139,16 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				group-data-[result=tie]:after:to-yellow-600 group-data-[result=win]:after:to-green-600
 			"
 			>
-				<SuperImage src={user.banner} className="h-full w-full object-cover" />
+				<SuperImage
+					src={user.banner}
+					className="h-full w-full object-cover"
+				/>
 				<div className="absolute inset-0 z-10 flex items-center justify-between p-16 group-data-[side=right]:flex-row-reverse">
-					<div className="aspect-square h-full overflow-hidden rounded-full relative">
-						<SuperImage src={user.avatar} className="h-full w-full" />
+					<div className="relative aspect-square h-full overflow-hidden rounded-full">
+						<SuperImage
+							src={user.avatar}
+							className="h-full w-full"
+						/>
 					</div>
 					<div className="text-4xl text-white">{score}</div>
 				</div>
@@ -187,8 +190,10 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 						{getRank(user.rank).name}
 					</div>
 				</div>
-				<div className="flex flex-col">
-					<span className="leading-4 select-all">{user.username}</span>
+				<div className="flex w-1/2 flex-col">
+					<span className="select-all truncate leading-4 group-data-[side=right]:text-right ">
+						{user.username}
+					</span>
 					<span className="flex gap-2 text-[0.55rem] leading-3 group-data-[side=right]:flex-row-reverse">
 						<span className="font-flag">
 							{getFlag(user.country)}
@@ -444,40 +449,117 @@ function ProfileNavigation() {
 	);
 }
 
+function InteractionButton({
+	type,
+	user,
+	...props
+}: {
+	type: "add" | "accept" | "reject" | "block" | "unblock";
+	user: User;
+} & React.ComponentProps<typeof Button>) {
+	const [loading, setLoading] = useState(false);
+	const { sessionMutate, session } = useContext(PublicContext) as any;
+	const endpointSuffix = type.includes("block") ? "User" : "Friend";
+
+	const handleInteraction = async () => {
+		setLoading(true);
+		try {
+			await axios.post(
+				`/user/${type}${endpointSuffix}`,
+				makeForm({ id: user.id }),
+			);
+			await sessionMutate();
+			toast.success(`${endpointSuffix} ${type}ed`);
+		} catch (err) {
+			toast.error(`Failed to ${type} ${endpointSuffix.toLowerCase()}`);
+			console.log(err);
+		}
+		setLoading(false);
+	};
+
+	return (
+		<Button loading={loading} onClick={handleInteraction} {...props}>
+			{
+				{
+					add: "Add Friend",
+					accept: "Accept Request",
+					reject: "Reject Request",
+					block: "Block",
+					unblock: "Unblock",
+				}[type]
+			}
+		</Button>
+	);
+}
+
 function ProfileTop({ user }: { user: User }) {
+	const { sessionMutate, session } = useContext(PublicContext) as any;
+	const userBlocked = session.blocked_users.find(
+		(blocked: User) => blocked.id == user.id,
+	);
+	const me = session.id == user.id;
+
 	return (
 		<div className="relative flex w-full flex-col">
 			<SessionLoadingSkeleton />
 			<div className="relative h-96 w-full overflow-hidden rounded-t-3xl">
-				<SuperImage src={user.banner} className="h-full w-full object-cover" />
+				<SuperImage
+					src={user.banner}
+					className="h-full w-full object-cover"
+				/>
 				<div className="absolute inset-0 z-10 flex items-end justify-end gap-2 p-8">
-					<Button startContent={<UserPlus2 />} variant="secondary">
-						Add Friend
-					</Button>
-					<Button startContent={<UserX2 />} variant="danger">
-						Block User
-					</Button>
+					{!me && (
+						<>
+							{!userBlocked && (
+								<InteractionButton
+									type="add"
+									user={user}
+									startContent={<UserPlus2 size={16} />}
+									variant="secondary"
+								/>
+							)}
+							{userBlocked ? (
+								<InteractionButton
+									type="unblock"
+									user={user}
+									startContent={<UserX2 size={16} />}
+									variant="secondary"
+								/>
+							) : (
+								<InteractionButton
+									type="block"
+									user={user}
+									startContent={<UserX2 size={16} />}
+									variant="danger"
+								/>
+							)}
+						</>
+					)}
 				</div>
 				<div className="absolute inset-0 bg-gradient-to-t from-card-300"></div>
 			</div>
 			<div className="z-10 flex h-24 w-full rounded-b-3xl bg-card-300 px-8">
-				<div className="aspect-square h-[150%] relative">
+				<div className="relative aspect-square h-[150%]">
 					<SuperImage
-						className="-translate-y-1/2 rounded-full object-cover w-full h-full"
+						className="h-full w-full -translate-y-1/2 rounded-full object-cover"
 						src={user.avatar}
 					/>
 				</div>
 				<div className="relative flex w-full translate-y-[-25%] flex-col items-start gap-4 px-2 pl-4 text-white">
 					<Status status={user.status} />
-					<div className="flex w-full flex-col gap-2">
-						<div className="text-3xl font-bold leading-5 select-all">
-							{user.username}
-						</div>
-						<div className="flex gap-2 text-xs leading-[0.5rem]">
-							<span className="font-flag">
-								{getFlag(user.country)}
-							</span>
-							<span>{user.country}</span>
+					<div className="relative h-32 w-full">
+						<div className="absolute inset-0">
+							<div className="flex w-full flex-col gap-2">
+								<div className="-mt-2 select-all truncate pr-20 text-3xl font-bold">
+									{user.username}
+								</div>
+								<div className="-mt-2 flex gap-2 text-xs leading-[0.5rem] ">
+									<span className="font-flag">
+										{getFlag(user.country)}
+									</span>
+									<span>{user.country}</span>
+								</div>
+							</div>
 						</div>
 					</div>
 					<LevelBar
@@ -677,16 +759,23 @@ function ProfileStats({ user }: { user: User }) {
 
 export default function Home({ params }: any) {
 	const { session } = useContext(PublicContext) as any;
-	const { data: user, isLoading: userLoading, error: userError } = useSWR(`/user/profile/${params.username}`, fetcher) as { data: User, isLoading: boolean, error: any };
-	const falseUser = { ...user1, ...user};
+	const {
+		data: user,
+		isLoading: userLoading,
+		error: userError,
+	} = useSWR(`/user/profile/${params.username}`, fetcher) as {
+		data: User;
+		isLoading: boolean;
+		error: any;
+	};
+	const falseUser = { ...user1, ...user };
 
-	console.log({userLoading});
+	console.log({ userLoading });
 
-	if (userError)
-		return <Error statusCode={401} />;
+	if (userError) return <Error statusCode={401} />;
 
 	return (
-		<main className="relative mb-12 flex w-[1250px] max-w-full flex-col justify-center gap-4 select-none">
+		<main className="relative mb-12 flex w-[1250px] max-w-full select-none flex-col justify-center gap-4">
 			<ProfileContext.Provider value={{ userLoading }}>
 				<ProfileTop user={falseUser} />
 				<ProfileNavigation />

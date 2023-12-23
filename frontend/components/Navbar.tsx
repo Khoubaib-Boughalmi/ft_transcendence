@@ -8,6 +8,7 @@ import Status from "@/components/Status";
 import Input from "@/components/Input";
 import { User } from "@/types/profile";
 import {
+	Divider,
 	Dropdown,
 	DropdownItem,
 	DropdownMenu,
@@ -20,6 +21,8 @@ import { SuperDropdown, SuperDropdownItem } from "./SuperDropdown";
 import { useRouter } from "next/navigation";
 import { cookies } from "next/headers";
 import axios from "@/lib/axios";
+import { twMerge } from "tailwind-merge";
+import { Lock } from "lucide-react";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -59,7 +62,9 @@ function LoginButton() {
 
 function ProfileButton({ user }: { user: User }) {
 	const router = useRouter();
-	const { sessionMutate, fullMutate } = useContext(PublicContext) as any;
+	const { sessionMutate, fullMutate, twoFactorAuthenticated } = useContext(
+		PublicContext,
+	) as any;
 
 	return (
 		<SuperDropdown>
@@ -67,7 +72,11 @@ function ProfileButton({ user }: { user: User }) {
 				<div className="flex h-full items-center gap-2 text-xs text-white">
 					<div className="flex flex-col items-end">
 						{user.username}
-						<Status status="Online" />
+						{twoFactorAuthenticated ? (
+							<Status status="Online" />
+						) : (
+							<Status status="Offline" />
+						)}
 					</div>
 					<div className="relative aspect-square h-full">
 						<SuperImage
@@ -93,9 +102,24 @@ function ProfileButton({ user }: { user: User }) {
 					}
 				}}
 			>
-				<SuperDropdownItem key="profile">Profile</SuperDropdownItem>
-				<SuperDropdownItem key="settings">Settings</SuperDropdownItem>
-				<SuperDropdownItem key="chat">Chat</SuperDropdownItem>
+				<SuperDropdownItem
+					className={twMerge(!twoFactorAuthenticated && "hidden")}
+					key="profile"
+				>
+					Profile
+				</SuperDropdownItem>
+				<SuperDropdownItem
+					className={twMerge(!twoFactorAuthenticated && "hidden")}
+					key="settings"
+				>
+					Settings
+				</SuperDropdownItem>
+				<SuperDropdownItem
+					className={twMerge(!twoFactorAuthenticated && "hidden")}
+					key="chat"
+				>
+					Chat
+				</SuperDropdownItem>	
 				<SuperDropdownItem color="danger" key="logout">
 					Logout
 				</SuperDropdownItem>
@@ -115,9 +139,8 @@ function SearchBar() {
 
 export function Navbar() {
 	const [solid, setSolid] = useState(false);
-	const { accessToken, session, sessionLoading } = useContext(
-		PublicContext,
-	) as any;
+	const { accessToken, session, sessionLoading, twoFactorAuthenticated } =
+		useContext(PublicContext) as any;
 
 	useEffect(() => {
 		const listener = () => {
@@ -152,10 +175,15 @@ export function Navbar() {
 			>
 				<div className="m-2 flex h-9 w-full items-center justify-between gap-2">
 					<div className="flex h-full flex-1 items-center justify-start gap-2">
-						<SearchBar />
+						{twoFactorAuthenticated ? <SearchBar /> : <div className="flex gap-4 items-center">
+							<Lock className="ml-4"/>
+							<div className="text-sm">
+								Please login to access this page.
+							</div>
+						</div>}
 					</div>
 					<div className="flex h-full flex-1 items-center justify-center gap-2">
-						<Navigation />
+						{twoFactorAuthenticated && <Navigation />}
 					</div>
 					<div className="flex h-full flex-1 items-center justify-end gap-2">
 						<div className="relative h-full max-w-full">
