@@ -271,7 +271,7 @@ export class UserService {
 			},
 		});
 		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMicro({ id: friend.user1_id });
+			return await this.getProfileMicro({ id: friend.user2_id });
 		}));
 		return friendsProfiles;
 	}
