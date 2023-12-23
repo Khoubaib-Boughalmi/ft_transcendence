@@ -121,10 +121,50 @@ export class UserController {
         const friend = await this.userService.user({ id: body.id });
         if (!user || !friend)
             throw new HttpException('User not found', 404);
-        if (this.userService.isRelationExists(user.id, friend.id, 'friends'))
+        if (this.userService.isFriend(user.id, friend.id))
             throw new HttpException('Already friends', 400);
-        if (this.userService.isRelationExists(friend.id, user.id, 'blocked'))
+        if (this.userService.isFriendRequest(user.id, friend.id))
+            throw new HttpException('Already sent a friend request', 400);
+        if (this.userService.isBlocked(user.id, friend.id))
+            throw new HttpException('You have blocked this user', 400);
+        if (this.userService.isBlocked(friend.id, user.id))
             throw new HttpException('You are blocked by this user', 400);
-        await this.userService.addFriend(user.id, friend.id);
+        await this.userService.addFriendRequest(friend.id, user.id);
+    }
+
+    @UseGuards(JwtGuard)
+    @Post('acceptFriend')
+    async acceptFriend(@Req() req, @Body() body: AddFriendDTO) {
+        const user = await this.userService.user({ id: req.user.id });
+        const friend = await this.userService.user({ id: body.id });
+        if (!user || !friend)
+            throw new HttpException('User not found', 404);
+        if (!this.userService.isFriendRequest(user.id, friend.id))
+            throw new HttpException('No friend request', 400);
+        await this.userService.acceptFriendRequest(user.id, friend.id);
+    }
+
+    @UseGuards(JwtGuard)
+    @Post('rejectFriend')
+    async rejectFriend(@Req() req, @Body() body: AddFriendDTO) {
+        const user = await this.userService.user({ id: req.user.id });
+        const friend = await this.userService.user({ id: body.id });
+        if (!user || !friend)
+            throw new HttpException('User not found', 404);
+        if (!this.userService.isFriendRequest(user.id, friend.id))
+        throw new HttpException('No friend request', 400);
+        await this.userService.deleteFriendRequest(user.id, friend.id);
+    }
+
+    @UseGuards(JwtGuard)
+    @Post('blockUser')
+    async blockUser(@Req() req, @Body() body: AddFriendDTO) {
+        const user = await this.userService.user({ id: req.user.id });
+        const friend = await this.userService.user({ id: body.id });
+        if (!user || !friend)
+            throw new HttpException('User not found', 404);
+        if (this.userService.isBlocked(user.id, friend.id))
+            throw new HttpException('Already blocked', 400);
+        await this.userService.addBlocked(user.id, friend.id);
     }
 }

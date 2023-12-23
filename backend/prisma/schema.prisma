@@ -38,24 +38,43 @@ model User {
 
   // Profile info
   country      String
-  avatar       String      @default("https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg")
-  banner       String      @default("https://dslv9ilpbe7p1.cloudfront.net/6P2tJV-6qxBDs2T8q21wZg_store_banner_image.jpeg")
-  level        Int         @default(0)
-  level_exp    Int         @default(0)
-  achievements Int[]       @default([])
-  history      String[]    @default([])
-  rank         Int         @default(0)
-  division     String      @default("D")
+  avatar       String   @default("https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg")
+  banner       String   @default("https://dslv9ilpbe7p1.cloudfront.net/6P2tJV-6qxBDs2T8q21wZg_store_banner_image.jpeg")
+  level        Int      @default(0)
+  level_exp    Int      @default(0)
+  achievements Int[]    @default([])
+  history      String[] @default([])
+  rank         Int      @default(0)
+  division     String   @default("D")
 
   // Two factor auth
   two_factor        Boolean @default(false)
   two_factor_secret String?
+}
 
-  // Relations
-  friends           User[] @relation("friends")
-  friendOf          User[] @relation("friends")
-  friend_requests   User[] @relation("FriendRequests")
-  friend_requestsOf User[] @relation("FriendRequests")
-  blocked_users     User[] @relation("BlockedUsers")
-  blocked_usersOf   User[] @relation("BlockedUsers")
+model Friends {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user1_id String
+  user2_id String
+}
+
+model BlockedUsers {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user1_id String
+  user2_id String
+}
+
+model FriendRequests {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user1_id String
+  user2_id String
 }
