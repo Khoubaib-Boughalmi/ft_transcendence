@@ -109,7 +109,7 @@ export class AuthController {
 	}
 
 	@Get('verify')
-	@UseGuards(JwtGuard)
+	@UseGuards(JwtNo2faGuard)
 	async verifyToken() {
 		return 'Token is valid';
 	}
