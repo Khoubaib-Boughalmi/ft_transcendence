@@ -107,4 +107,10 @@ export class AuthController {
 		});
 		res.send();
 	}
+
+	@Get('verify')
+	@UseGuards(JwtGuard)
+	async verifyToken() {
+		return 'Token is valid';
+	}
 }
