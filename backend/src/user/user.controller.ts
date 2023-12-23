@@ -173,4 +173,17 @@ export class UserController {
             throw new HttpException('Already blocked', 400);
         await this.userService.addBlocked(user.id, friend.id);
     }
+
+    @UseGuards(JwtGuard)
+    @Post('unblockUser')
+    @FormDataRequest()
+    async unblockUser(@Req() req, @Body() body: AddFriendDTO) {
+        const user = await this.userService.user({ id: req.user.id });
+        const friend = await this.userService.user({ id: body.id });
+        if (!user || !friend)
+            throw new HttpException('User not found', 404);
+        if (!await this.userService.isBlocked(user.id, friend.id))
+            throw new HttpException('Not blocked', 400);
+        await this.userService.deleteBlocked(user.id, friend.id);
+    }
 }
