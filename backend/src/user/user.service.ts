@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { User, Prisma } from '@prisma/client';
 
-export type UserProfileMicro = {
+export type UserProfile = {
 	id: string;
 	username: string;
 	email: string;
@@ -19,45 +19,17 @@ export type UserProfileMicro = {
 	division: string;
 };
 
-export type UserProfileMini = {
-	id: string;
-	username: string;
-	email: string;
-	createdAt: Date;
-	avatar: string;
-	banner: string;
-	country: string;
-	level: number;
-	level_percentage: number;
-	wins: number;
-	losses: number;
-	matches: number;
-	rank: number;
-	division: string;
+export type UserProfileMicro = UserProfile;
+
+export type UserProfileMini = UserProfile & {
 	friends: UserProfileMini[];
 };
 
-export type UserProfileFull = {
-	id: string;
-	username: string;
-	email: string;
-	createdAt: Date;
-	avatar: string;
-	banner: string;
-	country: string;
-	level: number;
-	level_percentage: number;
-	wins: number;
-	losses: number;
-	matches: number;
-	rank: number;
-	division: string;
+export type UserProfileFull = UserProfileMini & {
 	two_factor: boolean;
-	friends: UserProfileMini[];
 	friend_requests: UserProfileMini[];
 	blocked_users: UserProfileMini[];
 };
-
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService) { }
