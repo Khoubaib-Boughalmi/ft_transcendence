@@ -80,7 +80,7 @@ export class UserController {
     @UseGuards(JwtGuard)
     @Post('settings/delete-avatar')
     async updateSettingsDeleteAvatar(@Req() req) {
-        await this.userService.updateUser({ where: { id: req.user.id }, data: { avatar: null } });
+        await this.userService.updateUser({ where: { id: req.user.id }, data: { avatar: "https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg" } });
         return { message: 'Avatar deleted' };
     }
 
@@ -102,7 +102,7 @@ export class UserController {
     @UseGuards(JwtGuard)
     @Post('settings/delete-banner')
     async updateSettingsDeleteBanner(@Req() req) {
-        await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: null } });
+        await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: "https://dslv9ilpbe7p1.cloudfront.net/6P2tJV-6qxBDs2T8q21wZg_store_banner_image.jpeg" } });
         return { message: 'Banner deleted' };
     }
 
