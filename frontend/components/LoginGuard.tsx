@@ -21,16 +21,16 @@ export default function ({ children }: any) {
 			{verified ? (
 				<>{children}</>
 			) : (
-				<div className="z-10 flex flex-col items-center justify-center gap-12 select-none">
-					<div className="text-[10vw] leading-[7.5vw] ">Something</div>
+				<div className="z-10 flex flex-col items-center justify-center gap-14 select-none">
+					<div className="text-[10vw] leading-[7.5vw] bg-gradient-to-r from-emerald-500 to-lime-600 bg-clip-text text-transparent">
+						Pregonanto
+					</div>
 					<div className="text-[1vw] font-light text-foreground-600">
-						something something something something something
+						An interactive gaming platform for the 1337 community. All rights reserved 2023 ©.
 					</div>
 					<Button
 						className="text-lg px-96"
-						startContent={
-							<img className="h-7 w-7" src="/42_Logo.svg" />
-						}
+						startContent={<img className="h-7 w-7" src="/42_Logo.svg" />}
 						as="a"
 						href={`http://localhost:3000/api/auth/intra/login`}
 					>
