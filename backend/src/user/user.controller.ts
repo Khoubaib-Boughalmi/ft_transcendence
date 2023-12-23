@@ -78,6 +78,13 @@ export class UserController {
     }
 
     @UseGuards(JwtGuard)
+    @Post('settings/delete-avatar')
+    async updateSettingsDeleteAvatar(@Req() req) {
+        await this.userService.updateUser({ where: { id: req.user.id }, data: { avatar: null } });
+        return { message: 'Avatar deleted' };
+    }
+
+    @UseGuards(JwtGuard)
     @UseInterceptors(FileInterceptor('banner', multerConfig))
     @Post('settings/upload-banner')
     async updateSettingsUploadBanner(@Req() req, @UploadedFile() file: Express.Multer.File) {
@@ -90,6 +97,13 @@ export class UserController {
         const res = await this.appService.s3_upload(file);
         await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: res } });
         return { message: 'Banner updated' };
+    }
+
+    @UseGuards(JwtGuard)
+    @Post('settings/delete-banner')
+    async updateSettingsDeleteBanner(@Req() req) {
+        await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: null } });
+        return { message: 'Banner deleted' };
     }
 
     @UseGuards(JwtGuard)

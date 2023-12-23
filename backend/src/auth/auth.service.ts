@@ -21,8 +21,6 @@ export class AuthService {
             intra_id: Number(profile.id),
             email: profile.emails[0].value,
             country: profile._json.campus[0].country,
-            avatar: profile._json.image.link,
-            banner: '/background2.png',
         });
         return { id: newUser.id, two_factor_passed: user.two_factor ? false : true };
     }

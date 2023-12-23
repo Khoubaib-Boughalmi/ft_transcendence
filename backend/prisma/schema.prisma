@@ -38,8 +38,8 @@ model User {
 
   // Profile info
   country      String
-  avatar       String
-  banner       String
+  avatar       String      @default("https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg")
+  banner       String      @default("https://dslv9ilpbe7p1.cloudfront.net/6P2tJV-6qxBDs2T8q21wZg_store_banner_image.jpeg")
   level        Int         @default(0)
   level_exp    Int         @default(0)
   achievements Int[]       @default([])
