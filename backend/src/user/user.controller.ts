@@ -116,6 +116,7 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Post('addFriend')
+    @FormDataRequest()
     async addFriend(@Req() req, @Body() body: AddFriendDTO) {
         const user = await this.userService.user({ id: req.user.id });
         const friend = await this.userService.user({ id: body.id });
@@ -134,6 +135,7 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Post('acceptFriend')
+    @FormDataRequest()
     async acceptFriend(@Req() req, @Body() body: AddFriendDTO) {
         const user = await this.userService.user({ id: req.user.id });
         const friend = await this.userService.user({ id: body.id });
@@ -146,6 +148,7 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Post('rejectFriend')
+    @FormDataRequest()
     async rejectFriend(@Req() req, @Body() body: AddFriendDTO) {
         const user = await this.userService.user({ id: req.user.id });
         const friend = await this.userService.user({ id: body.id });
@@ -158,6 +161,7 @@ export class UserController {
 
     @UseGuards(JwtGuard)
     @Post('blockUser')
+    @FormDataRequest()
     async blockUser(@Req() req, @Body() body: AddFriendDTO) {
         const user = await this.userService.user({ id: req.user.id });
         const friend = await this.userService.user({ id: body.id });
