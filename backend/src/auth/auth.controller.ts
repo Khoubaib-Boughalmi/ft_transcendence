@@ -113,4 +113,11 @@ export class AuthController {
 	async verifyToken() {
 		return 'Token is valid';
 	}
+
+	@Get('logout')
+	@UseGuards(JwtNo2faGuard)
+	async logout(@Res() res) {
+		res.clearCookie('access_token');
+		res.send();
+	}
 }
