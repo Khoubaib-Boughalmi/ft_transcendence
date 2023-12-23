@@ -136,6 +136,9 @@ export class UserService {
 			rank: user.rank,
 			division: user.division,
 			two_factor: user.two_factor,
+			friends: await this.getFriends(user.id),
+			friend_requests: await this.getFriendRequests(user.id),
+			blocked_users: await this.getBlockedUsers(user.id),
 		};
 	}
 
