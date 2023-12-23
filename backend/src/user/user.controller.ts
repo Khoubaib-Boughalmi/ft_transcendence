@@ -21,16 +21,16 @@ export class AddFriendDTO {
 }
 
 export const multerConfig = {
-	storage: memoryStorage(),
-	fileFilter: (req, file, callback) => {
-		if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/))
-			callback(new UnsupportedMediaTypeException(), false);
-		else
-			callback(null, true);
-	},
-	limits: {
-		fileSize: 1024 * 1024 * 5, // 5MB
-	},
+    storage: memoryStorage(),
+    fileFilter: (req, file, callback) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/))
+            callback(null, false);
+        else
+            callback(null, true);
+    },
+    limits: {
+        fileSize: 1024 * 1024 * 5, // 5MB
+    },
 };
 
 @Controller('user')
@@ -66,15 +66,19 @@ export class UserController {
     @UseInterceptors(FileInterceptor('avatar', multerConfig))
     @Post('settings/upload-avatar')
     async updateSettingsUploadAvatar(@Req() req, @UploadedFile() file: Express.Multer.File) {
-        // Validate the magic bytes
-        const fileType = filetypeinfo(file.buffer);
-		const isImage = fileType.some(({ typename }) => ['png', 'gif', 'jpg', 'jpeg'].includes(typename));
-		if (!isImage)
-			throw new UnsupportedMediaTypeException();
-        // Upload to S3
-        const res = await this.appService.s3_upload(file);
-        await this.userService.updateUser({ where: { id: req.user.id }, data: { avatar: res } });
-        return { message: 'Avatar updated' };
+        try {
+            // Validate the magic bytes
+            const fileType = filetypeinfo(file.buffer);
+            const isImage = fileType.some(({ typename }) => ['png', 'gif', 'jpg', 'jpeg'].includes(typename));
+            if (!isImage)
+                throw new UnsupportedMediaTypeException();
+            // Upload to S3
+            const res = await this.appService.s3_upload(file);
+            await this.userService.updateUser({ where: { id: req.user.id }, data: { avatar: res } });
+            return { message: 'Avatar updated' };
+        } catch (err) {
+            throw new UnsupportedMediaTypeException();
+        }
     }
 
     @UseGuards(JwtGuard)
@@ -88,15 +92,19 @@ export class UserController {
     @UseInterceptors(FileInterceptor('banner', multerConfig))
     @Post('settings/upload-banner')
     async updateSettingsUploadBanner(@Req() req, @UploadedFile() file: Express.Multer.File) {
-        // Validate the magic bytes
-        const fileType = filetypeinfo(file.buffer);
-		const isImage = fileType.some(({ typename }) => ['png', 'gif', 'jpg', 'jpeg'].includes(typename));
-		if (!isImage)
-			throw new UnsupportedMediaTypeException();
-        // Upload to S3
-        const res = await this.appService.s3_upload(file);
-        await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: res } });
-        return { message: 'Banner updated' };
+        try {
+            // Validate the magic bytes
+            const fileType = filetypeinfo(file.buffer);
+            const isImage = fileType.some(({ typename }) => ['png', 'gif', 'jpg', 'jpeg'].includes(typename));
+            if (!isImage)
+                throw new UnsupportedMediaTypeException();
+            // Upload to S3
+            const res = await this.appService.s3_upload(file);
+            await this.userService.updateUser({ where: { id: req.user.id }, data: { banner: res } });
+            return { message: 'Banner updated' };
+        } catch (err) {
+            throw new UnsupportedMediaTypeException();
+        }
     }
 
     @UseGuards(JwtGuard)
