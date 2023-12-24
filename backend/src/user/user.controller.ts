@@ -45,10 +45,16 @@ export class UserController {
     async getProfile(@Req() req, @Param() params: ProfileDTO) {
         // If no username is provided, return the profile of the logged in user
         if (!params.username) {
-            return await this.userService.getProfileFull({ id: req.user.id });
+            const user = await this.userService.getProfileFull({ id: req.user.id });
+            if (!user)
+                throw new HttpException('User not found', 404);
+            return user;
         }
         // Otherwise, return the profile of the provided username
-        return await this.userService.getProfileMini({ username: params.username });
+        const user = await this.userService.getProfileMini({ username: params.username });
+        if (!user)
+            throw new HttpException('User not found', 404);
+        return user;
     }
 
     @UseGuards(JwtGuard)
