@@ -171,6 +171,7 @@ export class UserController {
             throw new HttpException('User not found', 404);
         if (await this.userService.isBlocked(user.id, friend.id))
             throw new HttpException('Already blocked', 400);
+        await this.userService.deleteFriend(user.id, friend.id);
         await this.userService.addBlocked(user.id, friend.id);
     }
 
