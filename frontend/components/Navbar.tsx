@@ -1,6 +1,15 @@
 "use client";
 
-import { LogIn, Search, UserCircle2 } from "lucide-react";
+import {
+	Bell,
+	Check,
+	LogIn,
+	MessageCircle,
+	Search,
+	UserCircle2,
+	Users2,
+	X,
+} from "lucide-react";
 import { Button } from "@/components/Button";
 import { useEffect, useState, useContext } from "react";
 import PublicContext from "@/contexts/PublicContext";
@@ -11,18 +20,21 @@ import {
 	Divider,
 	Dropdown,
 	DropdownItem,
-	DropdownMenu,
+	DropdownSection,
 	DropdownTrigger,
 	Skeleton,
 } from "@nextui-org/react";
 import { SuperSkeleton } from "./SuperSkeleton";
 import SuperImage from "./SuperImage";
-import { SuperDropdown, SuperDropdownItem } from "./SuperDropdown";
+import { SuperDropdown, SuperDropdownMenu } from "./SuperDropdown";
 import { useRouter } from "next/navigation";
 import { cookies } from "next/headers";
 import axios from "@/lib/axios";
 import { twMerge } from "tailwind-merge";
-import { Lock } from "lucide-react";
+import { Lock, User as UserIcon } from "lucide-react";
+import { getFlag, getRank } from "@/lib/utils";
+import UserList from "./UserList";
+import { user1 } from "@/mocks/profile";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -60,6 +72,47 @@ function LoginButton() {
 	);
 }
 
+function NotificationsButton() {}
+
+function FriendsButton() {
+	const { session } = useContext(PublicContext) as any;
+
+	return (
+		<SuperDropdown>
+			<DropdownTrigger>
+				<Users2 className="aspect-square h-full" />
+			</DropdownTrigger>
+			<SuperDropdownMenu
+				disabledKeys={[]}
+				itemClasses={{
+					base: "data-[hover=true]:bg-transparent",
+				}}
+			>
+				<DropdownSection title={"Friend Requests"}>
+					<DropdownItem className="w-56 p-0 opacity-100" key={"info"}>
+						<UserList
+							type="list"
+							size="xs"
+							users={user1.friends}
+							Controls={({ user }: { user: User }) => (
+								<div className="flex gap-1 flex-shrink-0">
+									<Button className="h-8 w-8" iconOnly><Check size={12}/></Button>
+									<Button className="h-8 w-8" variant="danger" iconOnly><X size={12}/></Button>
+								</div>
+							)}
+						/>
+					</DropdownItem>
+				</DropdownSection>
+				<DropdownSection className="mb-0" title={"Friends"}>
+					<DropdownItem className="w-56 p-0 opacity-100" key={"info"}>
+						<UserList type="list" size="xs" users={user1.friends} />
+					</DropdownItem>
+				</DropdownSection>
+			</SuperDropdownMenu>
+		</SuperDropdown>
+	);
+}
+
 function ProfileButton({ user }: { user: User }) {
 	const router = useRouter();
 	const { sessionMutate, fullMutate, twoFactorAuthenticated } = useContext(
@@ -70,14 +123,6 @@ function ProfileButton({ user }: { user: User }) {
 		<SuperDropdown>
 			<DropdownTrigger>
 				<div className="flex h-full items-center gap-2 text-xs text-white">
-					<div className="flex flex-col items-end">
-						{user.username}
-						{twoFactorAuthenticated ? (
-							<Status status="Online" />
-						) : (
-							<Status status="Offline" />
-						)}
-					</div>
 					<div className="relative aspect-square h-full">
 						<SuperImage
 							src={user.avatar}
@@ -86,7 +131,7 @@ function ProfileButton({ user }: { user: User }) {
 					</div>
 				</div>
 			</DropdownTrigger>
-			<DropdownMenu
+			<SuperDropdownMenu
 				onAction={(item) => {
 					if (item == "profile") {
 						router.push("/profile");
@@ -102,28 +147,79 @@ function ProfileButton({ user }: { user: User }) {
 					}
 				}}
 			>
-				<SuperDropdownItem
+				<DropdownItem
+					showDivider
+					key={"info"}
+					variant="solid"
+					className="relative overflow-hidden rounded-xl bg-black/25 p-0 opacity-100"
+					isReadOnly
+				>
+					<div className="flex">
+						<div
+							className={`h-12 w-1/3 flex-shrink-0 ${
+								getRank(user.rank).color
+							} flex items-center justify-center`}
+						>
+							<span
+								className={`text-transparent ${
+									getRank(user.rank).color
+								} fuck-css text-2xl mix-blend-plus-lighter`}
+							>
+								{getRank(user.rank).name}
+							</span>
+						</div>
+						<div className="flex flex-1 flex-col items-center justify-center text-foreground-600">
+							<div className="font-medium leading-3">
+								{user.username}
+							</div>
+							<div className="flex gap-2 text-[0.65rem] leading-[0.65rem]">
+								<div className="font-flag">
+									{getFlag(user.country)}
+								</div>
+								<div>{user.country}</div>
+							</div>
+						</div>
+					</div>
+					{twoFactorAuthenticated ? (
+						<Status
+							className="rounded-none px-4 text-white"
+							size="sm"
+							status="Online"
+						/>
+					) : (
+						<Status size="sm" status="Offline" />
+					)}
+				</DropdownItem>
+				<DropdownItem
+					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="profile"
 				>
 					Profile
-				</SuperDropdownItem>
-				<SuperDropdownItem
+				</DropdownItem>
+				<DropdownItem
+					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="settings"
 				>
 					Settings
-				</SuperDropdownItem>
-				<SuperDropdownItem
+				</DropdownItem>
+				<DropdownItem
+					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="chat"
 				>
 					Chat
-				</SuperDropdownItem>	
-				<SuperDropdownItem color="danger" key="logout">
+				</DropdownItem>
+				<DropdownItem
+					variant="solid"
+					data-exclude={false}
+					color="danger"
+					key="logout"
+				>
 					Logout
-				</SuperDropdownItem>
-			</DropdownMenu>
+				</DropdownItem>
+			</SuperDropdownMenu>
 		</SuperDropdown>
 	);
 }
@@ -175,21 +271,29 @@ export function Navbar() {
 			>
 				<div className="m-2 flex h-9 w-full items-center justify-between gap-2">
 					<div className="flex h-full flex-1 items-center justify-start gap-2">
-						{twoFactorAuthenticated ? <SearchBar /> : <div className="flex gap-4 items-center">
-							<Lock className="ml-4"/>
-							<div className="text-sm">
-								Please login to access this page.
+						{twoFactorAuthenticated ? (
+							<SearchBar />
+						) : (
+							<div className="flex items-center gap-4">
+								<Lock className="ml-4" />
+								<div className="text-sm">
+									Please login to access this page.
+								</div>
 							</div>
-						</div>}
+						)}
 					</div>
 					<div className="flex h-full flex-1 items-center justify-center gap-2">
 						{twoFactorAuthenticated && <Navigation />}
 					</div>
-					<div className="flex h-full flex-1 items-center justify-end gap-2">
+					<div className="flex h-full flex-1 items-center justify-end gap-4">
+						<div className="flex h-full gap-2 rounded-full bg-card-300 p-2">
+							<FriendsButton />
+							<Bell className="aspect-square h-full" />
+						</div>
 						<div className="relative h-full max-w-full">
 							<SuperSkeleton
 								isLoaded={!sessionLoading}
-								className="absolute inset-y-0 right-0 z-10 w-36 rounded-full "
+								className="absolute inset-y-0 right-0 z-10 w-48 rounded-full "
 							/>
 							{accessToken ? (
 								<ProfileButton user={session} />

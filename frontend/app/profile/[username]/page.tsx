@@ -8,7 +8,7 @@ import Chart from "@/components/Chart";
 import Card from "@/components/Card";
 import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
-import { fetcher, getFlag, getRank, makeForm } from "@/lib/utils";
+import { fetcher, fetcherUnsafe, getFlag, getRank, makeForm } from "@/lib/utils";
 import { dummyUser, user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import PublicContext from "@/contexts/PublicContext";
@@ -375,13 +375,16 @@ function ProfileFriends({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<UserList users={user.friends!} />
+						<UserList type="list" users={user1.friends!} />
 					</ModalSet>
 				</div>
 			}
 			fullWidth
 		>
-			<UserList users={user.friends!.slice(0, 7)} />
+			<div className="p-2">
+
+			<UserList type="grid" users={user1.friends!.slice(0, 7)} />
+			</div>
 		</Card>
 	);
 }
@@ -460,18 +463,43 @@ function InteractionButton({
 	const [loading, setLoading] = useState(false);
 	const { sessionMutate, session } = useContext(PublicContext) as any;
 	const endpointSuffix = type.includes("block") ? "User" : "Friend";
+	const dictionary = {
+		add: [
+			"Add Friend",
+			"Friend Request Sent",
+			"Failed to Send Friend Request",
+			"/user/addFriend",
+		],
+		accept: [
+			"Accept Request",
+			"Request Accepted",
+			"Failed to Accept Request",
+			"/user/acceptFriend",
+		],
+		reject: [
+			"Reject Request",
+			"Request Rejected",
+			"Failed to Reject Request",
+			"/user/rejectFriend",
+		],
+		block: ["Block", "User Blocked", "Failed to Block User", "/user/block"],
+		unblock: [
+			"Unblock",
+			"User Unblocked",
+			"Failed to Unblock User",
+			"/user/unblock",
+		],
+	};
+	const [buttonText, successText, errorText, endpointURL] = dictionary[type];
 
 	const handleInteraction = async () => {
 		setLoading(true);
 		try {
-			await axios.post(
-				`/user/${type}${endpointSuffix}`,
-				makeForm({ id: user.id }),
-			);
+			await axios.post(endpointURL, makeForm({ id: user.id }));
 			await sessionMutate();
-			toast.success(`${endpointSuffix} ${type}ed`);
+			toast.success(successText);
 		} catch (err) {
-			toast.error(`Failed to ${type} ${endpointSuffix.toLowerCase()}`);
+			toast.error(errorText);
 			console.log(err);
 		}
 		setLoading(false);
@@ -479,15 +507,7 @@ function InteractionButton({
 
 	return (
 		<Button loading={loading} onClick={handleInteraction} {...props}>
-			{
-				{
-					add: "Add Friend",
-					accept: "Accept Request",
-					reject: "Reject Request",
-					block: "Block",
-					unblock: "Unblock",
-				}[type]
-			}
+			{buttonText}
 		</Button>
 	);
 }
@@ -763,16 +783,26 @@ export default function Home({ params }: any) {
 		data: user,
 		isLoading: userLoading,
 		error: userError,
-	} = useSWR(`/user/profile/${params.username}`, fetcher) as {
+	} = useSWR(`/user/profile/${params.username}`, fetcherUnsafe) as {
 		data: User;
 		isLoading: boolean;
 		error: any;
 	};
 	const falseUser = { ...user1, ...user };
 
-	console.log({ userLoading });
+	console.log({ userLoading, userError });
 
-	if (userError) return <Error statusCode={401} />;
+	if (userError) return <main className="flex justify-center items-center flex-col">
+		<div className="absolute inset-0 flex justify-center">
+			<img src="/noose.png" className="translate-y-[-29%] translate-x-[8%] blur-md" />
+		</div>
+		<div className="text-[10rem] font-black pl-4 bg-clip-text text-transparent bg-gradient-to-t from-card-400 to-card-600">
+			?
+		</div>
+		<div className="-mt-14 font-bold">
+			404	
+		</div>
+	</main>
 
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full select-none flex-col justify-center gap-4">

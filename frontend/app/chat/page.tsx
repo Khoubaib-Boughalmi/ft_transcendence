@@ -48,8 +48,7 @@ function MessageListEntry({ message }: any) {
 			<div className={twMerge("jsutify-end flex flex-col", message.noAvatar && "-mt-4")}>
 				<div className={twMerge("flex items-center gap-2 text-sm text-foreground-600", message.noAvatar && "hidden")}>
 					<div className="line-clamp-1">
-
-					{message.user.username}
+						{message.user.username}
 					</div>
 					<div suppressHydrationWarning className="text-xs text-foreground-500 flex-shrink-0">
 						{dateStr + " at " + time}
@@ -153,10 +152,11 @@ export default function Page() {
 					</div>
 					<div className="no-scrollbar h-full w-64 flex-shrink-0 overflow-y-scroll rounded-r-3xl bg-card-300">
 						<UserList
+							type="list"
 							classNames={{
-								container: "p-0",
 								list: "gap-0",
-								entry: "rounded-none px-4 bg-transparent",
+								entryContainer: "rounded-none px-4 bg-card-400 py-2",
+								entry: twMerge("", expanded && "hover:scale-100")
 							}}
 							users={list}
 						/>

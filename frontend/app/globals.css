@@ -108,11 +108,7 @@
 }
 
 .platinum {
-	background: linear-gradient(
-		to bottom left,
-		cyan 0%,
-		rgb(84, 84, 255) 100%
-	);
+	background: linear-gradient(to bottom left, cyan 0%, rgb(84, 84, 255) 100%);
 }
 .diamond {
 	background: linear-gradient(
@@ -136,12 +132,12 @@ img {
 }
 
 @layer utilities {
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
+	.no-scrollbar::-webkit-scrollbar {
+		display: none;
+	}
 
 	.no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
- }
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+}

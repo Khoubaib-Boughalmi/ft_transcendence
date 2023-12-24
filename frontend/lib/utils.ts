@@ -49,8 +49,12 @@ export async function fetcher<T>(url: string) {
 	try {
 		const res = await axios.get<T>(url);
 		return res.data;
-	}
+	}	
 	catch (err) {
 		return null
 	}
+}
+
+export async function fetcherUnsafe<T>(url: string) {
+	return axios.get<T>(url).then(res => res.data);
 }
