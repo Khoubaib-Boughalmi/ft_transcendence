@@ -133,7 +133,7 @@ export class UserController {
         if (await this.userService.isFriend(user.id, friend.id))
             throw new HttpException('Already friends', 400);
         if (await this.userService.isFriendRequest(friend.id, user.id))
-            throw new HttpException('Already sent a friend request', 400);
+            throw new HttpException('Already sent a friend request', 200);
         if (await this.userService.isBlocked(user.id, friend.id))
             throw new HttpException('You have blocked this user', 400);
         if (await this.userService.isBlocked(friend.id, user.id))
