@@ -2,11 +2,11 @@ import { StatusType } from "@/types/profile";
 import { twMerge } from "tailwind-merge";
 
 export default function Status({
-	status,
+	status = "Online",
 	size,
 	className,
 }: {
-	status: StatusType;
+	status?: StatusType;
 	size?: "xs" | "sm" | "md" | "lg";
 	className?: string;
 }) {

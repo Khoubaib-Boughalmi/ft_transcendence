@@ -4,9 +4,11 @@ import {
 	Bell,
 	Check,
 	LogIn,
+	LucideIcon,
 	MessageCircle,
 	Search,
 	UserCircle2,
+	UserPlus2,
 	Users2,
 	X,
 } from "lucide-react";
@@ -17,12 +19,15 @@ import Status from "@/components/Status";
 import Input from "@/components/Input";
 import { User } from "@/types/profile";
 import {
+	Badge,
 	Divider,
 	Dropdown,
 	DropdownItem,
+	DropdownMenu,
 	DropdownSection,
 	DropdownTrigger,
 	Skeleton,
+	Tooltip,
 } from "@nextui-org/react";
 import { SuperSkeleton } from "./SuperSkeleton";
 import SuperImage from "./SuperImage";
@@ -32,7 +37,12 @@ import { cookies } from "next/headers";
 import axios from "@/lib/axios";
 import { twMerge } from "tailwind-merge";
 import { Lock, User as UserIcon } from "lucide-react";
-import { getFlag, getRank } from "@/lib/utils";
+import {
+	getFlag,
+	getRank,
+	makeForm,
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+} from "@/lib/utils";
 import UserList from "./UserList";
 import { user1 } from "@/mocks/profile";
 
@@ -72,15 +82,40 @@ function LoginButton() {
 	);
 }
 
-function NotificationsButton() {}
 
 function FriendsButton() {
-	const { session } = useContext(PublicContext) as any;
+	type tabs = "requests" | "friends";
+	const { session, sessionMutate } = useContext(PublicContext) as any;
+	const [tab, setTab] = useState<tabs>("requests");
+	const [actualTab, setActualTab] = useState<tabs>("requests");
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		// @ts-ignore
+		document.startViewTransition(() => setActualTab(tab));
+	}, [tab]);
+
+	const handleControls = (user: User, action: "accept" | "reject") => {
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/user/${action}Friend`,
+			makeForm({ id: user.id }),
+			setLoading,
+			`${action == "accept" ? "Accepted" : "Rejected"} request`,
+			"Something went wrong",
+			sessionMutate,
+		);
+	};
 
 	return (
-		<SuperDropdown>
+		<SuperDropdown closeOnSelect={false}>
 			<DropdownTrigger>
-				<Users2 className="aspect-square h-full" />
+				<div className="flex items-center justify-center">
+
+				<Badge isInvisible={session.friend_requests.length == 0} content={session.friend_requests.length} color="danger" className="text-xs scale-90">
+
+				<Users2 size={20} />
+				</Badge>
+				</div>
 			</DropdownTrigger>
 			<SuperDropdownMenu
 				disabledKeys={[]}
@@ -88,26 +123,77 @@ function FriendsButton() {
 					base: "data-[hover=true]:bg-transparent",
 				}}
 			>
-				<DropdownSection title={"Friend Requests"}>
-					<DropdownItem className="w-56 p-0 opacity-100" key={"info"}>
+				<DropdownItem className="mb-2 p-0">
+					<div className="flex w-full gap-2 rounded-xl">
+						{[
+							[Users2, "Friends"],
+							[UserPlus2, "Requests"],
+						].map((item: any) => {
+							const [Icon, text] = item;
+							return (
+								<Button
+									onClick={() => setTab(text.toLowerCase())}
+									key={text}
+									iconOnly
+									variant={
+										tab == text.toLowerCase()
+											? undefined
+											: "transparent"
+									}
+									className="flex-1 flex-col gap-0 p-1 text-xs"
+								>
+									<Icon size={16} className="flex-shrink-0" />
+									{text}
+								</Button>
+							);
+						})}
+					</div>
+				</DropdownItem>
+				<DropdownItem className="w-56 p-0 opacity-100">
+					{actualTab == "requests" ? (
 						<UserList
 							type="list"
 							size="xs"
-							users={user1.friends}
+							users={session.friend_requests}
+							classNames={{
+								list: "max-h-[70vh] overflow-y-auto",
+								entry: twMerge("", loading && "opacity-50"),
+							}}
 							Controls={({ user }: { user: User }) => (
-								<div className="flex gap-1 flex-shrink-0">
-									<Button className="h-8 w-8" iconOnly><Check size={12}/></Button>
-									<Button className="h-8 w-8" variant="danger" iconOnly><X size={12}/></Button>
+								<div className="flex flex-shrink-0 gap-1">
+									<Button
+										onClick={() =>
+											handleControls(user, "accept")
+										}
+										disabled={loading}
+										className="h-8 w-8"
+										iconOnly
+									>
+										<Check size={12} />
+									</Button>
+									<Button
+										onClick={() =>
+											handleControls(user, "reject")
+										}
+										disabled={loading}
+										className="h-8 w-8"
+										variant="danger"
+										iconOnly
+									>
+										<X size={12} />
+									</Button>
 								</div>
 							)}
 						/>
-					</DropdownItem>
-				</DropdownSection>
-				<DropdownSection className="mb-0" title={"Friends"}>
-					<DropdownItem className="w-56 p-0 opacity-100" key={"info"}>
-						<UserList type="list" size="xs" users={user1.friends} />
-					</DropdownItem>
-				</DropdownSection>
+					) : (
+						<UserList
+							classNames={{ list: "max-h-[70vh]" }}
+							type="list"
+							size="xs"
+							users={session.friends}
+						/>
+					)}
+				</DropdownItem>
 			</SuperDropdownMenu>
 		</SuperDropdown>
 	);
@@ -224,6 +310,19 @@ function ProfileButton({ user }: { user: User }) {
 	);
 }
 
+function NotificationsButton() {
+	return (
+		<Dropdown>
+			<DropdownTrigger>
+				<Bell size={20} />
+			</DropdownTrigger>
+			<DropdownMenu>
+				<DropdownItem>Item 1</DropdownItem>
+			</DropdownMenu>
+		</Dropdown>
+	);
+}
+
 function SearchBar() {
 	return (
 		<Input
@@ -286,9 +385,10 @@ export function Navbar() {
 						{twoFactorAuthenticated && <Navigation />}
 					</div>
 					<div className="flex h-full flex-1 items-center justify-end gap-4">
-						<div className="flex h-full gap-2 rounded-full bg-card-300 p-2">
+						<div className="flex h-full items-center	 gap-2 rounded-full bg-card-300 p-2 px-2">
 							<FriendsButton />
-							<Bell className="aspect-square h-full" />
+							<Divider orientation="vertical" />
+							<NotificationsButton />
 						</div>
 						<div className="relative h-full max-w-full">
 							<SuperSkeleton

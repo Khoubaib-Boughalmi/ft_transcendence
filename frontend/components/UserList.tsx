@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import Link from "next/link";
 import { Tooltip } from "@nextui-org/react";
 import UserHover from "./UserHover";
+import NoData from "./NoData";
 
 type ClassNames = {
 	list?: string;
@@ -63,9 +64,11 @@ function UserListListEntry({
 				<Link
 					href={`/profile/${user.username}`}
 					className={twMerge(
-						`flex flex-1 items-center gap-4  text-white overflow-hidden
+						`flex flex-1 items-center gap-4  overflow-hidden text-white
 						transition-all hover:scale-105 hover:brightness-110`,
-						!Controls && user.status == "Offline" && "brightness-[60%]",
+						!Controls &&
+							user.status == "Offline" &&
+							"brightness-[60%]",
 						size == "xs" && "gap-2",
 						classNames?.entry,
 					)}
@@ -90,7 +93,9 @@ function UserListListEntry({
 						>
 							{user.username}
 						</div>
-						{!Controls && <Status size={size} status={user.status} />}
+						{!Controls && (
+							<Status size={size} status={user.status} />
+						)}
 					</div>
 				</Link>
 				{Controls && <Controls user={user} />}
@@ -115,6 +120,7 @@ export default function UserList({
 	if (type == "list")
 		return (
 			<div className={twMerge(`flex flex-col gap-2`, classNames?.list)}>
+				{users.length == 0 && <NoData />}
 				{users.map((user) => (
 					<UserListListEntry
 						Controls={Controls}
@@ -127,7 +133,8 @@ export default function UserList({
 		);
 
 	return (
-		<div className="h-46 grid grid-cols-7 gap-2">
+		<div className={twMerge(`h-46 grid grid-cols-7 gap-2`, users.length == 0 && "grid-cols-1")}>
+			{users.length == 0 && <NoData />}
 			{users.map((user) => (
 				<UserListGridEntry user={user} />
 			))}

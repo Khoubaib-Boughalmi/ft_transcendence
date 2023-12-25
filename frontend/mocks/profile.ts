@@ -69,7 +69,7 @@ const friends: any[] = Array.from({ length: 10 })
 	}))
 	.sort((user1, user2) => (user1.status == "Offline" ? 1 : -1));
 
-user1.history = history;
+// user1.history = history;
 user1.achievements = achievements;
 user1.friends = friends;
 

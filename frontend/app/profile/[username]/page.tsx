@@ -1,14 +1,42 @@
 "use client";
 import { Button } from "@/components/Button";
-import { Equal, Expand, Medal, UserPlus2, UserX2, X } from "lucide-react";
+import {
+	Check,
+	Equal,
+	Expand,
+	Medal,
+	MessageSquareIcon,
+	MoreHorizontal,
+	Swords,
+	UserPlus2,
+	UserX2,
+	X,
+	Video,
+	HeartHandshake,
+} from "lucide-react";
 import { useContext, useEffect, useRef, useState, createContext } from "react";
 import Divider from "@/components/Divider";
-import { useDisclosure, Tooltip, Skeleton } from "@nextui-org/react";
+import {
+	useDisclosure,
+	Tooltip,
+	Skeleton,
+	Dropdown,
+	DropdownTrigger,
+	DropdownMenu,
+	DropdownItem,
+} from "@nextui-org/react";
 import Chart from "@/components/Chart";
 import Card from "@/components/Card";
 import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
-import { fetcher, fetcherUnsafe, getFlag, getRank, makeForm } from "@/lib/utils";
+import {
+	fetcher,
+	fetcherUnsafe,
+	getFlag,
+	getRank,
+	makeForm,
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+} from "@/lib/utils";
 import { dummyUser, user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import PublicContext from "@/contexts/PublicContext";
@@ -21,6 +49,7 @@ import NoData from "@/components/NoData";
 import UserList from "@/components/UserList";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
+import { SuperDropdown } from "@/components/SuperDropdown";
 
 const ProfileContext = createContext({});
 
@@ -375,15 +404,17 @@ function ProfileFriends({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<UserList type="list" users={user1.friends!} />
+						<div className="p-2">
+
+						<UserList type="list" users={user.friends!} />
+						</div>
 					</ModalSet>
 				</div>
 			}
 			fullWidth
 		>
 			<div className="p-2">
-
-			<UserList type="grid" users={user1.friends!.slice(0, 7)} />
+				<UserList type="grid" users={user.friends!.slice(0, 7)} />
 			</div>
 		</Card>
 	);
@@ -457,7 +488,7 @@ function InteractionButton({
 	user,
 	...props
 }: {
-	type: "add" | "accept" | "reject" | "block" | "unblock";
+	type: "add" | "accept" | "reject" | "block" | "unblock" | "unfriend";
 	user: User;
 } & React.ComponentProps<typeof Button>) {
 	const [loading, setLoading] = useState(false);
@@ -470,39 +501,48 @@ function InteractionButton({
 			"Failed to Send Friend Request",
 			"/user/addFriend",
 		],
+		unfriend: [
+			"Unfriend",
+			"User Unfriended",
+			"Failed to Unfriend User",
+			"/user/removeFriend",
+		],
 		accept: [
-			"Accept Request",
+			"Accept",
 			"Request Accepted",
 			"Failed to Accept Request",
 			"/user/acceptFriend",
 		],
 		reject: [
-			"Reject Request",
+			"Reject",
 			"Request Rejected",
 			"Failed to Reject Request",
 			"/user/rejectFriend",
 		],
-		block: ["Block", "User Blocked", "Failed to Block User", "/user/block"],
+		block: [
+			"Block",
+			"User Blocked",
+			"Failed to Block User",
+			"/user/blockUser",
+		],
 		unblock: [
 			"Unblock",
 			"User Unblocked",
 			"Failed to Unblock User",
-			"/user/unblock",
+			"/user/unblockUser",
 		],
 	};
 	const [buttonText, successText, errorText, endpointURL] = dictionary[type];
 
 	const handleInteraction = async () => {
-		setLoading(true);
-		try {
-			await axios.post(endpointURL, makeForm({ id: user.id }));
-			await sessionMutate();
-			toast.success(successText);
-		} catch (err) {
-			toast.error(errorText);
-			console.log(err);
-		}
-		setLoading(false);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			endpointURL,
+			makeForm({ id: user.id }),
+			setLoading,
+			successText,
+			errorText,
+			sessionMutate,
+		);
 	};
 
 	return (
@@ -514,8 +554,15 @@ function InteractionButton({
 
 function ProfileTop({ user }: { user: User }) {
 	const { sessionMutate, session } = useContext(PublicContext) as any;
+	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const userBlocked = session.blocked_users.find(
 		(blocked: User) => blocked.id == user.id,
+	);
+	const userFriends = session.friends.find(
+		(friend: User) => friend.id == user.id,
+	);
+	const requestReceived = session.friend_requests.find(
+		(request: User) => request.id == user.id,
 	);
 	const me = session.id == user.id;
 
@@ -530,15 +577,118 @@ function ProfileTop({ user }: { user: User }) {
 				<div className="absolute inset-0 z-10 flex items-end justify-end gap-2 p-8">
 					{!me && (
 						<>
-							{!userBlocked && (
+							{!userBlocked &&
+								(requestReceived ? (
+									<>
+										<InteractionButton
+											type="accept"
+											user={user}
+											startContent={<Check size={16} />}
+											variant="secondary"
+										/>
+										<InteractionButton
+											type="reject"
+											user={user}
+											startContent={<X size={16} />}
+											variant="danger"
+										/>
+									</>
+								) : !userFriends ? (
+									<InteractionButton
+										type="add"
+										user={user}
+										startContent={<UserPlus2 size={16} />}
+										variant="secondary"
+									/>
+								) : (
+									<InteractionButton
+										type="unfriend"
+										user={user}
+										startContent={<UserX2 size={16} />}
+										variant="danger"
+									/>
+								))}
+							{userBlocked && (
 								<InteractionButton
-									type="add"
+									type="unblock"
 									user={user}
-									startContent={<UserPlus2 size={16} />}
+									startContent={<HeartHandshake size={16} />}
 									variant="secondary"
 								/>
 							)}
-							{userBlocked ? (
+							{!userBlocked && (
+								<ModalSet
+									onClose={onClose}
+									title={`Options for ${user.username}`}
+									isOpen={isOpen}
+									onOpenChange={onOpenChange}
+									size="xs"
+									trigger={
+										<Button
+											onClick={onOpenChange}
+											variant="transparent"
+											iconOnly
+											startContent={
+												<MoreHorizontal size={20} />
+											}
+										></Button>
+									}
+								>
+									<div className="flex flex-col gap-1 p-2">
+										<Button
+											startContent={
+												<MessageSquareIcon size={16} />
+											}
+											variant="transparent"
+											className="justify-start"
+										>
+											Message
+										</Button>
+										<Button
+											startContent={<Swords size={16} />}
+											variant="transparent"
+											className="justify-start"
+										>
+											Invite
+										</Button>
+										<Button
+											startContent={<Video size={16} />}
+											variant="transparent"
+											className="justify-start"
+										>
+											Spectate
+										</Button>
+										<Divider className="my-4" />
+
+										<InteractionButton
+											type="block"
+											user={user}
+											startContent={<UserX2 size={16} />}
+											className="justify-start"
+											variant="danger"
+										/>
+										{/* <Button startContent={
+										<X size={16} />
+									} variant="danger" className="justify-start">
+										Block
+									</Button> */}
+									</div>
+								</ModalSet>
+							)}
+							{/* <ModalSet
+								onOpenChange={onOpenChange}
+								isOpen={isOpen}
+								onClose={}
+								trigger={
+									<Button iconOnly>
+										<MoreHorizontal size={20} />
+									</Button>
+								}
+							>
+								<div>s</div>
+							</ModalSet> */}
+
+							{/* {userBlocked ? (
 								<InteractionButton
 									type="unblock"
 									user={user}
@@ -550,9 +700,10 @@ function ProfileTop({ user }: { user: User }) {
 									type="block"
 									user={user}
 									startContent={<UserX2 size={16} />}
+									className="ml-4"
 									variant="danger"
 								/>
-							)}
+							)} */}
 						</>
 					)}
 				</div>
@@ -778,35 +929,41 @@ function ProfileStats({ user }: { user: User }) {
 }
 
 export default function Home({ params }: any) {
-	const { session } = useContext(PublicContext) as any;
+	const { session, sessionLoading } = useContext(PublicContext) as any;
 	const {
 		data: user,
 		isLoading: userLoading,
 		error: userError,
-	} = useSWR(`/user/profile/${params.username}`, fetcherUnsafe) as {
+	} = useSWR(`/user/profile/${params.username}`, fetcherUnsafe, {
+		refreshInterval: 1000,
+	}) as {
 		data: User;
 		isLoading: boolean;
 		error: any;
 	};
 	const falseUser = { ...user1, ...user };
 
-	console.log({ userLoading, userError });
-
-	if (userError) return <main className="flex justify-center items-center flex-col">
-		<div className="absolute inset-0 flex justify-center">
-			<img src="/noose.png" className="translate-y-[-29%] translate-x-[8%] blur-md" />
-		</div>
-		<div className="text-[10rem] font-black pl-4 bg-clip-text text-transparent bg-gradient-to-t from-card-400 to-card-600">
-			?
-		</div>
-		<div className="-mt-14 font-bold">
-			404	
-		</div>
-	</main>
+	if (userError)
+		return (
+			<main className="flex flex-col items-center justify-center">
+				<div className="absolute inset-0 flex justify-center">
+					<img
+						src="/noose.png"
+						className="translate-x-[8%] translate-y-[-29%] blur-md"
+					/>
+				</div>
+				<div className="bg-gradient-to-t from-card-400 to-card-600 bg-clip-text pl-4 text-[10rem] font-black text-transparent">
+					?
+				</div>
+				<div className="-mt-14 font-bold">404</div>
+			</main>
+		);
 
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full select-none flex-col justify-center gap-4">
-			<ProfileContext.Provider value={{ userLoading }}>
+			<ProfileContext.Provider
+				value={{ userLoading: userLoading || sessionLoading }}
+			>
 				<ProfileTop user={falseUser} />
 				<ProfileNavigation />
 				<ProfileGaming user={falseUser} />

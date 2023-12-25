@@ -5,7 +5,12 @@ import Input from "@/components/Input";
 import UserHover from "@/components/UserHover";
 import { Spinner, useDisclosure } from "@nextui-org/react";
 import { User } from "@/types/profile";
-import { fetcher, getFlag, makeForm } from "@/lib/utils";
+import {
+	fetcher,
+	getFlag,
+	makeForm,
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+} from "@/lib/utils";
 import { Button } from "@/components/Button";
 import Link from "next/link";
 import { user1 } from "@/mocks/profile";
@@ -33,20 +38,15 @@ function UploadButton({
 	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
 		const formData = new FormData(e.currentTarget);
 		const file = formData.get(name);
-		if (file) {
-			setLoading(true);
-			try {
-				const response = await axios.post(
-					`/user/settings/upload-${name}`,
-					formData,
-				);
-				await sessionMutate();
-				toast.success(`Successfully changed ${name}`);
-			} catch (e) {
-				toast.error(`Failed to change ${name}`);
-			}
-			setLoading(false);
-		}
+		if (file)
+			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+				`/user/settings/upload-${name}`,
+				formData,
+				setLoading,
+				`Successfully changed ${name}`,
+				`Failed to change ${name}`,
+				sessionMutate,
+			);
 		formRef.current?.reset();
 	};
 
@@ -75,16 +75,14 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 
 	const handleDisable = async () => {
-		setLoading(true);
-		try {
-			const response = await axios.post(`/auth/2fa/disable`);
-			await sessionMutate();
-			toast.success(`Successfully disabled two-factor authentication (rip bozo)`);
-			onClose();
-		} catch (e) {
-			toast.error(`Failed to disable two-factor authentication`);
-		}
-		setLoading(false);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/auth/2fa/disable`,
+			null,
+			setLoading,
+			`Successfully disabled two-factor authentication (rip bozo)`,
+			`Failed to disable two-factor authentication`,
+			sessionMutate,
+		);
 	};
 
 	return (
@@ -178,19 +176,14 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 		const formData = new FormData(e.currentTarget);
 		const otp = formData.get("otp");
 		if (otp) {
-			try {
-				setLoading(true);
-				const response = await axios.post(
-					`/auth/2fa/enable`,
-					makeForm({ otp }),
-				);
-				await sessionMutate();
-				toast.success(`Successfully enabled two-factor authentication`);
-				onClose();
-			} catch (e) {
-				toast.error(`Invalid code`);
-			}
-			setLoading(false);
+			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+				`/auth/2fa/enable`,
+				makeForm({ otp }),
+				setLoading,
+				`Successfully enabled two-factor authentication`,
+				`Invalid code`,
+				sessionMutate,
+			);
 		}
 	};
 
@@ -258,17 +251,14 @@ function DeleteButton({
 	const { sessionMutate } = useContext(PublicContext) as any;
 
 	const handleImageDelete = async () => {
-		setLoading(true);
-		try {
-
-			const response = await axios.post(`/user/settings/delete-${type}`);
-			await sessionMutate();
-			toast.success(`Successfully deleted ${type}`);
-		}
-		catch (e) {
-			toast.error(`Failed to delete ${type}`);
-		}
-		setLoading(false);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/user/settings/delete-${type}`,
+			null,
+			setLoading,
+			`Successfully deleted ${type}`,
+			`Failed to delete ${type}`,
+			sessionMutate,
+		);
 	};
 
 	return (
@@ -305,20 +295,16 @@ export default function Settings() {
 	const [loading, setLoading] = useState(false);
 
 	const handleSave = async () => {
-		setLoading(true);
-		try {
-			const response = await axios.post(
-				`/user/settings/update`,
-				makeForm({
-					username,
-				}),
-			);
-			await sessionMutate();
-			toast.success(`Successfully updated settings`);
-		} catch (e) {
-			toast.error(`Failed to update settings`);
-		}
-		setLoading(false);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/user/settings/update`,
+			makeForm({
+				username,
+			}),
+			setLoading,
+			`Successfully updated settings`,
+			`Failed to update settings`,
+			sessionMutate,
+		);
 	};
 
 	console.log(session.username);

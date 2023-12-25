@@ -16,7 +16,7 @@ export default function Providers({ accessToken, children }: any) {
 	const noRefresh = {
 		shouldRetryOnError: false,
 		errorRetryCount: 0,
-		revalidateOnFocus: false,
+		refreshInterval: 1000,
 	};
 
 	const {

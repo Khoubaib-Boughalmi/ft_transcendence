@@ -28,6 +28,7 @@ export default function ModalSet({
 				onOpenChange={onOpenChange}
 				hideCloseButton
 				size={size ?? "4xl"}
+				backdrop="blur"
 				{...modalProps}
 			>
 				<ModalContent className="bg-transparent shadow-none select-none">
