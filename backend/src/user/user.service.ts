@@ -2,6 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { User, Prisma } from '@prisma/client';
 
+type Achievement = {
+	id: number;
+	name: string;
+	description: string;
+	icon: string;
+	date: Date;
+	score: number;
+};
+
 export type UserProfile = {
 	id: string;
 	username: string;
@@ -17,6 +26,8 @@ export type UserProfile = {
 	matches: number;
 	rank: number;
 	division: string;
+	achievements: Achievement[];
+	achievements_percentage: number;
 };
 
 export type UserProfileMicro = UserProfile;
@@ -106,6 +117,8 @@ export class UserService {
 				.length,
 			rank: user.rank,
 			division: user.division,
+			achievements: [],
+			achievements_percentage: 0,
 		};
 	}
 
