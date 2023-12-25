@@ -91,8 +91,11 @@ function FriendsButton() {
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		// @ts-ignore
-		document.startViewTransition(() => setActualTab(tab));
+		const doc = document as any;
+		if (doc.startViewTransition)
+			doc.startViewTransition(() => setActualTab(tab));
+		else
+			setActualTab(tab);
 	}, [tab]);
 
 	const handleControls = (user: User, action: "accept" | "reject") => {
