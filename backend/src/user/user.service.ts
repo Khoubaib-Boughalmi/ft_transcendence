@@ -32,7 +32,7 @@ export type UserProfileFull = UserProfileMini & {
 };
 @Injectable()
 export class UserService {
-	constructor(private prisma: PrismaService) { }
+	constructor(private prisma: PrismaService) {}
 
 	async user(
 		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
@@ -77,11 +77,7 @@ export class UserService {
 		}
 	}
 
-	async getProfileFull(
-		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
-	): Promise<UserProfileFull | null> {
-		const user = await this.user(userWhereUniqueInput);
-		if (!user) return null;
+	async getProfileBase(user: User): Promise<UserProfileMicro> {
 		// Find matches with ids in user.history
 		const matches = await this.prisma.gameMatch.findMany({
 			where: {
@@ -91,7 +87,9 @@ export class UserService {
 			},
 		});
 		const total_matches = matches.length;
-		const matches_won = matches.filter((match) => match.winner_id === user.id).length
+		const matches_won = matches.filter(
+			(match) => match.winner_id === user.id,
+		).length;
 		return {
 			id: user.id,
 			username: user.username,
@@ -101,12 +99,23 @@ export class UserService {
 			banner: user.banner,
 			country: user.country,
 			level: user.level,
-			level_percentage: user.level_exp * 100 / 1000,
+			level_percentage: (user.level_exp * 100) / 1000,
 			matches: matches.length,
 			wins: matches.filter((match) => match.winner_id === user.id).length,
-			losses: matches.filter((match) => match.winner_id !== user.id).length,
+			losses: matches.filter((match) => match.winner_id !== user.id)
+				.length,
 			rank: user.rank,
 			division: user.division,
+		};
+	}
+
+	async getProfileFull(
+		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+	): Promise<UserProfileFull | null> {
+		const user = await this.user(userWhereUniqueInput);
+		if (!user) return null;
+		return {
+			...(await this.getProfileBase(user)),
 			two_factor: user.two_factor,
 			friends: await this.getFriends(user.id),
 			friend_requests: await this.getFriendRequests(user.id),
@@ -114,22 +123,23 @@ export class UserService {
 		};
 	}
 
-	async getProfileMini(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<UserProfileMini | null> {
-		const user = await this.getProfileFull(userWhereUniqueInput);
+	async getProfileMini(
+		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+	): Promise<UserProfileMini | null> {
+		const user = await this.user(userWhereUniqueInput);
 		if (!user) return null;
-		const { two_factor, friend_requests, blocked_users, ...rest } = user;
 		return {
-			...rest,
-		}
+			...(await this.getProfileBase(user)),
+			friends: await this.getFriends(user.id),
+		};
 	}
 
-	async getProfileMicro(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<UserProfileMicro | null> {
-		const user = await this.getProfileMini(userWhereUniqueInput);
+	async getProfileMicro(
+		userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+	): Promise<UserProfileMicro | null> {
+		const user = await this.user(userWhereUniqueInput);
 		if (!user) return null;
-		const { friends, ...rest } = user;
-		return {
-			...rest,
-		}
+		return this.getProfileBase(user);
 	}
 
 	async gainExp(id: string, exp: number): Promise<void> {
@@ -139,9 +149,10 @@ export class UserService {
 		if (!user) return;
 
 		const newExp = user.level_exp + exp;
-		const updateData = newExp < 1000
-			? { level_exp: newExp }
-			: { level: user.level + 1, level_exp: newExp - 1000 };
+		const updateData =
+			newExp < 1000
+				? { level_exp: newExp }
+				: { level: user.level + 1, level_exp: newExp - 1000 };
 
 		await this.prisma.user.update({
 			where: { id },
@@ -150,141 +161,193 @@ export class UserService {
 	}
 
 	async addFriendRequest(user_id: string, friend_id: string): Promise<void> {
-		await this.prisma.friendRequests.create({
-			data: {
-				user1_id: user_id,
-				user2_id: friend_id,
-			},
-		});
+		await this.createRelationship(
+			user_id,
+			friend_id,
+			this.prisma.friendRequests,
+			false,
+		);
 	}
 
-	async acceptFriendRequest(user_id: string, friend_id: string): Promise<void> {
+	async acceptFriendRequest(
+		user_id: string,
+		friend_id: string,
+	): Promise<void> {
 		await this.deleteFriendRequest(user_id, friend_id);
-		await this.deleteFriendRequest(friend_id, user_id);
 		await this.addFriend(user_id, friend_id);
-		await this.addFriend(friend_id, user_id);
 	}
 
-	async deleteFriendRequest(user_id: string, friend_id: string): Promise<void> {
-		await this.prisma.friendRequests.deleteMany({
-			where: {
-				user1_id: user_id,
-				user2_id: friend_id,
-			},
-		});
+	async rejectFriendRequest(
+		user_id: string,
+		friend_id: string,
+	): Promise<void> {
+		await this.deleteRelationship(
+			user_id,
+			friend_id,
+			this.prisma.friendRequests,
+			false,
+		);
+	}
+
+	async deleteFriendRequest(
+		user_id: string,
+		friend_id: string,
+	): Promise<void> {
+		await this.deleteRelationship(
+			user_id,
+			friend_id,
+			this.prisma.friendRequests,
+			true,
+		);
 	}
 
 	async addFriend(user_id: string, friend_id: string): Promise<void> {
-		await this.prisma.friends.create({
-			data: {
-				user1_id: user_id,
-				user2_id: friend_id,
-			},
-		});
-		await this.prisma.friends.create({
-			data: {
-				user1_id: friend_id,
-				user2_id: user_id,
-			},
-		});
+		await this.createRelationship(
+			user_id,
+			friend_id,
+			this.prisma.friends,
+			true,
+		);
 	}
 
 	async deleteFriend(user_id: string, friend_id: string): Promise<void> {
-		await this.prisma.friends.deleteMany({
-			where: {
-				user1_id: user_id,
-				user2_id: friend_id,
-			},
-		});
-		await this.prisma.friends.deleteMany({
-			where: {
-				user1_id: friend_id,
-				user2_id: user_id,
-			},
-		});
+		await this.deleteRelationship(
+			user_id,
+			friend_id,
+			this.prisma.friends,
+			true,
+		);
 	}
 
 	async addBlocked(user_id: string, friend_id: string): Promise<void> {
-		await this.prisma.blockedUsers.create({
+		await this.createRelationship(
+			user_id,
+			friend_id,
+			this.prisma.blockedUsers,
+			false,
+		);
+	}
+
+	async deleteBlocked(user_id: string, friend_id: string): Promise<void> {
+		await this.deleteRelationship(
+			user_id,
+			friend_id,
+			this.prisma.blockedUsers,
+			false,
+		);
+	}
+
+	private async createRelationship(
+		user_id: string,
+		friend_id: string,
+		model: any,
+		isTwoWay: boolean,
+	): Promise<void> {
+		await model.create({
 			data: {
 				user1_id: user_id,
 				user2_id: friend_id,
 			},
 		});
+
+		if (isTwoWay) {
+			await model.create({
+				data: {
+					user1_id: friend_id,
+					user2_id: user_id,
+				},
+			});
+		}
 	}
 
-	async deleteBlocked(user_id: string, friend_id: string): Promise<void> {
-		await this.prisma.blockedUsers.deleteMany({
+	private async deleteRelationship(
+		user_id: string,
+		friend_id: string,
+		model: any,
+		isTwoWay: boolean,
+	): Promise<void> {
+		await model.deleteMany({
 			where: {
 				user1_id: user_id,
 				user2_id: friend_id,
 			},
 		});
+
+		if (isTwoWay) {
+			await model.deleteMany({
+				where: {
+					user1_id: friend_id,
+					user2_id: user_id,
+				},
+			});
+		}
 	}
 
-	async isFriendRequest(user_id: string, friend_id: string): Promise<boolean> {
-		const friend = await this.prisma.friendRequests.findFirst({
-			where: {
-				user1_id: user_id,
-				user2_id: friend_id,
-			},
-		});
-		return friend ? true : false;
+	async isFriendRequest(
+		user_id: string,
+		friend_id: string,
+	): Promise<boolean> {
+		return this.isRelationship(
+			user_id,
+			friend_id,
+			this.prisma.friendRequests,
+		);
 	}
 
 	async isFriend(user_id: string, friend_id: string): Promise<boolean> {
-		const friend = await this.prisma.friends.findFirst({
-			where: {
-				user1_id: user_id,
-				user2_id: friend_id,
-			},
-		});
-		return friend ? true : false;
+		return this.isRelationship(user_id, friend_id, this.prisma.friends);
 	}
-	
+
 	async isBlocked(user_id: string, friend_id: string): Promise<boolean> {
-		const friend = await this.prisma.blockedUsers.findFirst({
+		return this.isRelationship(
+			user_id,
+			friend_id,
+			this.prisma.blockedUsers,
+		);
+	}
+
+	private async isRelationship(
+		user_id: string,
+		friend_id: string,
+		model: any,
+	): Promise<boolean> {
+		const friend = await model.findFirst({
 			where: {
 				user1_id: user_id,
 				user2_id: friend_id,
 			},
 		});
+
 		return friend ? true : false;
 	}
 
 	async getFriends(user_id: string): Promise<UserProfileMicro[]> {
-		const friends = await this.prisma.friends.findMany({
-			where: {
-				user1_id: user_id,
-			},
-		});
-		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMicro({ id: friend.user2_id });
-		}));
-		return friendsProfiles;
+		return this.getRelatedUsers(user_id, this.prisma.friends);
 	}
 
 	async getFriendRequests(user_id: string): Promise<UserProfileMicro[]> {
-		const friends = await this.prisma.friendRequests.findMany({
-			where: {
-				user1_id: user_id,
-			},
-		});
-		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMicro({ id: friend.user2_id });
-		}));
-		return friendsProfiles;
+		return this.getRelatedUsers(user_id, this.prisma.friendRequests);
 	}
 
 	async getBlockedUsers(user_id: string): Promise<UserProfileMicro[]> {
-		const friends = await this.prisma.blockedUsers.findMany({
+		return this.getRelatedUsers(user_id, this.prisma.blockedUsers);
+	}
+
+	private async getRelatedUsers(
+		user_id: string,
+		model: any,
+	): Promise<UserProfileMicro[]> {
+		const friends = await model.findMany({
 			where: {
 				user1_id: user_id,
 			},
 		});
-		const friendsProfiles = await Promise.all(friends.map(async (friend) => {
-			return await this.getProfileMicro({ id: friend.user2_id });
-		}));
+
+		const friendsProfiles = await Promise.all(
+			friends.map(async (friend) => {
+				return await this.getProfileMicro({ id: friend.user2_id });
+			}),
+		);
 		return friendsProfiles;
 	}
 }

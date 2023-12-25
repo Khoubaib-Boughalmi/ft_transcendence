@@ -128,9 +128,11 @@ export class UserController {
         const friend = await this.userService.user({ id: body.id });
         if (!user || !friend)
             throw new HttpException('User not found', 404);
+        if (user.id === friend.id)
+            throw new HttpException('Cannot friend yourself', 400);
         if (await this.userService.isFriend(user.id, friend.id))
             throw new HttpException('Already friends', 400);
-        if (await this.userService.isFriendRequest(user.id, friend.id))
+        if (await this.userService.isFriendRequest(friend.id, user.id))
             throw new HttpException('Already sent a friend request', 400);
         if (await this.userService.isBlocked(user.id, friend.id))
             throw new HttpException('You have blocked this user', 400);
@@ -164,7 +166,7 @@ export class UserController {
         const isFriendRequest = await this.userService.isFriendRequest(user.id, friend.id);
         if (!isFriendRequest)
         throw new HttpException('No friend request', 400);
-        await this.userService.deleteFriendRequest(user.id, friend.id);
+        await this.userService.rejectFriendRequest(user.id, friend.id);
     }
 
     @UseGuards(JwtGuard)
