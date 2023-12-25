@@ -3,12 +3,15 @@ import {
 	DropdownItem,
 	DropdownMenu,
 	extendVariants,
+	useDisclosure,
 } from "@nextui-org/react";
+import { useEffect } from "react";
 
 export function SuperDropdown({
 	children,
 	...props
 }: React.ComponentProps<typeof Dropdown>) {
+
 	return (
 		<Dropdown
 			classNames={{

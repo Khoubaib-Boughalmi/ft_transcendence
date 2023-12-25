@@ -82,20 +82,24 @@ function LoginButton() {
 	);
 }
 
-
 function FriendsButton() {
 	type tabs = "requests" | "friends";
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 	const [tab, setTab] = useState<tabs>("requests");
 	const [actualTab, setActualTab] = useState<tabs>("requests");
 	const [loading, setLoading] = useState(false);
+	const [closeOnSelect, setCloseOnSelect] = useState(true);
+
+	const saveTheWorld = {
+		onMouseEnter: () => setCloseOnSelect(false),
+		onMouseLeave: () => setCloseOnSelect(true),
+	};
 
 	useEffect(() => {
 		const doc = document as any;
 		if (doc.startViewTransition)
 			doc.startViewTransition(() => setActualTab(tab));
-		else
-			setActualTab(tab);
+		else setActualTab(tab);
 	}, [tab]);
 
 	const handleControls = (user: User, action: "accept" | "reject") => {
@@ -110,14 +114,17 @@ function FriendsButton() {
 	};
 
 	return (
-		<SuperDropdown closeOnSelect={false}>
+		<SuperDropdown closeOnSelect={closeOnSelect}>
 			<DropdownTrigger>
 				<div className="flex items-center justify-center">
-
-				<Badge isInvisible={session.friend_requests.length == 0} content={session.friend_requests.length} color="danger" className="text-xs scale-90">
-
-				<Users2 size={20} />
-				</Badge>
+					<Badge
+						isInvisible={session.friend_requests.length == 0}
+						content={session.friend_requests.length}
+						color="danger"
+						className="scale-90 text-xs"
+					>
+						<Users2 size={20} />
+					</Badge>
 				</div>
 			</DropdownTrigger>
 			<SuperDropdownMenu
@@ -137,6 +144,7 @@ function FriendsButton() {
 								<Button
 									onClick={() => setTab(text.toLowerCase())}
 									key={text}
+									
 									iconOnly
 									variant={
 										tab == text.toLowerCase()
@@ -144,6 +152,7 @@ function FriendsButton() {
 											: "transparent"
 									}
 									className="flex-1 flex-col gap-0 p-1 text-xs"
+									{...saveTheWorld}
 								>
 									<Icon size={16} className="flex-shrink-0" />
 									{text}
@@ -163,7 +172,7 @@ function FriendsButton() {
 								entry: twMerge("", loading && "opacity-50"),
 							}}
 							Controls={({ user }: { user: User }) => (
-								<div className="flex flex-shrink-0 gap-1">
+								<div  className="flex flex-shrink-0 gap-1" {...saveTheWorld}>
 									<Button
 										onClick={() =>
 											handleControls(user, "accept")
