@@ -8,6 +8,7 @@ import { FormDataRequest } from 'nestjs-form-data';
 import { diskStorage, memoryStorage } from 'multer';
 import { extname } from 'path';
 import filetypeinfo from 'magic-bytes.js';
+import { UserGateway } from './user.gateway';
 
 export class ProfileDTO {
     @IsLowercase()
@@ -37,7 +38,8 @@ export const multerConfig = {
 export class UserController {
     constructor(
         private readonly appService: AppService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly userGateway: UserGateway,
     ) { }
 
     @UseGuards(JwtGuard)
@@ -55,6 +57,15 @@ export class UserController {
         if (!user)
             throw new HttpException('User not found', 404);
         return user;
+    }
+
+    @UseGuards(JwtGuard)
+    @Get('profile/isonline/:username')
+    async getProfileIsOnline(@Req() req, @Param() params: ProfileDTO) {
+        const user = await this.userService.user({ username: params.username });
+        if (!user)
+            throw new HttpException('User not found', 404);
+        return { isOnline: await this.userGateway.isOnline(user.id) };
     }
 
     @UseGuards(JwtGuard)

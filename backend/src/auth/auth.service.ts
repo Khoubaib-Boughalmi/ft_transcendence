@@ -45,4 +45,13 @@ export class AuthService {
             access_token: this.jwtService.sign(payload),
         };
     }
+
+    async verifyJWTforSocket(token: string): Promise<any> {
+        try {
+            const payload = this.jwtService.verify(token);
+            return { id: payload['id'], two_factor_passed: payload['two_factor_passed'] };
+        } catch (err) {
+            return null;
+        }
+    }
 }
