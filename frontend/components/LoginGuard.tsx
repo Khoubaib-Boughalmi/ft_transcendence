@@ -32,7 +32,7 @@ export default function ({ children }: any) {
 						className="text-lg px-96"
 						startContent={<img className="h-7 w-7" src="/42_Logo.svg" />}
 						as="a"
-						href={`http://localhost:3000/api/auth/intra/login`}
+						href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/intra/login`}
 					>
 						تسجيل الدخول
 					</Button>
