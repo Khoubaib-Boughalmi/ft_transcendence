@@ -8,7 +8,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 
-@WebSocketGateway()
+@WebSocketGateway({
+	cors: {
+		origin: process.env.FRONTEND_URL,
+		credentials: true,
+	},
+})
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(private authService: AuthService) {}
 
@@ -16,8 +21,15 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private server: Server;
 	private onlineUsers: Map<string, Socket[]> = new Map();
 
-	handleConnection(client: Socket) {
+	async handleConnection(client: Socket) {
 		console.log(`Client connected: ${client.id}`);
+		const cookies = client?.handshake?.headers?.cookie;
+		if (!cookies) return client.disconnect();
+		const access_token = cookies
+			.split('; ')
+			.find((cookie: string) => cookie.startsWith('session'))
+			.split('=')[1];
+		await this.login(client, access_token);
 	}
 
 	handleDisconnect(client: Socket) {
@@ -30,11 +42,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		sockets.splice(index, 1);
 	}
 
-	@SubscribeMessage('login')
-	async handleLogin(client: Socket, data: any) {
-		const payload = await this.authService.verifyJWTforSocket(data.access_token);
-		if (!payload) return;
-		if (!payload?.two_factor_passed) return;
+	async login(client: Socket, access_token: string) {
+		const payload = await this.authService.verifyJWTforSocket(access_token);
+		if (!payload) return client.disconnect();
+		if (!payload?.two_factor_passed) return client.disconnect();
 
 		this.onlineUsers[payload.id] = this.onlineUsers[payload.id] || [];
 		this.onlineUsers[payload.id].push(client);
