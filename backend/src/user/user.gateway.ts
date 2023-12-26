@@ -26,8 +26,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const cookies = client?.handshake?.headers?.cookie;
 		if (!cookies) return client.disconnect();
 		const access_token = cookies
-			.split('; ')
-			.find((cookie: string) => cookie.startsWith('session'))
+			.split('; ')!
+			.find((cookie: string) => cookie.startsWith('access_token'))!
 			.split('=')[1];
 		await this.login(client, access_token);
 	}
