@@ -6,11 +6,10 @@ import axios from "@/lib/axios";
 import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
 import { dummyUser } from "@/mocks/profile";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import jwt from "jsonwebtoken";
 import { Toaster } from "react-hot-toast";
-
-const loadedImages = new Set<string>();
+import socket from "@/lib/socket";
 
 export default function Providers({ accessToken, children }: any) {
 	const noRefresh = {
@@ -32,6 +31,14 @@ export default function Providers({ accessToken, children }: any) {
 	const [loadedImages, setLoadedImages] = useState<string[]>([]);
 	const payload = jwt?.decode(accessToken?.value) as any;
 	const twoFactorAuthenticated = payload?.two_factor_passed === true;
+
+	useEffect(() => {
+		socket.on("disconnect", () => {
+		});
+		return () => {
+			socket.off("disconnect");
+		}
+	}, []);
 
 	console.log({
 		session,

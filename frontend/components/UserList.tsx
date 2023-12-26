@@ -25,12 +25,12 @@ function UserListGridEntry({ user }: { user: User }) {
 				)}
 			>
 				<div className="relative aspect-square h-24 w-24 overflow-hidden rounded-full">
-					<SuperImage src={user.avatar} className="h-full w-full" />
+					<SuperImage src={user.avatar} className="h-full w-full object-cover" />
 				</div>
 				<div className="w-full truncate text-center text-sm">
 					{user.username}
 				</div>
-				<Status status={user.status} />
+				<Status user={user} />
 			</Link>
 		</Tooltip>
 	);
@@ -81,7 +81,7 @@ function UserListListEntry({
 					>
 						<SuperImage
 							src={user.avatar}
-							className="h-full w-full"
+							className="h-full w-full object-cover"
 						/>
 					</div>
 					<div className="flex flex-1 flex-col items-start overflow-hidden">
@@ -94,7 +94,7 @@ function UserListListEntry({
 							{user.username}
 						</div>
 						{!Controls && (
-							<Status size={size} status={user.status} />
+							<Status size={size} user={user} />
 						)}
 					</div>
 				</Link>
@@ -121,8 +121,9 @@ export default function UserList({
 		return (
 			<div className={twMerge(`flex flex-col gap-2`, classNames?.list)}>
 				{users.length == 0 && <NoData />}
-				{users.map((user) => (
+				{users.map((user, i) => (
 					<UserListListEntry
+						key={i}
 						Controls={Controls}
 						classNames={classNames}
 						size={size}
@@ -135,8 +136,8 @@ export default function UserList({
 	return (
 		<div className={twMerge(`h-46 grid grid-cols-7 gap-2`, users.length == 0 && "grid-cols-1")}>
 			{users.length == 0 && <NoData />}
-			{users.map((user) => (
-				<UserListGridEntry user={user} />
+			{users.map((user, i) => (
+				<UserListGridEntry key={i} user={user} />
 			))}
 		</div>
 	);

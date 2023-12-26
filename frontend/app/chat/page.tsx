@@ -13,7 +13,7 @@ function ChatIcon() {
 	return (
 		<Button
 			variant="transparent"
-			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none bg-card-300 p-0 !outline-0 !ring-0"
+			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 !outline-0 !ring-0"
 		>
 			<div className="relative aspect-square h-full flex-shrink-0 p-4">
 				<div className="relative h-full w-full">
@@ -90,16 +90,16 @@ export default function Page() {
 
 
 	return (
-		<div suppressHydrationWarning className="relative z-10 mb-12 w-5/6 rounded-3xl overflow-hidden">
-			<div className="flex h-full w-64 flex-col overflow-hidden rounded-l-3xl bg-card-300">
+		<div suppressHydrationWarning className="relative z-10 mb-12 w-5/6 rounded-3xl overflow-hidden @container">
+			<div className="flex h-full w-full @md:w-64 flex-col overflow-hidden rounded-l-3xl bg-card-300">
 				<div className="relative flex-1">
 					<div className="absolute inset-0 overflow-y-scroll">
-						{Array.from({ length: 100 }).map((something) => (
-							<ChatIcon />
+						{Array.from({ length: 100 }).map((something, i) => (
+							<ChatIcon key={i} />
 						))}
 					</div>
 				</div>
-				<div className="h-20 w-full bg-card-200">
+				<div className="h-20 w-full bg-card-300">
 					<Button
 						variant="transparent"
 						onClick={() => {
@@ -107,14 +107,14 @@ export default function Page() {
 						}}
 						className="flex aspect-square h-full items-center justify-center rounded-none rounded-bl-3xl !outline-none !ring-0"
 					>
-						<Server className="mix-blend-plus-lighter" />
+						<Server />
 					</Button>
 				</div>
 			</div>
 			<div
 				className={twMerge(
-					"absolute inset-0 left-20 flex flex-col overflow-hidden rounded-r-3xl bg-card-400 transition-transform",
-					expanded && "translate-x-44",
+					"absolute inset-0 translate-x-full @md:translate-x-0 flex flex-col overflow-hidden rounded-r-3xl bg-gradient-to-tr from-card-300 to-card-500 from-40% transition-transform @md:left-20",
+					expanded && "translate-x-0 @md:translate-x-44",
 				)}
 			>
 				<div className="flex h-full w-full">
@@ -138,19 +138,20 @@ export default function Page() {
 						<div className="relative flex-1">
 							<div className="absolute inset-0 overflow-y-scroll">
 								<div suppressHydrationWarning className="flex min-h-full flex-col-reverse gap-4 py-4 pl-2">
-									{messages.map((message) => (
+									{messages.map((message, i) => (
 										<MessageListEntry
+											key={i}
 											message={message}
 										/>
 									))}
 								</div>
 							</div>
 						</div>
-						<div className="w-full flex-shrink-0 bg-card-500 p-4 h-20">
+						<div className="w-full flex-shrink-0 bg-card-300 p-4 h-20 ">
 							<Input />
 						</div>
 					</div>
-					<div className="no-scrollbar h-full w-64 flex-shrink-0 overflow-y-scroll rounded-r-3xl bg-card-300">
+					<div className="no-scrollbar h-full w-64 flex-shrink-0 overflow-y-scroll rounded-r-3xl bg-card-200">
 						<UserList
 							type="list"
 							classNames={{

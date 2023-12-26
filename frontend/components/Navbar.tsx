@@ -144,7 +144,6 @@ function FriendsButton() {
 								<Button
 									onClick={() => setTab(text.toLowerCase())}
 									key={text}
-									
 									iconOnly
 									variant={
 										tab == text.toLowerCase()
@@ -172,7 +171,10 @@ function FriendsButton() {
 								entry: twMerge("", loading && "opacity-50"),
 							}}
 							Controls={({ user }: { user: User }) => (
-								<div  className="flex flex-shrink-0 gap-1" {...saveTheWorld}>
+								<div
+									className="flex flex-shrink-0 gap-1"
+									{...saveTheWorld}
+								>
 									<Button
 										onClick={() =>
 											handleControls(user, "accept")
@@ -245,49 +247,47 @@ function ProfileButton({ user }: { user: User }) {
 					}
 				}}
 			>
-				<DropdownItem
-					showDivider
-					key={"info"}
-					variant="solid"
-					className="relative overflow-hidden rounded-xl bg-black/25 p-0 opacity-100"
-					isReadOnly
-				>
-					<div className="flex">
-						<div
-							className={`h-12 w-1/3 flex-shrink-0 ${
-								getRank(user.rank).color
-							} flex items-center justify-center`}
-						>
-							<span
-								className={`text-transparent ${
+				{twoFactorAuthenticated && (
+					<DropdownItem
+						showDivider
+						key={"info"}
+						variant="solid"
+						className="relative overflow-hidden rounded-xl bg-black/25 p-0 opacity-100"
+						isReadOnly
+					>
+						<div className="flex">
+							<div
+								className={`h-12 w-1/3 flex-shrink-0 ${
 									getRank(user.rank).color
-								} fuck-css text-2xl mix-blend-plus-lighter`}
+								} flex items-center justify-center`}
 							>
-								{getRank(user.rank).name}
-							</span>
-						</div>
-						<div className="flex flex-1 flex-col items-center justify-center text-foreground-600">
-							<div className="font-medium leading-3">
-								{user.username}
+								<span
+									className={`text-transparent ${
+										getRank(user.rank).color
+									} fuck-css text-2xl mix-blend-plus-lighter`}
+								>
+									{getRank(user.rank).name}
+								</span>
 							</div>
-							<div className="flex gap-2 text-[0.65rem] leading-[0.65rem]">
-								<div className="font-flag">
-									{getFlag(user.country)}
+							<div className="flex flex-1 flex-col items-center justify-center text-foreground-600">
+								<div className="font-medium leading-3">
+									{user.username}
 								</div>
-								<div>{user.country}</div>
+								<div className="flex gap-2 text-[0.65rem] leading-[0.65rem]">
+									<div className="font-flag">
+										{getFlag(user.country)}
+									</div>
+									<div>{user.country}</div>
+								</div>
 							</div>
 						</div>
-					</div>
-					{twoFactorAuthenticated ? (
 						<Status
 							className="rounded-none px-4 text-white"
 							size="sm"
-							status="Online"
+							user={user}
 						/>
-					) : (
-						<Status size="sm" status="Offline" />
-					)}
-				</DropdownItem>
+					</DropdownItem>
+				)}
 				<DropdownItem
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}

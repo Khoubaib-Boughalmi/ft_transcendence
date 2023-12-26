@@ -21,6 +21,7 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "react-hot-toast": "^2.4.1",
+    "socket.io-client": "^4.7.2",
     "swr": "^2.2.4",
     "tailwind-merge": "^2.1.0"
   },

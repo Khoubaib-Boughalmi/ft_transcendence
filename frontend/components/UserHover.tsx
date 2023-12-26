@@ -27,7 +27,7 @@ export default function UserHover({ user }: { user: User }) {
 				</div>
 			</div>
 					</div>
-			<Status status={user.status} size="sm" />
+			<Status user={user} size="sm" />
 			<div className="flex w-full gap-2">
 				<div
 					className={`aspect-square h-16 shrink-0 overflow-hidden rounded-xl bg-red-500 ${getRank(user.rank).color} flex items-center justify-center`}

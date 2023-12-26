@@ -717,7 +717,7 @@ function ProfileTop({ user }: { user: User }) {
 					/>
 				</div>
 				<div className="relative flex w-full translate-y-[-25%] flex-col items-start gap-4 px-2 pl-4 text-white">
-					<Status status={user.status} />
+					<Status user={user} />
 					<div className="relative h-32 w-full">
 						<div className="absolute inset-0">
 							<div className="flex w-full flex-col gap-2">
