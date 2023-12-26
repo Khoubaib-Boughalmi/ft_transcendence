@@ -33,12 +33,13 @@ export default function Providers({ accessToken, children }: any) {
 	const twoFactorAuthenticated = payload?.two_factor_passed === true;
 
 	useEffect(() => {
+		socket.connect();
 		socket.on("disconnect", () => {
 		});
 		return () => {
 			socket.off("disconnect");
 		}
-	}, []);
+	}, [accessToken]);
 
 	console.log({
 		session,

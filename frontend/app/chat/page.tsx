@@ -113,8 +113,8 @@ export default function Page() {
 			</div>
 			<div
 				className={twMerge(
-					"absolute inset-0 translate-x-full @md:translate-x-0 flex flex-col overflow-hidden rounded-r-3xl bg-gradient-to-tr from-card-300 to-card-500 from-40% transition-transform @md:left-20",
-					expanded && "translate-x-0 @md:translate-x-44",
+					"absolute inset-0 translate-x-full @md:translate-x-0 flex flex-col overflow-hidden rounded-r-3xl bg-gradient-to-tr from-card-300 to-card-500 from-40% @md:left-20 transition-all",
+					expanded && "translate-x-0 @md:translate-x-44 brightness-50",
 				)}
 			>
 				<div className="flex h-full w-full">

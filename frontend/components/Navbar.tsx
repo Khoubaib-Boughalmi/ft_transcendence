@@ -45,6 +45,7 @@ import {
 } from "@/lib/utils";
 import UserList from "./UserList";
 import { user1 } from "@/mocks/profile";
+import socket from "@/lib/socket";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -242,6 +243,7 @@ function ProfileButton({ user }: { user: User }) {
 					} else if (item == "logout") {
 						axios.get("/auth/logout").then(async () => {
 							await fullMutate();
+							socket.disconnect();
 							router.refresh();
 						});
 					}
