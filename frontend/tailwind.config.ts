@@ -24,11 +24,23 @@ const config: Config = {
 				overlay: {
 					"0%": { opacity: "0" },
 					"100%": { opacity: "1" },
-				}
+				},
+				lefttoright: {
+					"0%": { transform: "translateX(-100%)", opacity: "0" },
+					"50%": { opacity: "0" },
+					"100%": { transform: "translateX(0)", opacity: "1" },
+				},
+				righttoleft: {
+					"0%": { transform: "translateX(0%)", opacity: "1" },
+					"50%": { opacity: "0" },
+					"100%": { transform: "translateX(-100%)", opacity: "0" },
+				},
 			},
 			animation: {
 				popup: "popup 0.1s ease-in-out",
 				overlay: "overlay 0.5s ease-in-out",
+				lefttoright: "lefttoright 0.25s ease-in-out",
+				righttoleft: "righttoleft 0.25s ease-in-out",
 			},
 			colors:
 			{
@@ -48,6 +60,8 @@ const config: Config = {
 					DEFAULT: "var(--card-default)",
 					100: "var(--card-100)",
 					200: "var(--card-200)",
+					250: "var(--card-250)",
+					275: "var(--card-275)",
 					300: "var(--card-300)",
 					400: "var(--card-400)",
 					500: "var(--card-500)",

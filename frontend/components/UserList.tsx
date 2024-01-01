@@ -13,7 +13,7 @@ type ClassNames = {
 	entryContainer?: string;
 };
 
-function UserListGridEntry({ user }: { user: User }) {
+function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: number }) {
 	return (
 		<Tooltip className="rounded-xl p-2" content={<UserHover user={user} />}>
 			<Link
@@ -40,9 +40,11 @@ function UserListListEntry({
 	user,
 	size,
 	classNames,
+	hoverDelay,
 	Controls,
 }: {
 	user: User;
+	hoverDelay?: number;
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
 	Controls?: any;
@@ -51,6 +53,7 @@ function UserListListEntry({
 		<Tooltip
 			className="rounded-xl p-2"
 			placement="left"
+			delay={hoverDelay || 250}
 			content={<UserHover user={user} />}
 		>
 			<div
@@ -107,11 +110,13 @@ function UserListListEntry({
 export default function UserList({
 	users,
 	type,
+	hoverDelay,
 	size,
 	classNames,
 	Controls,
 }: {
 	users: User[];
+	hoverDelay?: number;
 	type: "list" | "grid";
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
@@ -123,6 +128,7 @@ export default function UserList({
 				{users.length == 0 && <NoData />}
 				{users.map((user, i) => (
 					<UserListListEntry
+						hoverDelay={hoverDelay}
 						key={i}
 						Controls={Controls}
 						classNames={classNames}
@@ -137,7 +143,7 @@ export default function UserList({
 		<div className={twMerge(`h-46 grid grid-cols-7 gap-2`, users.length == 0 && "grid-cols-1")}>
 			{users.length == 0 && <NoData />}
 			{users.map((user, i) => (
-				<UserListGridEntry key={i} user={user} />
+				<UserListGridEntry hoverDelay={hoverDelay} key={i} user={user} />
 			))}
 		</div>
 	);
