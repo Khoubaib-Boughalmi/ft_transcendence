@@ -38,6 +38,9 @@ type Message = {
 	content: string;
 	target: string;
 	noAvatar: boolean;
+	blocked?: boolean;
+	groupid: string;
+	parent?: boolean;
 };
 
 type ChatContextType = {
@@ -51,6 +54,9 @@ type ChatContextType = {
 	setMessages: (messages: Message[]) => void;
 	members: User[];
 	setMembers: (members: User[]) => void;
+	displayedMessages: any;
+	setDisplayedMessages: (displayedMessages: any) => void;
+	messageParents: any;
 };
 
 function useChatContext() {
@@ -87,47 +93,97 @@ function ServerListEntry() {
 	);
 }
 
-function MessageListEntry({ message }: any) {
+function MessageListEntry({
+	message,
+	index,
+}: {
+	message: Message;
+	index: number;
+}) {
 	const date = message.time.toLocaleDateString();
 	const time = message.time.toLocaleTimeString();
 	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
+	const { displayedMessages, setDisplayedMessages, messageParents } =
+		useChatContext();
+	const displayed =
+		displayedMessages[message.groupid] || message.blocked != true;
+
+	if (message.blocked && !message.parent && displayed != true) return null;
 
 	return (
-		<div className="flex gap-4 px-4">
-			<div
-				className={twMerge(
-					"relative h-12 w-12 flex-shrink-0",
-					message.noAvatar && "h-0 opacity-0",
-				)}
-			>
-				<SuperImage
-					src={message.user.avatar}
-					className="absolute inset-0 rounded-full"
-				/>
-			</div>
-			<div
-				className={twMerge(
-					"jsutify-end flex flex-col",
-					message.noAvatar && "-mt-4",
-				)}
-			>
-				<div
-					className={twMerge(
-						"flex items-center gap-2 text-sm text-foreground-600",
-						message.noAvatar && "hidden",
-					)}
-				>
-					<div className="line-clamp-1">{message.user.username}</div>
+		<>
+			{displayed && (
+				<div className="flex gap-4 px-4">
 					<div
-						suppressHydrationWarning
-						className="flex-shrink-0 text-xs text-foreground-500"
+						className={twMerge(
+							"relative h-12 w-12 flex-shrink-0",
+							message.noAvatar && "h-0 opacity-0",
+						)}
 					>
-						{dateStr + " at " + time}
+						<SuperImage
+							src={message.user.avatar}
+							className="absolute inset-0 rounded-full"
+						/>
+					</div>
+					<div
+						className={twMerge(
+							"jsutify-end flex flex-col",
+							message.noAvatar && "-mt-4",
+						)}
+					>
+						<div
+							className={twMerge(
+								"flex items-center gap-2 text-sm text-foreground-600",
+								message.noAvatar && "hidden",
+							)}
+						>
+							<div className="line-clamp-1">
+								{message.user.username}
+							</div>
+							<div
+								suppressHydrationWarning
+								className="flex-shrink-0 text-xs text-foreground-500"
+							>
+								{dateStr + " at " + time}
+							</div>
+						</div>
+						<div className="text-foreground-800">
+							{message.content}
+						</div>
 					</div>
 				</div>
-				<div className="text-foreground-800">{message.content}</div>
-			</div>
-		</div>
+			)}
+			{message.blocked && message.parent && (
+				<div className="flex w-full justify-center gap-4 px-4 font-semibold">
+					<Button
+						variant="ghost"
+						className="w-full select-none !outline-none !ring-0 text-card-900"
+						onClick={() => {
+							setDisplayedMessages((prev: any) => {
+								return {
+									...prev,
+									[message.groupid]:
+										prev[message.groupid] == true
+											? false
+											: true,
+								};
+							});
+						}}
+					>
+						{(displayed
+							? "Hide"
+							: `Show ${
+									messageParents.current[message.groupid]
+								}`) +
+								` Blocked Message${
+									messageParents.current[message.groupid] == 1
+										? ""
+										: "s"
+								}`}
+					</Button>
+				</div>
+			)}
+		</>
 	);
 }
 
@@ -157,7 +213,7 @@ function ServerList() {
 					>
 						{expanded ? <ArrowLeft /> : <Menu />}
 					</Button>
-					<div className="bg-card-250 flex flex-1">
+					<div className="flex flex-1 bg-card-250">
 						{[
 							["servers", Server, "Channels"],
 							["friends", Users2, "Friends"],
@@ -228,7 +284,7 @@ function ChatInput() {
 	const { messages, setMessages } = useChatContext();
 
 	return (
-		<div className="flex h-20 items-center gap-4 p-4	">
+		<div className="flex h-20 items-center gap-4 p-4 pr-1">
 			<form
 				onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
 					e.preventDefault();
@@ -238,11 +294,14 @@ function ChatInput() {
 					(e.target as HTMLFormElement).reset();
 					setMessages([
 						{
-							user: user1,
+							user: user2,
 							time: new Date(),
 							content: message,
 							target: "server",
 							noAvatar: false,
+							groupid: randomString(),
+							blocked: true
+
 						},
 						...messages,
 					]);
@@ -307,7 +366,7 @@ function ChatSection() {
 			const visibleHeight = messageBox.clientHeight;
 			const difference = currentHeight - currentScroll;
 			if (currentHeight - currentScroll < visibleHeight * 2)
-				messageBox.scrollTop = messageBox.scrollHeight;
+				messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
 	}, [messages]);
 
@@ -325,10 +384,10 @@ function ChatSection() {
 					className="absolute inset-0 z-10"
 				></div>
 			)}
-			<div className="flex h-full w-full">
+			<div className="flex h-full w-full gap-0">
 				<div className="flex flex-1 flex-col">
 					<div className="flex h-24 w-full flex-shrink-0 p-4 pr-0">
-						<div className="bg-card-275 flex h-full w-full gap-2 rounded-full">
+						<div className="flex h-full w-full gap-2 rounded-full bg-card-275">
 							<div className="aspect-square h-full p-2">
 								<div className="relative h-full w-full flex-shrink-0">
 									<SuperImage
@@ -369,12 +428,15 @@ function ChatSection() {
 								suppressHydrationWarning
 								className="flex min-h-full flex-col-reverse gap-4 py-4 pl-2"
 							>
-								{messages.map((message, i) => (
-									<MessageListEntry
-										key={i}
-										message={message}
-									/>
-								))}
+								{messages.map((message, i) => {
+									return (
+										<MessageListEntry
+											key={i}
+											index={i}
+											message={message}
+										/>
+									);
+								})}
 							</div>
 						</div>
 					</div>
@@ -386,18 +448,22 @@ function ChatSection() {
 	);
 }
 
+const randomString = () => Math.random().toString(36).substring(7);
+
 export default function Page() {
 	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
-	const [showMembers, setShowMembers] = useState(false);
+	const [showMembers, setShowMembers] = useState(true);
 	const [expanded, setExpanded] = useState(false);
 	const [members, setMembers] = useState<User[]>(
-		Array.from({ length: 10 })
+		Array.from({ length: 30 })
 			.map((_, i: number) => (i % 2 == 0 ? user1 : user2))
 			.sort((user1, user2) => (user1.status == "Online" ? -1 : 1)),
 	);
+	const [displayedMessages, setDisplayedMessages] = useState({});
+	const messageParents = useRef({}) as any;
 
 	const [messages, setMessages] = useState<Message[]>(
-		Array.from({ length: 5 }).map((_, i: number) => ({
+		Array.from({ length: 20 }).map((_, i: number) => ({
 			user: i % 4 == 0 ? user1 : user2,
 			time: new Date(),
 			content: `Lorem ipsum dolor sit amet consectetur, adipisicing elit.
@@ -407,14 +473,41 @@ export default function Page() {
 		explicabo!`,
 			noAvatar: false,
 			target: "server",
+			groupid: randomString(),
 		})),
 	);
+
+	messageParents.current = {};
 
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user == messages[i + 1]?.user) {
 			messages[i].noAvatar = true;
 		}
+		messages[i].parent = true;
+		if (messageParents.current[messages[i].groupid] == undefined)
+			messageParents.current[messages[i].groupid] = 1;
+		if (messages[i + 1]?.blocked == messages[i]?.blocked)
+			messages[i].parent = false
+		if (i > 0 && messages[i].blocked == messages[i - 1].blocked)
+		{
+			messageParents.current[messages[i].groupid] += 1;
+			messages[i].groupid = messages[i - 1].groupid;
+		}
 	}
+
+
+	// for (let i = messages.length - 2; i >= 0; i--) {
+	// 	if (messages[i].blocked == true || messages[i].blocked == messages[i + 1]?.blocked) {
+	// 		messages[i].groupid = messages[i + 1]?.groupid;
+	// 		if (messageParents.current[messages[i].groupid] == undefined) {
+	// 			messageParents.current[messages[i].groupid] = 1;
+	// 		}
+	// 		else
+	// 			messages[i].parent = false;
+	// 		messageParents.current[messages[i].groupid] += 1;
+	// 	}
+	// }
+
 
 	return (
 		<div
@@ -433,6 +526,9 @@ export default function Page() {
 					setMessages,
 					members,
 					setMembers,
+					displayedMessages,
+					setDisplayedMessages,
+					messageParents,
 				}}
 			>
 				<ServerList />
