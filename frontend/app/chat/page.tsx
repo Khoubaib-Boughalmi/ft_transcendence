@@ -4,10 +4,12 @@ import SuperImage from "@/components/SuperImage";
 import {
 	AirVent,
 	ArrowLeft,
+	LogOut,
 	Menu,
 	MoreHorizontal,
 	SendHorizontal,
 	Server,
+	Settings2,
 	Sparkles,
 	UserPlus2,
 	Users2,
@@ -16,13 +18,15 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import UserList from "@/components/UserList";
 import { user1, user2 } from "@/mocks/profile";
-import { ScrollShadow, Textarea } from "@nextui-org/react";
+import { Dropdown, DropdownItem, DropdownTrigger, ScrollShadow, Textarea } from "@nextui-org/react";
 import Input from "@/components/Input";
 import { User } from "@/types/profile";
 import generateBullshitExpression from "@/lib/bullshit";
 import Divider from "@/components/Divider";
+import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
 
 const ChatContext = createContext({});
+
 
 type Server = {
 	name: string;
@@ -335,7 +339,6 @@ function ChatInput() {
 					const input = document.querySelector(
 						"#message",
 					) as HTMLInputElement;
-					console.log(input);
 					const bs = generateBullshitExpression(
 						["cryptoBS", ""][Math.floor(Math.random() * 2)],
 					);
@@ -414,7 +417,24 @@ function ChatSection() {
 									<Users2 />
 								</Button>
 								<Button variant="ghost" iconOnly>
+									<SuperDropdown>
+									<DropdownTrigger>
+
 									<MoreHorizontal />
+									</DropdownTrigger>
+									<SuperDropdownMenu>
+										<DropdownItem startContent={
+											<Settings2/>
+										}>
+											Settings
+										</DropdownItem>
+										<DropdownItem startContent={
+											<LogOut/>
+										} data-exclude={true} color="danger">
+											Leave
+										</DropdownItem>
+									</SuperDropdownMenu>
+									</SuperDropdown>
 								</Button>
 							</div>
 						</div>
@@ -455,7 +475,7 @@ export default function Page() {
 	const [showMembers, setShowMembers] = useState(true);
 	const [expanded, setExpanded] = useState(false);
 	const [members, setMembers] = useState<User[]>(
-		Array.from({ length: 30 })
+		Array.from({ length: 7 })
 			.map((_, i: number) => (i % 2 == 0 ? user1 : user2))
 			.sort((user1, user2) => (user1.status == "Online" ? -1 : 1)),
 	);
@@ -474,6 +494,7 @@ export default function Page() {
 			noAvatar: false,
 			target: "server",
 			groupid: randomString(),
+			blocked: i % 4 != 0 ? true : false,
 		})),
 	);
 

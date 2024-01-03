@@ -4,9 +4,13 @@ import {
 	Bell,
 	Check,
 	LogIn,
+	LogOut,
 	LucideIcon,
 	MessageCircle,
+	MessageSquareIcon,
 	Search,
+	Settings2,
+	User2,
 	UserCircle2,
 	UserPlus2,
 	Users2,
@@ -294,6 +298,9 @@ function ProfileButton({ user }: { user: User }) {
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="profile"
+					startContent={
+						<User2/>
+					}
 				>
 					Profile
 				</DropdownItem>
@@ -301,6 +308,9 @@ function ProfileButton({ user }: { user: User }) {
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="settings"
+					startContent={
+						<Settings2/>
+					}
 				>
 					Settings
 				</DropdownItem>
@@ -308,6 +318,9 @@ function ProfileButton({ user }: { user: User }) {
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="chat"
+					startContent={
+						<MessageSquareIcon/>
+					}
 				>
 					Chat
 				</DropdownItem>
@@ -316,6 +329,9 @@ function ProfileButton({ user }: { user: User }) {
 					data-exclude={false}
 					color="danger"
 					key="logout"
+					startContent={
+						<LogOut/>
+					}
 				>
 					Logout
 				</DropdownItem>
@@ -353,15 +369,12 @@ export function Navbar() {
 
 	useEffect(() => {
 		const listener = () => {
-			console.log("setting scroll listener");
 			setSolid(window.scrollY > 25);
 		};
 		window.addEventListener("scroll", listener);
 		listener();
 		return () => window.removeEventListener("scroll", listener);
 	}, []);
-
-	console.log(sessionLoading);
 
 	return (
 		<nav

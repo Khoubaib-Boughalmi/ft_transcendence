@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Tooltip } from "@nextui-org/react";
 import UserHover from "./UserHover";
 import NoData from "./NoData";
+import { useEffect, useState } from "react";
 
 type ClassNames = {
 	list?: string;
@@ -13,9 +14,37 @@ type ClassNames = {
 	entryContainer?: string;
 };
 
-function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: number }) {
+function SuperTooltip({children, ...props}: React.ComponentProps<typeof Tooltip>) {
+	// const [portal, setPortal] = useState(null) as any;
+	// const updatePortal = () => {
+	// 	setPortal(document.querySelector(`*[data-slot="list"]`) || document.querySelector('*[role="dialog"]') || document.body);
+	// }
+
+	// useEffect(() => {
+	// 	updatePortal()
+	// }, []);
+
 	return (
-		<Tooltip className="rounded-xl p-2" content={<UserHover user={user} />}>
+		<Tooltip className={twMerge("bg-card-200 p-2", props.className)}
+			radius="lg"
+			// onMouseEnter={updatePortal}
+			classNames={{
+				arrow: twMerge("", props.classNames?.arrow),
+				base: twMerge("", props.classNames?.base),
+				content: twMerge("", props.classNames?.content)
+			}}
+			// portalContainer={portal}
+			{...props}
+			>
+				{children}
+		</Tooltip>
+	)
+}
+
+function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: number }) {
+
+	return (
+		<SuperTooltip delay={hoverDelay || 250} content={<UserHover user={user} />}>
 			<Link
 				href={`/profile/${user.username}`}
 				className={twMerge(
@@ -32,7 +61,7 @@ function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: numb
 				</div>
 				<Status user={user} />
 			</Link>
-		</Tooltip>
+		</SuperTooltip>
 	);
 }
 
@@ -50,8 +79,7 @@ function UserListListEntry({
 	Controls?: any;
 }) {
 	return (
-		<Tooltip
-			className="rounded-xl p-2"
+		<SuperTooltip
 			placement="left"
 			delay={hoverDelay || 250}
 			content={<UserHover user={user} />}
@@ -103,7 +131,7 @@ function UserListListEntry({
 				</Link>
 				{Controls && <Controls user={user} />}
 			</div>
-		</Tooltip>
+		</SuperTooltip>
 	);
 }
 

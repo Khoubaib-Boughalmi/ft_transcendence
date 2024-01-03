@@ -17,8 +17,6 @@ export default function Status({
 	}) as any;
 	let status = null;
 
-	console.log({ data });
-
 	if (data?.isOnline != null)
 		status = data.isOnline == true ? "Online" : "Offline";
 	else

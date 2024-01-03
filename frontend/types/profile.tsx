@@ -84,3 +84,4 @@ export type User = {
 	two_factor: boolean;
 	
 };
+export type InteractionType = "add" | "accept" | "reject" | "block" | "unblock" | "unfriend";
