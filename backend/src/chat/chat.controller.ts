@@ -1,4 +1,4 @@
-// router.route("/").post(verifyAuth, getOrCreateOneToOneChat).get(verifyAuth, getAllCurrentUserChats);
+// router.route("/").post(verifyAuth, getOrCreateOneToOneChat).get(verifyAuth, getCurrentUserChats);
 import { Controller, Get, Post, Body, Param, Req, Res, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { IsLowercase, IsOptional, Length } from 'class-validator';
@@ -22,7 +22,18 @@ export class ChatController {
     @FormDataRequest()
     async createOneToOneChat(@Req() req, @Body() body: UserDTO): Promise<any> {
         const { userId } = body;
+        if (!userId) {
+            return {
+                error: "userId is required",
+            };
+        }
         return await this.chatService.createOneToOneChat(req.user.id, userId);
+    }
+
+    @Get("/getCurrentUserChats")
+    @UseGuards(JwtGuard)
+    async getCurrentUserChats(@Req() req): Promise<any> {
+        return await this.chatService.getCurrentUserChats(req.user.id);
     }
 
 }
