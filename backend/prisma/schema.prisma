@@ -78,3 +78,18 @@ model FriendRequests {
   user1_id String
   user2_id String
 }
+
+model Channel {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  name         String
+  description  String
+  users        String[]
+  messages     String[]
+  type         String
+  invitedUsers String[]
+  password     String
+  admins       String[]
+}
