@@ -13,6 +13,7 @@ import {
 	X,
 	Video,
 	HeartHandshake,
+	UserMinus2,
 } from "lucide-react";
 import { useContext, useEffect, useRef, useState, createContext } from "react";
 import Divider from "@/components/Divider";
@@ -34,8 +35,6 @@ import {
 	fetcherUnsafe,
 	getFlag,
 	getRank,
-	makeForm,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 } from "@/lib/utils";
 import { dummyUser, user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
@@ -50,6 +49,9 @@ import UserList from "@/components/UserList";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { SuperDropdown } from "@/components/SuperDropdown";
+import { InteractionType } from "@/types/profile";
+import { interactionDictionary } from "@/lib/utils";
+import { InteractionFunctionality } from "@/lib/utils";
 
 const ProfileContext = createContext({});
 
@@ -488,72 +490,24 @@ function InteractionButton({
 	user,
 	...props
 }: {
-	type: "add" | "accept" | "reject" | "block" | "unblock" | "unfriend";
+	type: InteractionType;
 	user: User;
 } & React.ComponentProps<typeof Button>) {
+	const { sessionMutate } = useContext(PublicContext) as any;
 	const [loading, setLoading] = useState(false);
-	const { sessionMutate, session } = useContext(PublicContext) as any;
-	const endpointSuffix = type.includes("block") ? "User" : "Friend";
-	const dictionary = {
-		add: [
-			"Add Friend",
-			"Friend Request Sent",
-			"Failed to Send Friend Request",
-			"/user/addFriend",
-		],
-		unfriend: [
-			"Unfriend",
-			"User Unfriended",
-			"Failed to Unfriend User",
-			"/user/removeFriend",
-		],
-		accept: [
-			"Accept",
-			"Request Accepted",
-			"Failed to Accept Request",
-			"/user/acceptFriend",
-		],
-		reject: [
-			"Reject",
-			"Request Rejected",
-			"Failed to Reject Request",
-			"/user/rejectFriend",
-		],
-		block: [
-			"Block",
-			"User Blocked",
-			"Failed to Block User",
-			"/user/blockUser",
-		],
-		unblock: [
-			"Unblock",
-			"User Unblocked",
-			"Failed to Unblock User",
-			"/user/unblockUser",
-		],
-	};
-	const [buttonText, successText, errorText, endpointURL] = dictionary[type];
-
-	const handleInteraction = async () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-			endpointURL,
-			makeForm({ id: user.id }),
-			setLoading,
-			successText,
-			errorText,
-			sessionMutate,
-		);
-	};
+	const [buttonText, ..._] = interactionDictionary[type];
 
 	return (
-		<Button loading={loading} onClick={handleInteraction} {...props}>
+		<Button loading={loading} onClick={() => {
+			InteractionFunctionality(type, user, sessionMutate, setLoading);
+		}} {...props}>
 			{buttonText}
 		</Button>
 	);
 }
 
 function ProfileTop({ user }: { user: User }) {
-	const { sessionMutate, session } = useContext(PublicContext) as any;
+	const { session } = useContext(PublicContext) as any;
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const userBlocked = session.blocked_users.find(
 		(blocked: User) => blocked.id == user.id,
@@ -583,13 +537,13 @@ function ProfileTop({ user }: { user: User }) {
 										<InteractionButton
 											type="accept"
 											user={user}
-											startContent={<Check size={16} />}
+											startContent={<Check size={18} />}
 											variant="secondary"
 										/>
 										<InteractionButton
 											type="reject"
 											user={user}
-											startContent={<X size={16} />}
+											startContent={<X size={18} />}
 											variant="danger"
 										/>
 									</>
@@ -597,14 +551,14 @@ function ProfileTop({ user }: { user: User }) {
 									<InteractionButton
 										type="add"
 										user={user}
-										startContent={<UserPlus2 size={16} />}
+										startContent={<UserPlus2 size={18} />}
 										variant="secondary"
 									/>
 								) : (
 									<InteractionButton
 										type="unfriend"
 										user={user}
-										startContent={<UserX2 size={16} />}
+										startContent={<UserMinus2 size={18} />}
 										variant="danger"
 									/>
 								))}
@@ -612,7 +566,7 @@ function ProfileTop({ user }: { user: User }) {
 								<InteractionButton
 									type="unblock"
 									user={user}
-									startContent={<HeartHandshake size={16} />}
+									startContent={<HeartHandshake size={18} />}
 									variant="secondary"
 								/>
 							)}
@@ -637,7 +591,7 @@ function ProfileTop({ user }: { user: User }) {
 									<div className="flex flex-col gap-1 p-2">
 										<Button
 											startContent={
-												<MessageSquareIcon size={16} />
+												<MessageSquareIcon size={18} />
 											}
 											variant="transparent"
 											className="justify-start"
@@ -645,14 +599,14 @@ function ProfileTop({ user }: { user: User }) {
 											Message
 										</Button>
 										<Button
-											startContent={<Swords size={16} />}
+											startContent={<Swords size={18} />}
 											variant="transparent"
 											className="justify-start"
 										>
 											Invite
 										</Button>
 										<Button
-											startContent={<Video size={16} />}
+											startContent={<Video size={18} />}
 											variant="transparent"
 											className="justify-start"
 										>
@@ -663,47 +617,13 @@ function ProfileTop({ user }: { user: User }) {
 										<InteractionButton
 											type="block"
 											user={user}
-											startContent={<UserX2 size={16} />}
+											startContent={<UserX2 size={18} />}
 											className="justify-start"
 											variant="danger"
 										/>
-										{/* <Button startContent={
-										<X size={16} />
-									} variant="danger" className="justify-start">
-										Block
-									</Button> */}
 									</div>
 								</ModalSet>
 							)}
-							{/* <ModalSet
-								onOpenChange={onOpenChange}
-								isOpen={isOpen}
-								onClose={}
-								trigger={
-									<Button iconOnly>
-										<MoreHorizontal size={20} />
-									</Button>
-								}
-							>
-								<div>s</div>
-							</ModalSet> */}
-
-							{/* {userBlocked ? (
-								<InteractionButton
-									type="unblock"
-									user={user}
-									startContent={<UserX2 size={16} />}
-									variant="secondary"
-								/>
-							) : (
-								<InteractionButton
-									type="block"
-									user={user}
-									startContent={<UserX2 size={16} />}
-									className="ml-4"
-									variant="danger"
-								/>
-							)} */}
 						</>
 					)}
 				</div>
@@ -958,6 +878,8 @@ export default function Home({ params }: any) {
 				<div className="-mt-14 font-bold">404</div>
 			</main>
 		);
+
+	console.log(session, sessionLoading);
 
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full select-none flex-col justify-center gap-4">

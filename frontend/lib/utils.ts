@@ -1,8 +1,8 @@
-import { Rank, User, Match, Achievement, StatusType } from "@/types/profile";
+import { Rank, User, Match, Achievement, StatusType, InteractionType } from "@/types/profile";
 import axios from "@/lib/axios";
 import { useContext } from "react";
-import PublicContext from "@/contexts/PublicContext";
 import toast from "react-hot-toast";
+import PublicContext from "@/contexts/PublicContext";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -79,3 +79,55 @@ export async function useAbstractedAttemptedExclusivelyPostRequestToTheNestBacke
 	}
 	if (setLoading) setLoading(false);
 }
+export const interactionDictionary = {
+	add: [
+		"Add Friend",
+		"Friend Request Sent",
+		"Failed to Send Friend Request",
+		"/user/addFriend",
+	],
+	unfriend: [
+		"Unfriend",
+		"User Unfriended",
+		"Failed to Unfriend User",
+		"/user/removeFriend",
+	],
+	accept: [
+		"Accept",
+		"Request Accepted",
+		"Failed to Accept Request",
+		"/user/acceptFriend",
+	],
+	reject: [
+		"Reject",
+		"Request Rejected",
+		"Failed to Reject Request",
+		"/user/rejectFriend",
+	],
+	block: [
+		"Block",
+		"User Blocked",
+		"Failed to Block User",
+		"/user/blockUser",
+	],
+	unblock: [
+		"Unblock",
+		"User Unblocked",
+		"Failed to Unblock User",
+		"/user/unblockUser",
+	],
+};
+
+export async function InteractionFunctionality(type: InteractionType, user: User, sessionMutate: any, setLoading?: any) {
+	const [buttonText, successText, errorText, endpointURL] = interactionDictionary[type];
+
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		endpointURL,
+		makeForm({ id: user.id }),
+		setLoading,
+		successText,
+		errorText,
+		sessionMutate
+	);
+}
+

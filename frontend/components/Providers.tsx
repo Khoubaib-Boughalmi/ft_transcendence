@@ -41,14 +41,6 @@ export default function Providers({ accessToken, children }: any) {
 		}
 	}, [accessToken]);
 
-	console.log({
-		session,
-		sessionLoading,
-		verified,
-		verifiedLoading,
-		accessToken,
-	});
-
 	return (
 		<PublicContext.Provider
 			value={{

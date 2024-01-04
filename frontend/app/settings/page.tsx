@@ -307,7 +307,6 @@ export default function Settings() {
 		);
 	};
 
-	console.log(session.username);
 
 	return (
 		<main className="mb-12 flex w-[1000px] max-w-full flex-col justify-center gap-4">
@@ -374,7 +373,10 @@ export default function Settings() {
 						</SettingSection>
 					</div>
 					<div className="flex items-center justify-center rounded-xl bg-black text-white ">
+						<div className="p-2 rounded-2xl bg-card-200">
+
 						<UserHover user={session} />
+						</div>
 					</div>
 				</div>
 				<div className="flex flex-col gap-8 p-4">
