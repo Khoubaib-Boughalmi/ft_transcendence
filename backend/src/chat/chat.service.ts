@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Chat, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
+import { UserDTO } from './chat.controller';
 
 @Injectable()
 export class ChatService {
@@ -37,7 +38,7 @@ export class ChatService {
         });
     }
 
-    //get all chats of current user
+    //get all chats of current user in this format: [chat, user1, user2, ...]
     async getCurrentUserChats(userId: string) {
         const userChats =  await this.prisma.chat.findMany({
             where: {
@@ -46,6 +47,7 @@ export class ChatService {
                 },
             },
         });
+
         // populate the userChats with the users
         let userChatsWithUsers = [];
         for (let i = 0; i < userChats.length; i++) {
@@ -57,9 +59,31 @@ export class ChatService {
                     },
                 },
             });
-            userChatsWithUsers[i] = users;
+            userChatsWithUsers[i] = [chat, ...users];
         }
         return userChatsWithUsers;
+    }
+
+    async createOneToManyChat(userId: string, groupUsers: string[], groupName: string) {
+        // create the chat
+        const chat = await this.createChat({
+            isGroupChat: true,
+            users: [userId, ...groupUsers],
+            chatName: groupName,
+            groupAdmins: [userId],
+        });
+        // populate the chat with the users
+        const users = await this.prisma.user.findMany({
+            where: {
+                id: {
+                    in: chat.users,
+                },
+            },
+        });
+        return {
+            ...chat,
+            users,
+        }; 
     }
     
 }
