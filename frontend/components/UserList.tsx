@@ -7,6 +7,7 @@ import { Tooltip } from "@nextui-org/react";
 import UserHover from "./UserHover";
 import NoData from "./NoData";
 import { useEffect, useState } from "react";
+import { useIsOnline } from "@/lib/utils";
 
 type ClassNames = {
 	list?: string;
@@ -42,6 +43,7 @@ function SuperTooltip({children, ...props}: React.ComponentProps<typeof Tooltip>
 }
 
 function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: number }) {
+	const isOnline = useIsOnline(user);
 
 	return (
 		<SuperTooltip delay={hoverDelay || 250} content={<UserHover user={user} />}>
@@ -50,7 +52,7 @@ function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: numb
 				className={twMerge(
 					`flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-card-400 p-4 text-white transition-all
 					hover:scale-105 hover:brightness-110`,
-					user.status == "Offline" && "brightness-[60%]",
+					isOnline == false && "brightness-[60%]",
 				)}
 			>
 				<div className="relative aspect-square h-24 w-24 overflow-hidden rounded-full">
@@ -59,7 +61,7 @@ function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: numb
 				<div className="w-full truncate text-center text-sm">
 					{user.username}
 				</div>
-				<Status user={user} />
+				<Status isOnline={isOnline} user={user} />
 			</Link>
 		</SuperTooltip>
 	);
@@ -78,6 +80,8 @@ function UserListListEntry({
 	classNames?: ClassNames;
 	Controls?: any;
 }) {
+	const isOnline = useIsOnline(user);
+
 	return (
 		<SuperTooltip
 			placement="left"
@@ -88,7 +92,7 @@ function UserListListEntry({
 				className={twMerge(
 					`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all`,
 					size == "xs" && "gap-2 p-2",
-					!Controls && user.status == "Offline" && "brightness-[60%]",
+					!Controls && isOnline == false && "brightness-[60%]",
 					classNames?.entryContainer,
 				)}
 			>
@@ -98,7 +102,7 @@ function UserListListEntry({
 						`flex flex-1 items-center gap-4  overflow-hidden text-white
 						transition-all hover:scale-105 hover:brightness-110`,
 						!Controls &&
-							user.status == "Offline" &&
+							isOnline == false &&
 							"brightness-[60%]",
 						size == "xs" && "gap-2",
 						classNames?.entry,
@@ -125,7 +129,7 @@ function UserListListEntry({
 							{user.username}
 						</div>
 						{!Controls && (
-							<Status size={size} user={user} />
+							<Status isOnline={isOnline} size={size} user={user} />
 						)}
 					</div>
 				</Link>
