@@ -16,7 +16,6 @@ export const user1: User = {
 	achievements_percentage: 0,
 	rank: 0,
 	division: "I",
-	status: "Online",
 	friends: [],
 	history: [],
 	achievements: [],
@@ -35,7 +34,6 @@ export const user2: User = {
 	country: "China",
 	rank: 3,
 	division: "II",
-	status: "Offline",
 };
 
 const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
@@ -66,8 +64,7 @@ const friends: any[] = Array.from({ length: 10 })
 	.map((_, i) => ({
 		...(i % 2 == 0 ? user1 : user2),
 		friends: [],
-	}))
-	.sort((user1, user2) => (user1.status == "Offline" ? 1 : -1));
+	}));
 
 // user1.history = history;
 user1.achievements = achievements;
@@ -93,7 +90,6 @@ export const dummyUser: User = {
 	achievements_percentage: 0,
 	rank: 0,
 	division: "I",
-	status: "Online",
 	friends: [],
 	history: [],
 	achievements: [],
