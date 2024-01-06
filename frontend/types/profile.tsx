@@ -76,12 +76,10 @@ export type User = {
 	matches: number;
 	rank: number;
 	division: string;
-	status: StatusType;
 	activity: number[];
 	friends: User[];
 	friend_requests: User[];
 	blocked_users: User[];
 	two_factor: boolean;
-	
 };
 export type InteractionType = "add" | "accept" | "reject" | "block" | "unblock" | "unfriend";
