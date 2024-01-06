@@ -1,4 +1,4 @@
-import { fetcher } from "@/lib/utils";
+import { fetcher, useIsOnline } from "@/lib/utils";
 import { StatusType, User } from "@/types/profile";
 import useSWR from "swr";
 import { twMerge } from "tailwind-merge";
@@ -7,20 +7,15 @@ export default function Status({
 	user,
 	size,
 	className,
+	isOnline,
 }: {
 	user: User;
 	size?: "xs" | "sm" | "md" | "lg";
 	className?: string;
+	isOnline?: boolean;
 }) {
-	const { data } = useSWR(`/user/profile/isonline/${user.id}`, fetcher, {
-		refreshInterval: 1000,
-	}) as any;
-	let status = null;
-
-	if (data?.isOnline != null)
-		status = data.isOnline == true ? "Online" : "Offline";
-	else
-		status = user.status;
+	isOnline = isOnline ?? useIsOnline(user);
+	const status = isOnline == true ? "Online" : "Offline";
 
 	return (
 		<div
