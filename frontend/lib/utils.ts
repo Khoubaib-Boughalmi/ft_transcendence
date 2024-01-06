@@ -3,6 +3,7 @@ import axios from "@/lib/axios";
 import { useContext } from "react";
 import toast from "react-hot-toast";
 import PublicContext from "@/contexts/PublicContext";
+import useSWR from "swr";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -129,5 +130,13 @@ export async function InteractionFunctionality(type: InteractionType, user: User
 		errorText,
 		sessionMutate
 	);
+}
+
+export function useIsOnline(user: User) {
+	const { data } = useSWR(`/user/profile/isonline/${user.id}`, fetcher, {
+		refreshInterval: 1000,
+	}) as any;
+
+	return data ? data.isOnline : false;
 }
 
