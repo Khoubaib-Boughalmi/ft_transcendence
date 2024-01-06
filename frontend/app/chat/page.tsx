@@ -24,6 +24,8 @@ import { User } from "@/types/profile";
 import generateBullshitExpression from "@/lib/bullshit";
 import Divider from "@/components/Divider";
 import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
+import useSWR from "swr";
+import { fetcher } from "@/lib/utils";
 
 const ChatContext = createContext({});
 
@@ -471,13 +473,15 @@ function ChatSection() {
 const randomString = () => Math.random().toString(36).substring(7);
 
 export default function Page() {
+	const { data: fckUser } = useSWR("/user/profile/fck", fetcher) as any;
+	const { data: mrianUser } = useSWR("/user/profile/mrian", fetcher) as any;
+
 	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
 	const [showMembers, setShowMembers] = useState(true);
 	const [expanded, setExpanded] = useState(false);
 	const [members, setMembers] = useState<User[]>(
 		Array.from({ length: 7 })
-			.map((_, i: number) => (i % 2 == 0 ? user1 : user2))
-			.sort((user1, user2) => (user1.status == "Online" ? -1 : 1)),
+			.map((_, i: number) => (i % 2 == 0 ? user1 : user2)),
 	);
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
@@ -515,6 +519,16 @@ export default function Page() {
 			messages[i].groupid = messages[i - 1].groupid;
 		}
 	}
+
+	useEffect(() => {
+		if (fckUser && mrianUser)
+		setMembers([fckUser, mrianUser]);
+	else
+	{
+		console.log("fckUser", fckUser);
+		console.log("mrianUser", mrianUser);
+	}
+	}, [fckUser, mrianUser]);
 
 
 	// for (let i = messages.length - 2; i >= 0; i--) {
