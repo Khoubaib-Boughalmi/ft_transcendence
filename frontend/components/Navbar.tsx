@@ -298,9 +298,7 @@ function ProfileButton({ user }: { user: User }) {
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="profile"
-					startContent={
-						<User2/>
-					}
+					startContent={<User2 />}
 				>
 					Profile
 				</DropdownItem>
@@ -308,9 +306,7 @@ function ProfileButton({ user }: { user: User }) {
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="settings"
-					startContent={
-						<Settings2/>
-					}
+					startContent={<Settings2 />}
 				>
 					Settings
 				</DropdownItem>
@@ -318,9 +314,7 @@ function ProfileButton({ user }: { user: User }) {
 					variant="solid"
 					className={twMerge(!twoFactorAuthenticated && "hidden")}
 					key="chat"
-					startContent={
-						<MessageSquareIcon/>
-					}
+					startContent={<MessageSquareIcon />}
 				>
 					Chat
 				</DropdownItem>
@@ -329,9 +323,7 @@ function ProfileButton({ user }: { user: User }) {
 					data-exclude={false}
 					color="danger"
 					key="logout"
-					startContent={
-						<LogOut/>
-					}
+					startContent={<LogOut />}
 				>
 					Logout
 				</DropdownItem>
@@ -356,6 +348,9 @@ function NotificationsButton() {
 function SearchBar() {
 	return (
 		<Input
+			classNames={{
+				container: "h-full",
+			}}
 			startContent={<Search className="text-background-800" />}
 			placeholder="Search"
 		/>
