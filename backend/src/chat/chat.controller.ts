@@ -59,4 +59,30 @@ export class ChatController {
         }
         return await this.chatService.createOneToManyChat(req.user.id, groupUsers, groupName);
     }
+
+    @Post("/sendMessage")
+    @UseGuards(JwtGuard)
+    @FormDataRequest()
+    async sendMessage(@Req() req, @Body() body: any): Promise<any> {
+        const { chatId, content } = body;
+        if (!chatId || !content) {
+            return {
+                error: "chatId and content are required",
+            };
+        }
+        return await this.chatService.sendMessage(req.user.id, chatId, content);
+    }
+
+    @Get("/getChatMessages/:chatId")
+    @UseGuards(JwtGuard)
+    async getChatMessages(@Req() req, @Param() params): Promise<any> {
+        const { chatId } = params;
+        if (!chatId) {
+            return {
+                error: "chatId is required",
+            };
+        }
+        return await this.chatService.getChatMessages(chatId);
+    }
+    
 }

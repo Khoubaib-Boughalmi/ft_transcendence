@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Chat, Prisma } from '@prisma/client';
+import {  Message, Chat, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { UserDTO } from './chat.controller';
 
@@ -85,5 +85,54 @@ export class ChatService {
             users,
         }; 
     }
+
+    async sendMessage(userId: string, chatId: string, content: string) {
+        const data: Prisma.MessageCreateInput = {
+            content,
+            chat_id: chatId,
+            user_id: userId,
+        };
+        const message = await this.prisma.message.create({
+                data,
+        });
+        // populate the message with the user and chat
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+        const chat = await this.prisma.chat.findUnique({
+            where: {
+                id: chatId,
+            },
+        });
+        return {
+            ...message,
+            user,
+            chat,
+        };
+    }
     
+    async getChatMessages(chatId: string) {
+        const messages = await this.prisma.message.findMany({
+            where: {
+                chat_id: chatId,
+            },
+        });
+        // populate the messages with the users
+        let messagesWithUsers = [];
+        for (let i = 0; i < messages.length; i++) {
+            const message = messages[i];
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    id: message.user_id,
+                },
+            });
+            messagesWithUsers[i] = {
+                ...message,
+                user,
+            };
+        }
+        return messagesWithUsers;
+    }
 }

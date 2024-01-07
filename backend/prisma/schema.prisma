@@ -108,3 +108,13 @@ model Chat {
   chatPassword      String   @default("")
   chatAvatar        String   @default("")
 }
+
+model Message {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  chat_id String
+  user_id String
+  content String
+}
