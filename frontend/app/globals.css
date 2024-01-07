@@ -133,6 +133,10 @@ img {
 	-ms-user-drag: none;
 }
 
+.chatbox {
+	overflow-anchor: auto;
+}
+
 @layer utilities {
 	.no-scrollbar::-webkit-scrollbar {
 		display: none;
