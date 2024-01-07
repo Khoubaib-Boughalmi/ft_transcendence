@@ -22,6 +22,7 @@ import axios from "@/lib/axios";
 import PublicContext from "@/contexts/PublicContext";
 import useSWR, { useSWRConfig } from "swr";
 import toast from "react-hot-toast";
+import SettingSection from "@/components/SettingSection";
 
 function UploadButton({
 	children,
@@ -271,21 +272,6 @@ function DeleteButton({
 			<Trash2 />
 			{children}
 		</Button>
-	);
-}
-
-function SettingSection({
-	title,
-	children,
-}: {
-	title: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="flex w-full flex-col gap-2">
-			<div className="text-sm">{title}</div>
-			{children}
-		</div>
 	);
 }
 
