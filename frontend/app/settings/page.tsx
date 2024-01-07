@@ -23,52 +23,8 @@ import PublicContext from "@/contexts/PublicContext";
 import useSWR, { useSWRConfig } from "swr";
 import toast from "react-hot-toast";
 import SettingSection from "@/components/SettingSection";
-
-function UploadButton({
-	children,
-	name,
-	...props
-}: React.ComponentProps<typeof Button> & {
-	name: string;
-}) {
-	const ref = useRef<HTMLLabelElement>(null);
-	const formRef = useRef<HTMLFormElement>(null);
-	const [loading, setLoading] = useState(false);
-	const { sessionMutate } = useContext(PublicContext) as any;
-
-	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
-		const formData = new FormData(e.currentTarget);
-		const file = formData.get(name);
-		if (file)
-			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-				`/user/settings/upload-${name}`,
-				formData,
-				setLoading,
-				`Successfully changed ${name}`,
-				`Failed to change ${name}`,
-				sessionMutate,
-			);
-		formRef.current?.reset();
-	};
-
-	return (
-		<>
-			<form ref={formRef} onChange={handleUpload} className="hidden">
-				<input type="file" name={name} id={name} className="hidden" />
-				<label ref={ref} htmlFor={name}></label>
-			</form>
-			<Button
-				{...props}
-				loading={loading}
-				onClick={() => {
-					if (ref.current) ref.current.click();
-				}}
-			>
-				{children}
-			</Button>
-		</>
-	);
-}
+import UploadButton from "@/components/UploadButton";
+import DeleteButton from "@/components/DeleteButton";
 
 function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
@@ -241,40 +197,6 @@ function TwoFactorAuthenticationToggle({ user }: { user: User }) {
 	);
 }
 
-function DeleteButton({
-	type,
-	children,
-}: {
-	type: "avatar" | "banner";
-	children?: React.ReactNode;
-}) {
-	const [loading, setLoading] = useState(false);
-	const { sessionMutate } = useContext(PublicContext) as any;
-
-	const handleImageDelete = async () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-			`/user/settings/delete-${type}`,
-			null,
-			setLoading,
-			`Successfully deleted ${type}`,
-			`Failed to delete ${type}`,
-			sessionMutate,
-		);
-	};
-
-	return (
-		<Button
-			loading={loading}
-			onClick={handleImageDelete}
-			variant="transparent"
-			iconOnly
-		>
-			<Trash2 />
-			{children}
-		</Button>
-	);
-}
-
 export default function Settings() {
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 	const [username, setUsername] = useState(session.username);
@@ -338,10 +260,10 @@ export default function Settings() {
 						<Divider />
 						<SettingSection title="Avatar">
 							<div className="flex gap-2">
-								<UploadButton name="avatar" variant="secondary">
+								<UploadButton endpoint="/user/settings/upload-avatar" name="avatar" variant="secondary">
 									Upload Avatar
 								</UploadButton>
-								<DeleteButton type="avatar">
+								<DeleteButton endpoint="/user/settings/delete-avatar" type="avatar">
 									{/* Delete Avatar */}
 								</DeleteButton>
 							</div>
@@ -349,10 +271,10 @@ export default function Settings() {
 						<Divider />
 						<SettingSection title="Banner">
 							<div className="flex gap-2">
-								<UploadButton name="banner" variant="secondary">
+								<UploadButton endpoint="/user/settings/upload-banner" name="banner" variant="secondary">
 									Upload Banner
 								</UploadButton>
-								<DeleteButton type="banner">
+								<DeleteButton endpoint="/user/settings/delete-banner" type="banner">
 									{/* Delete Banner */}
 								</DeleteButton>
 							</div>
