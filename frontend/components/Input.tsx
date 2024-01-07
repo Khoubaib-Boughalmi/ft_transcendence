@@ -30,6 +30,7 @@ export default function Input({
 					"min-w-0 flex-1 bg-transparent text-white placeholder-white/50 outline-none",
 					classNames?.input,
 				)}
+				autoComplete="off"
 				{...props}
 			/>
 			{endContent}
