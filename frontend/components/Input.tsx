@@ -17,8 +17,8 @@ export default function Input({
 		<div
 			data-disabled={disabled == true}
 			className={twMerge(
-				`data-[disabled=true]:after:content:[''] relative flex h-full w-full items-center justify-center gap-2 overflow-hidden rounded-3xl bg-white/10 px-4 pl-2 text-sm text-white shadow transition-all duration-300 file:data-[disabled=false]:h-full data-[disabled=true]:after:absolute data-[disabled=true]:after:inset-0
-				data-[disabled=true]:after:bg-black/40 focus-within:data-[disabled=false]:ring-2 focus-within:data-[disabled=false]:ring-primary-400 hover:data-[disabled=false]:brightness-110 active:data-[disabled=false]:scale-[99%]`,
+				`data-[disabled=true]:after:content:[''] relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-3xl bg-white/10 px-4 pl-2 text-sm text-white shadow transition-all duration-300 file:data-[disabled=false]:h-full data-[disabled=true]:after:absolute data-[disabled=true]:after:inset-0
+				data-[disabled=true]:after:bg-black/50 focus-within:data-[disabled=false]:ring-2 focus-within:data-[disabled=false]:ring-primary-400 hover:data-[disabled=false]:brightness-110 active:data-[disabled=false]:scale-[99%]`,
 				classNames?.container,
 				!startContent && "pl-4",
 			)}
