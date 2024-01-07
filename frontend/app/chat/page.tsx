@@ -11,6 +11,7 @@ import {
 	Menu,
 	MessageSquarePlus,
 	MoreHorizontal,
+	Pencil,
 	Plus,
 	SendHorizontal,
 	Server,
@@ -21,7 +22,14 @@ import {
 	Users2,
 	X,
 } from "lucide-react";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+	ReactNode,
+	createContext,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { twMerge } from "tailwind-merge";
 import UserList from "@/components/UserList";
 import { user1, user2 } from "@/mocks/profile";
@@ -49,6 +57,8 @@ import Card from "@/components/Card";
 import PublicContext from "@/contexts/PublicContext";
 import SettingSection from "@/components/SettingSection";
 import SuperSwitch from "@/components/SuperSwitch";
+import UploadButton from "@/components/UploadButton";
+import DeleteButton from "@/components/DeleteButton";
 
 const ChatContext = createContext({});
 
@@ -81,14 +91,16 @@ type ChatContextType = {
 	showMembers: boolean;
 	setShowMembers: (showMembers: boolean) => void;
 	messages: Message[];
-	setMessages: (messages: Message[]) => void;
+	akashicRecords: { [key: string]: Message[] };
+	setAkashicRecords: (records: { [key: string]: Message[] }) => void;
 	members: User[];
 	setMembers: (members: User[]) => void;
 	displayedMessages: any;
 	setDisplayedMessages: (displayedMessages: any) => void;
 	messageParents: any;
-	selectedServer: Server | null;
-	setSelectedServer: (server: Server | null) => void;
+	selectedServer: Server | undefined;
+	selectedServerId:  string | null;
+	setSelectedServerId: (selectedServerId: string | null) => void;
 };
 
 function useChatContext() {
@@ -96,10 +108,13 @@ function useChatContext() {
 }
 
 function ServerListEntry({ server }: { server: Server }) {
-	const { expanded } = useChatContext();
+	const { expanded, setSelectedServerId } = useChatContext();
 
 	return (
 		<Button
+			onClick={() => {
+				setSelectedServerId(server.id);
+			}}
 			variant="transparent"
 			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0"
 		>
@@ -214,12 +229,14 @@ function ServerCreateButton() {
 									container: "flex-1 w-auto",
 								}}
 							/>
-							<Button
-								type="submit"
-								className="aspect-square flex-shrink-0 rounded-full"
-								startContent={<Plus />}
-								iconOnly
-							></Button>
+							<div className="flex aspect-square h-full items-center justify-center">
+								<Button
+									type="submit"
+									className="aspect-square flex-shrink-0 rounded-full"
+									startContent={<Plus />}
+									iconOnly
+								></Button>
+							</div>
 						</div>
 					</form>
 				</Card>
@@ -462,29 +479,32 @@ function MemberList() {
 }
 
 function ChatInput() {
-	const { messages, setMessages } = useChatContext();
+	const { messages, akashicRecords, setAkashicRecords, selectedServerId } = useChatContext();
 
 	return (
 		<div className="flex h-20 items-center gap-4 p-4 pr-1">
 			<form
 				onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+					if (!selectedServerId) return;
 					e.preventDefault();
 					const formData = new FormData(e.target as HTMLFormElement);
 					const message = (formData.get("message") as string).trim();
 					if (message == "") return;
 					(e.target as HTMLFormElement).reset();
-					setMessages([
-						{
-							user: user2,
-							time: new Date(),
-							content: message,
-							target: "server",
-							noAvatar: false,
-							groupid: randomString(),
-							blocked: true,
-						},
-						...messages,
-					]);
+					setAkashicRecords({
+						...akashicRecords,
+						[selectedServerId]: [
+							{
+								user: user1,
+								time: new Date(),
+								content: message,
+								noAvatar: false,
+								target: "server",
+								groupid: randomString(),
+							},
+							...messages,
+						],
+					});
 				}}
 				className="h-full w-full flex-1 flex-shrink-0 bg-card-300"
 			>
@@ -526,89 +546,124 @@ function ChatInput() {
 	);
 }
 
-function DeleteButton({
-	type,
-	children,
+function MemberControls({
+	list,
+	controls,
 }: {
-	type: "avatar" | "banner";
-	children?: React.ReactNode;
+	list: User[];
+	controls: ({ user }: { user: User }) => any;
 }) {
-	const [loading, setLoading] = useState(false);
-	const { sessionMutate } = useContext(PublicContext) as any;
-
-	const handleImageDelete = async () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-			`/user/settings/delete-${type}`,
-			null,
-			setLoading,
-			`Successfully deleted ${type}`,
-			`Failed to delete ${type}`,
-			sessionMutate,
-		);
-	};
-
 	return (
-		<Button
-			loading={loading}
-			onClick={handleImageDelete}
-			variant="ghost"
-			iconOnly
-		>
-			<Trash2 />
-			{children}
-		</Button>
+		<Card className="relative h-64 overflow-hidden">
+			<div className="absolute inset-0 overflow-y-scroll py-2">
+				<UserList
+					Controls={controls}
+					type="list"
+					users={list}
+					classNames={{
+						list: "gap-0",
+						entryContainer: "bg-transparent py-2",
+					}}
+				/>
+			</div>
+		</Card>
 	);
 }
 
-function UploadButton({
-	children,
-	name,
-	...props
-}: React.ComponentProps<typeof Button> & {
-	name: string;
-}) {
-	const ref = useRef<HTMLLabelElement>(null);
-	const formRef = useRef<HTMLFormElement>(null);
-	const [loading, setLoading] = useState(false);
-	const { sessionMutate } = useContext(PublicContext) as any;
-
-	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
+function InviteBox() {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-		const file = formData.get(name);
-		if (file)
-			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-				`/user/settings/upload-${name}`,
-				formData,
-				setLoading,
-				`Successfully changed ${name}`,
-				`Failed to change ${name}`,
-				sessionMutate,
-			);
-		formRef.current?.reset();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const username = (formData.get("name") as string || "").trim();
+		console.log(username);
+		e.currentTarget.reset();
 	};
 
 	return (
-		<>
-			<form ref={formRef} onChange={handleUpload} className="hidden">
-				<input type="file" name={name} id={name} className="hidden" />
-				<label ref={ref} htmlFor={name}></label>
-			</form>
-			<Button
-				{...props}
-				loading={loading}
-				onClick={() => {
-					if (ref.current) ref.current.click();
+		<form onSubmit={handleSubmit} className="flex w-full gap-4">
+			<Input
+				classNames={{
+					container: "flex-1 h-12",
 				}}
+				placeholder="Enter a username"
+				name="name"
+			/>
+			<Button
+				variant="secondary"
+				className="h-12 rounded-full"
+				type="submit"
+				startContent={<Plus />}
 			>
-				{children}
+				Invite
 			</Button>
-		</>
+		</form>
+	);
+}
+
+function RevokeInviteButton({ user }: { user: User }) {
+	const handleRevokeInvite = (user: User) => {
+		console.log(user);
+	};
+
+	return (
+		<div className="flex items-center justify-center">
+			<Button
+				onClick={() => handleRevokeInvite(user)}
+				className="pl-3"
+				startContent={<X />}
+				variant="danger"
+			>
+				Revoke Invite
+			</Button>
+		</div>
+	);
+}
+
+function RevokeBanButton({ user }: { user: User }) {
+	const handleRevokeBan = (user: User) => {
+		console.log(user);
+	};
+
+	return (
+		<div className="flex items-center justify-center">
+			<Button
+				onClick={() => handleRevokeBan(user)}
+				className="pl-3"
+				startContent={<X />}
+				variant="danger"
+			>
+				Revoke Ban
+			</Button>
+		</div>
 	);
 }
 
 function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
-	const { selectedServer, members } = useChatContext();
+	const { members, selectedServer } = useChatContext();
+	const [passwordEnabled, setPasswordEnabled] = useState(false);
+	const [inviteOnlyEnabled, setInviteOnlyEnabled] = useState(false);
+
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const name = (formData.get("name") as string || "").trim();
+		const topic = (formData.get("topic") as string || "").trim();
+		const password = (formData.get("password") as string || "").trim();
+		console.log(name, topic, password, passwordEnabled);
+		e.currentTarget.reset();
+	};
+
+	const handleTogglePassword = (value: boolean) => {
+		console.log(value);
+		setPasswordEnabled(value);
+	}
+
+	const handleToggleInviteOnly = (value: boolean) => {
+		console.log(value);
+		setInviteOnlyEnabled(value);
+	}
+
+	if (!selectedServer) return null;
 
 	return (
 		<ModalSet
@@ -616,71 +671,85 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 			isOpen={isOpen}
 			onClose={onClose}
 			onOpenChange={onOpenChange}
-			title={selectedServer?.name}
+			title={selectedServer.name}
 		>
 			<div className="p-2">
 				<Card
+					header="General Settings"
 					className="bg-card-200"
 					footer={
 						<div className="flex w-full justify-end">
-							<Button startContent={
-								<Check/>
-							} >Submit</Button>
+							<Button type="submit" form="general" startContent={<Check />}>Submit</Button>
 						</div>
 					}
 				>
+					<form
+						id="general"
+						onSubmit={handleSubmit}
+						className="hidden"
+					/>
 					<div className="flex flex-col items-center gap-4 p-4">
-						<SettingSection
-							title="Channel Icon"
-							className="items-start justify-center"
-						>
-							<div className="flex flex-col gap-2 self-center">
-								<div className="relative aspect-square w-full">
+						<div className="flex w-full gap-8">
+							<div className="aspect-square h-[252px] flex-shrink-0">
+								<div className="relative h-full w-full">
 									<SuperImage
 										className="absolute inset-0 rounded-2xl"
-										src="/pfp.png"
+										src={selectedServer?.icon}
 									/>
 								</div>
-								<div className="flex gap-2">
-									<UploadButton
-										name="avatar"
-										variant="secondary"
-									>
-										Upload Icon
-									</UploadButton>
-									<DeleteButton type="avatar">
-										{/* Delete Avatar */}
-									</DeleteButton>
-								</div>
 							</div>
-						</SettingSection>
-						<div className="flex w-full flex-col gap-4">
-							<SettingSection title="Channel Name">
-								<Input
-									classNames={{
-										container: "w-auto h-12",
-									}}
-									placeholder={selectedServer?.name}
-									name="name"
-								/>
-							</SettingSection>
-							<SettingSection title="Channel Topic">
-								<Input
-									classNames={{
-										container: "w-auto h-12",
-									}}
-									placeholder={selectedServer?.description}
-									name="name"
-								/>
-							</SettingSection>
+							<div className="flex flex-1 flex-col gap-4">
+								<SettingSection title="Channel Name">
+									<Input
+										form="general"
+										classNames={{
+											container: "w-auto h-12",
+										}}
+										placeholder={selectedServer?.name}
+										name="name"
+									/>
+								</SettingSection>
+								<SettingSection title="Channel Topic">
+									<Input
+										form="general"
+										classNames={{
+											container: "w-auto h-12",
+										}}
+										placeholder={
+											selectedServer?.description
+										}
+										name="topic"
+									/>
+								</SettingSection>
+								<SettingSection title="Channel Icon">
+									<div className="flex gap-2">
+										<UploadButton
+											endpoint="no"
+											name="icon"
+											variant="secondary"
+										>
+											Upload Icon
+										</UploadButton>
+										<DeleteButton
+											endpoint="no"
+											type="icon"
+										></DeleteButton>
+									</div>
+								</SettingSection>
+							</div>
 						</div>
+
 						<Divider className="my-4" />
 						<SettingSection title="Password">
 							<div className="flex w-full flex-col gap-4">
 								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
 									Enable password protection
 									<div className="relative flex flex-1 items-center justify-end">
-										<SuperSwitch className="absolute" />
+										<SuperSwitch
+											isSelected={passwordEnabled}
+											onValueChange={handleTogglePassword}
+											className="absolute"
+										/>
 									</div>
 								</div>
 								<p className="text-base leading-4">
@@ -688,94 +757,44 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 									enter the password to join the channel.
 								</p>
 								<Input
+									form="general"
+									disabled={!passwordEnabled}
 									classNames={{
 										container: "w-auto h-12",
 									}}
 									placeholder="Enter a password"
-									name="name"
+									name="password"
+									type="password"
 								/>
 							</div>
-							{/* <div className="flex w-full gap-2">
-								<div className="flex flex-col justify-between">
-
-								<SuperSwitch/>
-								<div className="text-xs">
-
-								Enabled
-								</div>
-								</div>
-								<Input
-									classNames={{
-										container: "flex-1 h-12",
-									}}
-									type="password"
-									placeholder="Enter a password"
-									name="name"
-								/>
-							</div> */}
 						</SettingSection>
 					</div>
 				</Card>
 				<Divider className="my-8" />
-				<Card className="bg-card-200">
+				<Card header={"Member Settings"} className="bg-card-200">
 					<div className="flex flex-col items-center gap-4 p-4">
 						<SettingSection title="Invites">
 							<div className="flex w-full flex-col gap-4">
 								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
 									Enable invite-only
 									<div className="relative flex flex-1 items-center justify-end">
-										<SuperSwitch className="absolute" />
+										<SuperSwitch 
+											isSelected={inviteOnlyEnabled}
+											onValueChange={handleToggleInviteOnly}
+										 className="absolute" />
 									</div>
 								</div>
 								<p className="text-base leading-4">
 									When enabled, users will need an invite to
 									join the channel.
 								</p>
-								<Card className="relative h-64 overflow-hidden">
-									<div className="absolute inset-0 overflow-y-scroll py-2">
-										<UserList
-											Controls={(user) => (
-												<div className="flex items-center justify-center">
-													<Button
-														className="pl-3"
-														startContent={<X />}
-														variant="danger"
-													>
-														Revoke Invite
-													</Button>
-												</div>
-											)}
-											type="list"
-											users={[
-												...members,
-												...members,
-												...members,
-												...members,
-											]}
-											classNames={{
-												list: "gap-0",
-												entryContainer:
-													"bg-transparent py-2",
-											}}
-										/>
-									</div>
-								</Card>
-								<div className="flex w-full gap-4">
-									<Input
-										classNames={{
-											container: "flex-1 h-12",
-										}}
-										placeholder="Enter a username"
-										name="name"
-									/>
+								<div className={twMerge("flex flex-col gap-4", !inviteOnlyEnabled && "brightness-50 pointer-events-none")}>
 
-									<Button
-										variant="secondary"
-										className="h-12 rounded-full"
-										startContent={<Plus />}
-									>
-										Invite
-									</Button>
+									<MemberControls
+										list={members}
+										controls={RevokeInviteButton}
+										/>
+									<InviteBox />
 								</div>
 							</div>
 						</SettingSection>
@@ -785,35 +804,10 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
 									Banned users
 								</div>
-								<Card className="relative h-64 overflow-hidden">
-									<div className="absolute inset-0 overflow-y-scroll py-2">
-										<UserList
-											Controls={(user) => (
-												<div className="flex items-center justify-center">
-													<Button
-														className="pl-3"
-														startContent={<X />}
-														variant="danger"
-													>
-														Revoke Ban
-													</Button>
-												</div>
-											)}
-											type="list"
-											users={[
-												...members,
-												...members,
-												...members,
-												...members,
-											]}
-											classNames={{
-												list: "gap-0",
-												entryContainer:
-													"bg-transparent py-2",
-											}}
-										/>
-									</div>
-								</Card>
+								<MemberControls
+									list={members}
+									controls={RevokeBanButton}
+								/>
 							</div>
 						</SettingSection>
 					</div>
@@ -830,7 +824,7 @@ function ChatSection() {
 		showMembers,
 		setShowMembers,
 		messages,
-		setMessages,
+		selectedServer
 	} = useContext(ChatContext) as ChatContextType;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -853,6 +847,8 @@ function ChatSection() {
 			messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
 	}, []);
+
+	if (!selectedServer) return null;
 
 	return (
 		<div
@@ -886,9 +882,13 @@ function ChatSection() {
 								</div>
 							</div>
 							<div className="flex flex-col justify-center">
-								<div className="text-sm">servername</div>
+								<div className="text-sm">{
+									selectedServer.name
+								}</div>
 								<div className="text-xs text-foreground-500">
-									something
+									{
+										selectedServer.description
+									}
 								</div>
 							</div>
 							<div className="flex flex-1 items-center justify-end gap-2 px-4">
@@ -957,6 +957,20 @@ function ChatSection() {
 										/>
 									);
 								})}
+								<div className="w-full p-8 pb-0">
+									<p className="text-foreground-500">
+										This is the start of the channel's history, it's a lonely place...
+									</p>
+									<p className="text-xl">
+										Invite some friends to get the conversation started!
+									</p>
+									<Button onClick={onOpen} className="mt-2" startContent={
+										<Pencil />
+									}>
+										Edit channel
+									</Button>
+									<Divider className="mt-4" />
+								</div>
 							</div>
 						</div>
 					</div>
@@ -995,18 +1009,21 @@ export default function Page() {
 			),
 		})),
 	);
-	const [selectedServer, setSelectedServer] = useState<Server | null>(
-		servers[0],
+	const [selectedServerId, setSelectedServerId] = useState<string | null>(
+		servers[0].id,
+	);
+	const selectedServer = servers.find(
+		(server) => server.id == selectedServerId,
 	);
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
 
-	const [messages, setMessages] = useState<Message[]>(
-		Array.from({ length: 20 }).map((_, i: number) => ({
-			user: i % 4 == 0 ? user1 : user2,
+	const [akashicRecords, setAkashicRecords] = useState<{ [key: string]: Message[] }>({
+		[servers[0].id]: Array.from({ length: 3 }).map((_, i: number) => ({
+			user: i % 4 === 0 ? user1 : user2,
 			time: new Date(),
-			content: Array.from({ length: Math.random() * 100 })
+			content: Array.from({ length: Math.floor(Math.random() * 100) })
 				.map(() =>
 					generateBullshitExpression(
 						["cryptoBS", ""][Math.floor(Math.random() * 2)],
@@ -1016,12 +1033,15 @@ export default function Page() {
 			noAvatar: false,
 			target: "server",
 			groupid: randomString(),
-			blocked: i % 4 != 0 ? true : false,
+			blocked: i % 4 !== 0,
 		})),
-	);
+	});
+
+	console.log(akashicRecords);	
+
+	const messages = selectedServerId ? akashicRecords[selectedServerId] || [] : [];
 
 	messageParents.current = {};
-
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user == messages[i + 1]?.user) {
 			messages[i].noAvatar = true;
@@ -1061,14 +1081,16 @@ export default function Page() {
 					showMembers,
 					setShowMembers,
 					messages,
-					setMessages,
+					akashicRecords,
+					setAkashicRecords,
 					members,
 					setMembers,
 					displayedMessages,
 					setDisplayedMessages,
 					messageParents,
 					selectedServer,
-					setSelectedServer,
+					selectedServerId,
+					setSelectedServerId,
 				}}
 			>
 				<ServerList />
