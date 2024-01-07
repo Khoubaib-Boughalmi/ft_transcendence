@@ -5,6 +5,7 @@ type ButtonProps = {
 	children?: React.ReactNode;
 	iconOnly?: boolean;
 	startContent?: React.ReactNode;
+	endContent?: React.ReactNode;
 	variant?: "default" | "secondary" | "danger" | "transparent" | "ghost";
 	as?: "button" | "a";
 	disabled?: boolean;
@@ -19,6 +20,7 @@ export function Button({
 	children,
 	iconOnly = false,
 	startContent,
+	endContent,	
 	variant = "default",
 	as: As = "button",
 	disabled,
@@ -56,6 +58,7 @@ export function Button({
 		>
 			{loading ? <Spinner size="sm" /> : startContent}
 			{children}
+			{endContent}
 		</As>
 	);
 }
