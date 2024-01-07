@@ -4,31 +4,53 @@ import SuperImage from "@/components/SuperImage";
 import {
 	AirVent,
 	ArrowLeft,
+	ArrowRight,
+	Check,
 	LogOut,
+	MailPlus,
 	Menu,
+	MessageSquarePlus,
 	MoreHorizontal,
+	Plus,
 	SendHorizontal,
 	Server,
 	Settings2,
 	Sparkles,
+	Trash2,
 	UserPlus2,
 	Users2,
+	X,
 } from "lucide-react";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import UserList from "@/components/UserList";
 import { user1, user2 } from "@/mocks/profile";
-import { Dropdown, DropdownItem, DropdownTrigger, ScrollShadow, Textarea } from "@nextui-org/react";
+import {
+	Dropdown,
+	DropdownItem,
+	DropdownTrigger,
+	ScrollShadow,
+	Switch,
+	Textarea,
+	useDisclosure,
+} from "@nextui-org/react";
 import Input from "@/components/Input";
 import { User } from "@/types/profile";
 import generateBullshitExpression from "@/lib/bullshit";
 import Divider from "@/components/Divider";
 import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
 import useSWR from "swr";
-import { fetcher } from "@/lib/utils";
+import {
+	fetcher,
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+} from "@/lib/utils";
+import ModalSet from "@/components/ModalSet";
+import Card from "@/components/Card";
+import PublicContext from "@/contexts/PublicContext";
+import SettingSection from "@/components/SettingSection";
+import SuperSwitch from "@/components/SuperSwitch";
 
 const ChatContext = createContext({});
-
 
 type Server = {
 	name: string;
@@ -50,6 +72,8 @@ type Message = {
 };
 
 type ChatContextType = {
+	servers: Server[];
+	setServers: (servers: Server[]) => void;
 	expanded: boolean;
 	setExpanded: (expanded: boolean) => void;
 	listTab: "servers" | "friends";
@@ -63,39 +87,184 @@ type ChatContextType = {
 	displayedMessages: any;
 	setDisplayedMessages: (displayedMessages: any) => void;
 	messageParents: any;
+	selectedServer: Server | null;
+	setSelectedServer: (server: Server | null) => void;
 };
 
 function useChatContext() {
 	return useContext(ChatContext) as ChatContextType;
 }
 
-function ServerListEntry() {
+function ServerListEntry({ server }: { server: Server }) {
 	const { expanded } = useChatContext();
 
 	return (
 		<Button
 			variant="transparent"
-			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 !outline-0 !ring-0"
+			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0"
 		>
 			<div className="relative aspect-square h-full flex-shrink-0 p-4">
 				<div className="relative h-full w-full">
 					<SuperImage
-						src="/pfp.png"
-						className="absolute inset-0 rounded-full"
+						src={server.icon}
+						className="absolute inset-0 rounded-2xl"
 					/>
 				</div>
 			</div>
 			<div
 				className={twMerge(
-					"flex h-full flex-col items-start justify-center",
+					"flex h-full flex-col items-start justify-center overflow-hidden",
 					expanded && "animate-lefttoright",
 					!expanded && "animate-righttoleft",
 				)}
 			>
-				<div className="text-sm">servername</div>
-				<div className="text-xs text-foreground-500">something</div>
+				<div className="max-w-full truncate text-sm">{server.name}</div>
+				<div className="max-w-full truncate text-xs text-foreground-500">
+					{server.description}
+				</div>
 			</div>
 		</Button>
+	);
+}
+
+function ServerCreateButton() {
+	const { expanded } = useChatContext();
+	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+	const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const name = (formData.get("name") as string).trim();
+		if (name == "") return;
+		console.log(name);
+		(e.target as HTMLFormElement).reset();
+	};
+
+	const handleJoin = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.target as HTMLFormElement);
+		const name = (formData.get("name") as string).trim();
+		const password = (formData.get("password") as string).trim();
+		if (name == "") return;
+		console.log(name, password);
+		(e.target as HTMLFormElement).reset();
+	};
+
+	return (
+		<ModalSet
+			isOpen={isOpen}
+			onClose={onClose}
+			onOpenChange={onOpenChange}
+			trigger={
+				<Button
+					onClick={onOpen}
+					variant="transparent"
+					className={twMerge(
+						"left-20 flex h-20 w-full justify-start gap-0 rounded-none !bg-transparent p-0 !outline-0 !ring-0 hover:!from-transparent hover:!to-transparent",
+						expanded && "h-24 p-4",
+					)}
+				>
+					<div
+						className={twMerge(
+							"flex h-full w-full bg-card-100 transition-all hover:bg-white/10",
+							expanded && "rounded-[100px] px-2",
+						)}
+					>
+						<div className="relative aspect-square h-full flex-shrink-0">
+							<div className="relative flex h-full w-full items-center justify-center rounded-2xl">
+								<MessageSquarePlus
+									size={32}
+									strokeWidth={1.25}
+								/>
+							</div>
+						</div>
+						<div
+							className={twMerge(
+								"flex h-full flex-col items-start justify-center overflow-hidden",
+								expanded && "animate-lefttoright",
+								!expanded && "animate-righttoleft",
+							)}
+						>
+							<div className="max-w-full truncate text-sm">
+								Add a Channel
+							</div>
+							{/* <div className="text-xs text-foreground-500 truncate max-w-full"></div> */}
+						</div>
+					</div>
+				</Button>
+			}
+			title="Add a Channel"
+		>
+			<div className="p-2">
+				<Card header={"Create a Channel"} className="bg-card-200">
+					<form
+						onSubmit={handleCreate}
+						className="flex flex-col items-end gap-4 p-4"
+					>
+						<p className="w-full">
+							Channels are where your members communicate. They're
+							best when organized around a topic - #games for
+							example.
+						</p>
+						<div className="flex h-12 w-full gap-4">
+							<Input
+								name="name"
+								placeholder="Enter a name"
+								classNames={{
+									container: "flex-1 w-auto",
+								}}
+							/>
+							<Button
+								type="submit"
+								className="aspect-square flex-shrink-0 rounded-full"
+								startContent={<Plus />}
+								iconOnly
+							></Button>
+						</div>
+					</form>
+				</Card>
+				<div className="my-4 flex items-center gap-4">
+					<Divider /> OR <Divider />
+				</div>
+				<Card header="Join a Channel" className="bg-card-200">
+					<form
+						onSubmit={handleJoin}
+						className="flex flex-col items-end gap-4 p-4"
+					>
+						<p className="w-full">
+							Enter a channel name and password to join an
+							existing channel.
+						</p>
+						<div className="flex h-12 w-full">
+							<Input
+								name="name"
+								placeholder="Enter the channel name"
+								classNames={{
+									container: "flex-1 w-auto",
+								}}
+							/>
+						</div>
+						<div className="flex h-12 w-full">
+							<Input
+								name="password"
+								type="password"
+								placeholder="Enter the password (optional)"
+								classNames={{
+									container: "flex-1 w-auto",
+								}}
+							/>
+						</div>
+						<Button
+							type="submit"
+							className="h-12 flex-shrink-0 rounded-full pl-6"
+							endContent={<ArrowRight />}
+						>
+							Join
+						</Button>
+					</form>
+				</Card>
+			</div>
+		</ModalSet>
 	);
 }
 
@@ -119,40 +288,43 @@ function MessageListEntry({
 	return (
 		<>
 			{displayed && (
-				<div className="flex gap-4 px-4">
+				<div
+					className={twMerge(
+						"flex gap-4 px-4",
+						!message.noAvatar && "mt-4",
+					)}
+				>
 					<div
 						className={twMerge(
-							"relative h-12 w-12 flex-shrink-0",
-							message.noAvatar && "h-0 opacity-0",
+							"relative h-0 w-12 flex-shrink-0",
+							message.noAvatar && "opacity-0",
 						)}
 					>
-						<SuperImage
-							src={message.user.avatar}
-							className="absolute inset-0 rounded-full"
-						/>
+						{!message.noAvatar && (
+							<SuperImage
+								src={message.user.avatar}
+								className="absolute inset-0 rounded-full"
+							/>
+						)}
 					</div>
-					<div
-						className={twMerge(
-							"jsutify-end flex flex-col",
-							message.noAvatar && "-mt-4",
-						)}
-					>
-						<div
-							className={twMerge(
-								"flex items-center gap-2 text-sm text-foreground-600",
-								message.noAvatar && "hidden",
-							)}
-						>
-							<div className="line-clamp-1">
-								{message.user.username}
-							</div>
+					<div className={twMerge("flex flex-col")}>
+						{!message.noAvatar && (
 							<div
-								suppressHydrationWarning
-								className="flex-shrink-0 text-xs text-foreground-500"
+								className={twMerge(
+									"flex items-center gap-2 text-sm text-foreground-600",
+								)}
 							>
-								{dateStr + " at " + time}
+								<div className="line-clamp-1">
+									{message.user.username}
+								</div>
+								<div
+									suppressHydrationWarning
+									className="flex-shrink-0 text-xs text-foreground-500"
+								>
+									{dateStr + " at " + time}
+								</div>
 							</div>
-						</div>
+						)}
 						<div className="text-foreground-800">
 							{message.content}
 						</div>
@@ -160,10 +332,10 @@ function MessageListEntry({
 				</div>
 			)}
 			{message.blocked && message.parent && (
-				<div className="flex w-full justify-center gap-4 px-4 font-semibold">
+				<div className="mt-4 flex w-full justify-center gap-4 px-4 font-semibold">
 					<Button
 						variant="ghost"
-						className="w-full select-none !outline-none !ring-0 text-card-900"
+						className="w-full select-none text-card-900 !outline-none !ring-0"
 						onClick={() => {
 							setDisplayedMessages((prev: any) => {
 								return {
@@ -181,11 +353,11 @@ function MessageListEntry({
 							: `Show ${
 									messageParents.current[message.groupid]
 								}`) +
-								` Blocked Message${
-									messageParents.current[message.groupid] == 1
-										? ""
-										: "s"
-								}`}
+							` Blocked Message${
+								messageParents.current[message.groupid] == 1
+									? ""
+									: "s"
+							}`}
 					</Button>
 				</div>
 			)}
@@ -194,7 +366,8 @@ function MessageListEntry({
 }
 
 function ServerList() {
-	const { expanded, setExpanded, listTab, setListTab } = useChatContext();
+	const { expanded, setExpanded, listTab, setListTab, servers } =
+		useChatContext();
 
 	return (
 		<div className="flex h-full w-full flex-col overflow-hidden rounded-l-3xl bg-card-300 @md:w-[19rem]">
@@ -245,9 +418,11 @@ function ServerList() {
 			<div className="relative flex-1">
 				<div className="absolute inset-0">
 					<ScrollShadow size={64} className="h-full w-full">
-						{Array.from({ length: 100 }).map((something, i) => (
-							<ServerListEntry key={i} />
+						{servers.map((server, i) => (
+							<ServerListEntry key={i} server={server} />
 						))}
+						<ServerCreateButton />
+						{/* <ServerListEntry /> */}
 					</ScrollShadow>
 				</div>
 			</div>
@@ -306,8 +481,7 @@ function ChatInput() {
 							target: "server",
 							noAvatar: false,
 							groupid: randomString(),
-							blocked: true
-
+							blocked: true,
 						},
 						...messages,
 					]);
@@ -352,6 +526,303 @@ function ChatInput() {
 	);
 }
 
+function DeleteButton({
+	type,
+	children,
+}: {
+	type: "avatar" | "banner";
+	children?: React.ReactNode;
+}) {
+	const [loading, setLoading] = useState(false);
+	const { sessionMutate } = useContext(PublicContext) as any;
+
+	const handleImageDelete = async () => {
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/user/settings/delete-${type}`,
+			null,
+			setLoading,
+			`Successfully deleted ${type}`,
+			`Failed to delete ${type}`,
+			sessionMutate,
+		);
+	};
+
+	return (
+		<Button
+			loading={loading}
+			onClick={handleImageDelete}
+			variant="ghost"
+			iconOnly
+		>
+			<Trash2 />
+			{children}
+		</Button>
+	);
+}
+
+function UploadButton({
+	children,
+	name,
+	...props
+}: React.ComponentProps<typeof Button> & {
+	name: string;
+}) {
+	const ref = useRef<HTMLLabelElement>(null);
+	const formRef = useRef<HTMLFormElement>(null);
+	const [loading, setLoading] = useState(false);
+	const { sessionMutate } = useContext(PublicContext) as any;
+
+	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const formData = new FormData(e.currentTarget);
+		const file = formData.get(name);
+		if (file)
+			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+				`/user/settings/upload-${name}`,
+				formData,
+				setLoading,
+				`Successfully changed ${name}`,
+				`Failed to change ${name}`,
+				sessionMutate,
+			);
+		formRef.current?.reset();
+	};
+
+	return (
+		<>
+			<form ref={formRef} onChange={handleUpload} className="hidden">
+				<input type="file" name={name} id={name} className="hidden" />
+				<label ref={ref} htmlFor={name}></label>
+			</form>
+			<Button
+				{...props}
+				loading={loading}
+				onClick={() => {
+					if (ref.current) ref.current.click();
+				}}
+			>
+				{children}
+			</Button>
+		</>
+	);
+}
+
+function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
+	const { selectedServer, members } = useChatContext();
+
+	return (
+		<ModalSet
+			placement="top"
+			isOpen={isOpen}
+			onClose={onClose}
+			onOpenChange={onOpenChange}
+			title={selectedServer?.name}
+		>
+			<div className="p-2">
+				<Card
+					className="bg-card-200"
+					footer={
+						<div className="flex w-full justify-end">
+							<Button startContent={
+								<Check/>
+							} >Submit</Button>
+						</div>
+					}
+				>
+					<div className="flex flex-col items-center gap-4 p-4">
+						<SettingSection
+							title="Channel Icon"
+							className="items-start justify-center"
+						>
+							<div className="flex flex-col gap-2 self-center">
+								<div className="relative aspect-square w-full">
+									<SuperImage
+										className="absolute inset-0 rounded-2xl"
+										src="/pfp.png"
+									/>
+								</div>
+								<div className="flex gap-2">
+									<UploadButton
+										name="avatar"
+										variant="secondary"
+									>
+										Upload Icon
+									</UploadButton>
+									<DeleteButton type="avatar">
+										{/* Delete Avatar */}
+									</DeleteButton>
+								</div>
+							</div>
+						</SettingSection>
+						<div className="flex w-full flex-col gap-4">
+							<SettingSection title="Channel Name">
+								<Input
+									classNames={{
+										container: "w-auto h-12",
+									}}
+									placeholder={selectedServer?.name}
+									name="name"
+								/>
+							</SettingSection>
+							<SettingSection title="Channel Topic">
+								<Input
+									classNames={{
+										container: "w-auto h-12",
+									}}
+									placeholder={selectedServer?.description}
+									name="name"
+								/>
+							</SettingSection>
+						</div>
+						<Divider className="my-4" />
+						<SettingSection title="Password">
+							<div className="flex w-full flex-col gap-4">
+								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+									Enable password protection
+									<div className="relative flex flex-1 items-center justify-end">
+										<SuperSwitch className="absolute" />
+									</div>
+								</div>
+								<p className="text-base leading-4">
+									When enabled, users will be required to
+									enter the password to join the channel.
+								</p>
+								<Input
+									classNames={{
+										container: "w-auto h-12",
+									}}
+									placeholder="Enter a password"
+									name="name"
+								/>
+							</div>
+							{/* <div className="flex w-full gap-2">
+								<div className="flex flex-col justify-between">
+
+								<SuperSwitch/>
+								<div className="text-xs">
+
+								Enabled
+								</div>
+								</div>
+								<Input
+									classNames={{
+										container: "flex-1 h-12",
+									}}
+									type="password"
+									placeholder="Enter a password"
+									name="name"
+								/>
+							</div> */}
+						</SettingSection>
+					</div>
+				</Card>
+				<Divider className="my-8" />
+				<Card className="bg-card-200">
+					<div className="flex flex-col items-center gap-4 p-4">
+						<SettingSection title="Invites">
+							<div className="flex w-full flex-col gap-4">
+								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+									Enable invite-only
+									<div className="relative flex flex-1 items-center justify-end">
+										<SuperSwitch className="absolute" />
+									</div>
+								</div>
+								<p className="text-base leading-4">
+									When enabled, users will need an invite to
+									join the channel.
+								</p>
+								<Card className="relative h-64 overflow-hidden">
+									<div className="absolute inset-0 overflow-y-scroll py-2">
+										<UserList
+											Controls={(user) => (
+												<div className="flex items-center justify-center">
+													<Button
+														className="pl-3"
+														startContent={<X />}
+														variant="danger"
+													>
+														Revoke Invite
+													</Button>
+												</div>
+											)}
+											type="list"
+											users={[
+												...members,
+												...members,
+												...members,
+												...members,
+											]}
+											classNames={{
+												list: "gap-0",
+												entryContainer:
+													"bg-transparent py-2",
+											}}
+										/>
+									</div>
+								</Card>
+								<div className="flex w-full gap-4">
+									<Input
+										classNames={{
+											container: "flex-1 h-12",
+										}}
+										placeholder="Enter a username"
+										name="name"
+									/>
+
+									<Button
+										variant="secondary"
+										className="h-12 rounded-full"
+										startContent={<Plus />}
+									>
+										Invite
+									</Button>
+								</div>
+							</div>
+						</SettingSection>
+						<Divider className="my-4" />
+						<SettingSection title="Bans">
+							<div className="flex w-full flex-col gap-4">
+								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+									Banned users
+								</div>
+								<Card className="relative h-64 overflow-hidden">
+									<div className="absolute inset-0 overflow-y-scroll py-2">
+										<UserList
+											Controls={(user) => (
+												<div className="flex items-center justify-center">
+													<Button
+														className="pl-3"
+														startContent={<X />}
+														variant="danger"
+													>
+														Revoke Ban
+													</Button>
+												</div>
+											)}
+											type="list"
+											users={[
+												...members,
+												...members,
+												...members,
+												...members,
+											]}
+											classNames={{
+												list: "gap-0",
+												entryContainer:
+													"bg-transparent py-2",
+											}}
+										/>
+									</div>
+								</Card>
+							</div>
+						</SettingSection>
+					</div>
+				</Card>
+			</div>
+		</ModalSet>
+	);
+}
+
 function ChatSection() {
 	const {
 		expanded,
@@ -362,6 +833,7 @@ function ChatSection() {
 		setMessages,
 	} = useContext(ChatContext) as ChatContextType;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
+	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
@@ -375,6 +847,13 @@ function ChatSection() {
 		}
 	}, [messages]);
 
+	useEffect(() => {
+		const messageBox = messageBoxRef.current;
+		if (messageBox) {
+			messageBox.scrollTop = messageBox.scrollHeight + 1;
+		}
+	}, []);
+
 	return (
 		<div
 			className={twMerge(
@@ -383,6 +862,11 @@ function ChatSection() {
 					"translate-x-0 select-none brightness-50 @md:translate-x-56",
 			)}
 		>
+			<SettingsModal
+				isOpen={isOpen}
+				onClose={onClose}
+				onOpenChange={onOpenChange}
+			/>
 			{expanded && (
 				<div
 					onClick={() => setExpanded(false)}
@@ -418,37 +902,51 @@ function ChatSection() {
 								>
 									<Users2 />
 								</Button>
-								<Button variant="ghost" iconOnly>
-									<SuperDropdown>
+								<SuperDropdown>
 									<DropdownTrigger>
-
-									<MoreHorizontal />
+										<div>
+											<Button
+												variant="transparent"
+												iconOnly
+											>
+												<MoreHorizontal />
+											</Button>
+										</div>
 									</DropdownTrigger>
-									<SuperDropdownMenu>
-										<DropdownItem startContent={
-											<Settings2/>
-										}>
+									<SuperDropdownMenu
+										onAction={(action) => {
+											if (action == "settings") {
+												onOpen();
+											}
+										}}
+									>
+										<DropdownItem
+											key={"settings"}
+											startContent={<Settings2 />}
+										>
 											Settings
 										</DropdownItem>
-										<DropdownItem startContent={
-											<LogOut/>
-										} data-exclude={true} color="danger">
+										<DropdownItem
+											startContent={<LogOut />}
+											data-exclude={true}
+											color="danger"
+											key={"leave"}
+										>
 											Leave
 										</DropdownItem>
 									</SuperDropdownMenu>
-									</SuperDropdown>
-								</Button>
+								</SuperDropdown>
 							</div>
 						</div>
 					</div>
 					<div className="relative flex-1">
 						<div
 							ref={messageBoxRef}
-							className="no-scrollbar absolute inset-0 overflow-y-scroll scroll-smooth"
+							className="no-scrollbar chatbox absolute inset-0 overflow-y-scroll"
 						>
 							<div
 								suppressHydrationWarning
-								className="flex min-h-full flex-col-reverse gap-4 py-4 pl-2"
+								className="flex min-h-full flex-col-reverse gap-0 p-2"
 							>
 								{messages.map((message, i) => {
 									return (
@@ -480,9 +978,27 @@ export default function Page() {
 	const [showMembers, setShowMembers] = useState(true);
 	const [expanded, setExpanded] = useState(false);
 	const [members, setMembers] = useState<User[]>(
-		Array.from({ length: 7 })
-			.map((_, i: number) => (i % 2 == 0 ? user1 : user2)),
+		Array.from({ length: 7 }).map((_, i: number) =>
+			i % 2 == 0 ? user1 : user2,
+		),
 	);
+	const [servers, setServers] = useState<Server[]>(
+		Array.from({ length: 7 }).map((_, i: number) => ({
+			name: generateBullshitExpression("cryptoBS"),
+			description: Array.from({ length: Math.max(1, Math.random() * 10) })
+				.map(() => generateBullshitExpression("cryptoBS"))
+				.join(" "),
+			icon: "/pfp.png",
+			id: randomString(),
+			members: Array.from({ length: 7 }).map((_, i: number) =>
+				i % 2 == 0 ? user1 : user2,
+			),
+		})),
+	);
+	const [selectedServer, setSelectedServer] = useState<Server | null>(
+		servers[0],
+	);
+
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
 
@@ -490,11 +1006,13 @@ export default function Page() {
 		Array.from({ length: 20 }).map((_, i: number) => ({
 			user: i % 4 == 0 ? user1 : user2,
 			time: new Date(),
-			content: `Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-		Pariatur blanditiis totam minima voluptas natus possimus,
-		consequuntur similique molestiae atque neque libero ut,
-		porro quod exp delectus distinctio officiis! Sequi,
-		explicabo!`,
+			content: Array.from({ length: Math.random() * 100 })
+				.map(() =>
+					generateBullshitExpression(
+						["cryptoBS", ""][Math.floor(Math.random() * 2)],
+					),
+				)
+				.join(" "),
 			noAvatar: false,
 			target: "server",
 			groupid: randomString(),
@@ -512,37 +1030,20 @@ export default function Page() {
 		if (messageParents.current[messages[i].groupid] == undefined)
 			messageParents.current[messages[i].groupid] = 1;
 		if (messages[i + 1]?.blocked == messages[i]?.blocked)
-			messages[i].parent = false
-		if (i > 0 && messages[i].blocked == messages[i - 1].blocked)
-		{
+			messages[i].parent = false;
+		if (i > 0 && messages[i].blocked == messages[i - 1].blocked) {
 			messageParents.current[messages[i].groupid] += 1;
 			messages[i].groupid = messages[i - 1].groupid;
 		}
 	}
 
 	useEffect(() => {
-		if (fckUser && mrianUser)
-		setMembers([fckUser, mrianUser]);
-	else
-	{
-		console.log("fckUser", fckUser);
-		console.log("mrianUser", mrianUser);
-	}
+		if (fckUser && mrianUser) setMembers([fckUser, mrianUser]);
+		else {
+			console.log("fckUser", fckUser);
+			console.log("mrianUser", mrianUser);
+		}
 	}, [fckUser, mrianUser]);
-
-
-	// for (let i = messages.length - 2; i >= 0; i--) {
-	// 	if (messages[i].blocked == true || messages[i].blocked == messages[i + 1]?.blocked) {
-	// 		messages[i].groupid = messages[i + 1]?.groupid;
-	// 		if (messageParents.current[messages[i].groupid] == undefined) {
-	// 			messageParents.current[messages[i].groupid] = 1;
-	// 		}
-	// 		else
-	// 			messages[i].parent = false;
-	// 		messageParents.current[messages[i].groupid] += 1;
-	// 	}
-	// }
-
 
 	return (
 		<div
@@ -551,6 +1052,8 @@ export default function Page() {
 		>
 			<ChatContext.Provider
 				value={{
+					servers,
+					setServers,
 					expanded,
 					setExpanded,
 					listTab,
@@ -564,6 +1067,8 @@ export default function Page() {
 					displayedMessages,
 					setDisplayedMessages,
 					messageParents,
+					selectedServer,
+					setSelectedServer,
 				}}
 			>
 				<ServerList />
