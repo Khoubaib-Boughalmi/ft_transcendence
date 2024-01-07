@@ -85,4 +85,16 @@ export class ChatController {
         return await this.chatService.getChatMessages(chatId);
     }
     
+    @Post("/updateChatInfo")
+    @UseGuards(JwtGuard)
+    @FormDataRequest()
+    async updateChatInfo(@Req() req, @Body() body: any): Promise<any> {
+        const { chatId, chatName, groupAdmins, chatPassword } = body;
+        if (!chatId) {
+            return {
+                error: "chatId is required",
+            };
+        }
+        return await this.chatService.updateChatInfo(chatId, chatName, groupAdmins, chatPassword);
+    }
 }
