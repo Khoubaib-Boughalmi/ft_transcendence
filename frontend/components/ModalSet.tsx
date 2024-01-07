@@ -17,7 +17,7 @@ export default function ModalSet({
 	...modalProps
 }: ComponentProps<typeof Modal> & {
 	children: ReactNode;
-	trigger: ReactNode;
+	trigger?: ReactNode;
 	title?: ReactNode;
 	footer?: ReactNode;
 }) {
