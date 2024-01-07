@@ -152,7 +152,7 @@ export default function UserList({
 	type: "list" | "grid";
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
-	Controls?: ({ user }: { user: User }) => JSX.Element;
+	Controls?: ({ user }: { user: User }) => any;
 }) {
 	if (type == "list")
 		return (
