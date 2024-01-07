@@ -102,7 +102,7 @@ function FriendsButton() {
 
 	useEffect(() => {
 		const doc = document as any;
-		if (doc.startViewTransition)
+		if (doc.startViewTransition && closeOnSelect == false)
 			doc.startViewTransition(() => setActualTab(tab));
 		else setActualTab(tab);
 	}, [tab]);
