@@ -70,6 +70,9 @@ export class ChatService {
 					has: userId,
 				},
 			},
+            orderBy: {
+                id: 'asc',
+            },
 		});
 
         // Create the list of chat channels
