@@ -91,12 +91,7 @@ export class ChatController {
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
 	async channelUpdate(@Req() req, @Body() body: ChannelUpdateDTO) {
-		if (
-			!(await this.chatService.isChatOwnerOrAdmin(
-				req.user.id,
-				req.body.chatId,
-			))
-		)
+		if (!(await this.chatService.isChatOwnerOrAdmin(req.user.id, body.id)))
 			throw new HttpException('You are not allowed to do that', 403);
 
 		await this.chatService.updateChat({
@@ -115,6 +110,7 @@ export class ChatController {
 	@Post('channel/upload-icon')
 	async channelUploadIcon(
 		@Req() req,
+		@Body() body: ChannelUpdateDTO,
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		try {
@@ -122,7 +118,7 @@ export class ChatController {
 			if (
 				!(await this.chatService.isChatOwnerOrAdmin(
 					req.user.id,
-					req.body.chatId,
+					body.id,
 				))
 			)
 				throw new HttpException('You are not allowed to do that', 403);
@@ -135,7 +131,7 @@ export class ChatController {
 			// Upload to S3
 			const res = await this.appService.s3_upload(file);
 			await this.chatService.updateChat({
-				where: { id: req.body.chatId },
+				where: { id: body.id },
 				data: { chatIcon: res },
 			});
 			return { message: 'Icon updated' };
@@ -146,16 +142,12 @@ export class ChatController {
 
 	@UseGuards(JwtGuard)
 	@Post('channel/delete-icon')
-	async updateSettingsDeleteAvatar(@Req() req) {
-		if (
-			!(await this.chatService.isChatOwnerOrAdmin(
-				req.user.id,
-				req.body.chatId,
-			))
-		)
+	@FormDataRequest()
+	async channelDeleteIcon(@Req() req, @Body() body: ChannelUpdateDTO) {
+		if (!(await this.chatService.isChatOwnerOrAdmin(req.user.id, body.id)))
 			throw new HttpException('You are not allowed to do that', 403);
 		await this.chatService.updateChat({
-			where: { id: req.body.chatId },
+			where: { id: body.id },
 			data: {
 				chatIcon:
 					'https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg',
