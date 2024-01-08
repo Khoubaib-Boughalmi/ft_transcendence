@@ -8,7 +8,10 @@ import {
 	Req,
 	Res,
 	UseGuards,
-    HttpException,
+	HttpException,
+	UseInterceptors,
+	UploadedFile,
+	UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import {
@@ -22,6 +25,10 @@ import {
 import { FormDataRequest } from 'nestjs-form-data';
 import { JwtGuard } from 'src/auth/auth.guards';
 import { Type } from 'class-transformer';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/user/user.controller';
+import filetypeinfo from 'magic-bytes.js';
+import { AppService } from 'src/app.service';
 
 export class UserDTO {
 	@IsLowercase()
@@ -36,32 +43,55 @@ class GroupUsersDTO {
 
 @Controller('chat')
 export class ChatController {
-	constructor(private readonly chatService: ChatService) {}
+	constructor(
+		private readonly chatService: ChatService,
+		private readonly appService: AppService,
+	) {}
 
-	@Get('/channel/list')
+	@Get('channel/list')
 	@UseGuards(JwtGuard)
 	async channelList(@Req() req) {
 		return this.chatService.getCurrentUserChats(req.user.id);
 	}
 
-    @Post('/channel/create')
+	@Post('channel/create')
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
-	async channelCreate(
-		@Req() req,
-		@Body() body: GroupUsersDTO,
-	) {
-        const chat = await this.chatService.chat({ chatName: body.name });
-        if (chat)
-            throw new HttpException('Chat name already in use', 400);
+	async channelCreate(@Req() req, @Body() body: GroupUsersDTO) {
+		const chat = await this.chatService.chat({ chatName: body.name });
+		if (chat) throw new HttpException('Chat name already in use', 400);
 
-		return this.chatService.createOneToManyChat(
-			req.user.id,
-			body.name,
-		);
+		return this.chatService.createOneToManyChat(req.user.id, body.name);
 	}
 
-    @UseGuards(JwtGuard)
+	@UseGuards(JwtGuard)
+	@UseInterceptors(FileInterceptor('icon', multerConfig))
+	@Post('channel/upload-icon')
+	async channelUploadIcon(
+		@Req() req,
+		@UploadedFile() file: Express.Multer.File,
+	) {
+		try {
+			// Validate the magic bytes
+			const fileType = filetypeinfo(file.buffer);
+			const isImage = fileType.some(({ typename }) =>
+				['png', 'gif', 'jpg', 'jpeg'].includes(typename),
+			);
+			if (!isImage) throw new UnsupportedMediaTypeException();
+			// Upload to S3
+			const res = await this.appService.s3_upload(file);
+            // TODO: verify is a valid chat and user is admin
+			await this.chatService.updateChat({
+				where: { id: req.body.chatId },
+				data: { chatIcon: res },
+			});
+			return { message: 'Icon updated' };
+		} catch (err) {
+			throw new UnsupportedMediaTypeException();
+		}
+	}
+
+	@UseGuards(JwtGuard)
 	@Post('/createOneToOneChat')
 	@FormDataRequest()
 	async createOneToOneChat(@Req() req, @Body() body: UserDTO) {
@@ -109,11 +139,9 @@ export class ChatController {
 				error: 'chatId is required',
 			};
 		}
-		return this.chatService.updateChatInfo(
-			chatId,
-			chatName,
-			groupAdmins,
-			chatPassword,
-		);
+		return this.chatService.updateChat({
+			where: { id: chatId },
+			data: { chatName, groupAdmins, chatPassword },
+		});
 	}
 }

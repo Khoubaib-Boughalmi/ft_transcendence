@@ -156,21 +156,14 @@ export class ChatService {
 		return messagesWithUsers;
 	}
 
-	async updateChatInfo(
-		chatId: string,
-		chatName: string,
-		groupAdmins: string[],
-		chatPassword: string,
-	) {
-		return await this.prisma.chat.update({
-			where: {
-				id: chatId,
-			},
-			data: {
-				chatName,
-				groupAdmins,
-				chatPassword,
-			},
+    async updateChat(params: {
+		where: Prisma.ChatWhereUniqueInput;
+		data: Prisma.ChatUpdateInput;
+	}): Promise<Chat> {
+		const { where, data } = params;
+		return this.prisma.chat.update({
+			data,
+			where,
 		});
 	}
 }
