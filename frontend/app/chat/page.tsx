@@ -6,6 +6,8 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	Check,
+	Globe,
+	Globe2,
 	LogOut,
 	MailPlus,
 	Menu,
@@ -13,6 +15,7 @@ import {
 	MoreHorizontal,
 	Pencil,
 	Plus,
+	Search,
 	SendHorizontal,
 	Server,
 	Settings2,
@@ -69,6 +72,7 @@ type Server = {
 	icon: string;
 	id: string;
 	members: User[];
+	enable_password: boolean;
 };
 
 type Message = {
@@ -83,24 +87,25 @@ type Message = {
 };
 
 type ChatContextType = {
-	servers: Server[];
-	expanded: boolean;
-	setExpanded: (expanded: boolean) => void;
-	listTab: "servers" | "friends";
-	setListTab: (tab: "servers" | "friends") => void;
-	showMembers: boolean;
-	setShowMembers: (showMembers: boolean) => void;
-	messages: Message[];
 	akashicRecords: { [key: string]: Message[] };
-	setAkashicRecords: (records: { [key: string]: Message[] }) => void;
-	members: User[];
-	setMembers: (members: User[]) => void;
 	displayedMessages: any;
-	setDisplayedMessages: (displayedMessages: any) => void;
+	expanded: boolean;
+	listTab: "servers" | "friends";
+	members: User[];
 	messageParents: any;
+	messages: Message[];
 	selectedServer: Server | undefined;
-	selectedServerId:  string | null;
+	selectedServerId: string | null;
+	servers: Server[];
+	serversMutate: () => Promise<void>;
+	setAkashicRecords: (records: { [key: string]: Message[] }) => void;
+	setDisplayedMessages: (displayedMessages: any) => void;
+	setExpanded: (expanded: boolean) => void;
+	setListTab: (tab: "servers" | "friends") => void;
+	setMembers: (members: User[]) => void;
 	setSelectedServerId: (selectedServerId: string | null) => void;
+	setShowMembers: (showMembers: boolean) => void;
+	showMembers: boolean;
 };
 
 function useChatContext() {
@@ -119,10 +124,10 @@ function ServerListEntry({ server }: { server: Server }) {
 			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0"
 		>
 			<div className="relative aspect-square h-full flex-shrink-0 p-4">
-				<div className="relative h-full w-full">
+				<div className="relative aspect-square h-full">
 					<SuperImage
 						src={server.icon}
-						className="absolute inset-0 rounded-2xl"
+						className="absolute inset-0 aspect-square rounded-2xl object-cover"
 					/>
 				</div>
 			</div>
@@ -146,7 +151,6 @@ function ServerCreateButton() {
 	const { expanded } = useChatContext();
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { sessionMutate } = useContext(PublicContext) as any;
-
 
 	const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -489,7 +493,8 @@ function MemberList() {
 }
 
 function ChatInput() {
-	const { messages, akashicRecords, setAkashicRecords, selectedServerId } = useChatContext();
+	const { messages, akashicRecords, setAkashicRecords, selectedServerId } =
+		useChatContext();
 
 	return (
 		<div className="flex h-20 items-center gap-4 p-4 pr-1">
@@ -584,7 +589,7 @@ function InviteBox() {
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
-		const username = (formData.get("name") as string || "").trim();
+		const username = ((formData.get("name") as string) || "").trim();
 		console.log(username);
 		e.currentTarget.reset();
 	};
@@ -649,29 +654,59 @@ function RevokeBanButton({ user }: { user: User }) {
 }
 
 function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
-	const { members, selectedServer } = useChatContext();
-	const [passwordEnabled, setPasswordEnabled] = useState(false);
+	const { members, selectedServer, serversMutate } = useChatContext();
+	const [passwordEnabled, setPasswordEnabled] = useState(
+		selectedServer?.enable_password,
+	);
 	const [inviteOnlyEnabled, setInviteOnlyEnabled] = useState(false);
+	const formRef = useRef<HTMLFormElement>(null);
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
-		const name = (formData.get("name") as string || "").trim();
-		const topic = (formData.get("topic") as string || "").trim();
-		const password = (formData.get("password") as string || "").trim();
-		console.log(name, topic, password, passwordEnabled);
-		e.currentTarget.reset();
+		const name = ((formData.get("name") as string) || "").trim();
+		const topic = ((formData.get("topic") as string) || "").trim();
+		const password = ((formData.get("password") as string) || "").trim();
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/update",
+			makeForm({
+				id: selectedServer?.id,
+				name: name.length > 0 ? name : undefined,
+				description: topic.length > 0 ? topic : undefined,
+				password: passwordEnabled ? password : undefined,
+			}),
+			undefined,
+			`Successfully updated the channel`,
+			`Failed to update the channel`,
+			async () => {
+				await serversMutate();
+				formRef.current?.reset();
+			},
+		);
 	};
 
 	const handleTogglePassword = (value: boolean) => {
-		console.log(value);
+		console.log({
+			value,
+		});
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/update",
+			makeForm({
+				id: selectedServer?.id,
+				enable_password: value,
+			}),
+			undefined,
+			`Successfully enabled password protection`,
+			`Failed to enable password protection`,
+			serversMutate,
+		);
 		setPasswordEnabled(value);
-	}
+	};
 
 	const handleToggleInviteOnly = (value: boolean) => {
 		console.log(value);
 		setInviteOnlyEnabled(value);
-	}
+	};
 
 	if (!selectedServer) return null;
 
@@ -689,11 +724,18 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 					className="bg-card-200"
 					footer={
 						<div className="flex w-full justify-end">
-							<Button type="submit" form="general" startContent={<Check />}>Submit</Button>
+							<Button
+								type="submit"
+								form="general"
+								startContent={<Check />}
+							>
+								Submit
+							</Button>
 						</div>
 					}
 				>
 					<form
+						ref={formRef}
 						id="general"
 						onSubmit={handleSubmit}
 						className="hidden"
@@ -703,7 +745,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 							<div className="aspect-square h-[252px] flex-shrink-0">
 								<div className="relative h-full w-full">
 									<SuperImage
-										className="absolute inset-0 rounded-2xl"
+										className="absolute inset-0 aspect-square rounded-2xl object-cover"
 										src={selectedServer?.icon}
 									/>
 								</div>
@@ -734,14 +776,26 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 								<SettingSection title="Channel Icon">
 									<div className="flex gap-2">
 										<UploadButton
-											endpoint="no"
+											endpoint="/chat/channel/upload-icon"
 											name="icon"
 											variant="secondary"
+											data={{
+												id: selectedServer?.id,
+											}}
+											callback={async () => {
+												await serversMutate();
+											}}
 										>
 											Upload Icon
 										</UploadButton>
 										<DeleteButton
-											endpoint="no"
+											data={{
+												id: selectedServer?.id,
+											}}
+											callback={async () => {
+												await serversMutate();
+											}}
+											endpoint="/chat/channel/delete-icon"
 											type="icon"
 										></DeleteButton>
 									</div>
@@ -788,22 +842,30 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
 									Enable invite-only
 									<div className="relative flex flex-1 items-center justify-end">
-										<SuperSwitch 
+										<SuperSwitch
 											isSelected={inviteOnlyEnabled}
-											onValueChange={handleToggleInviteOnly}
-										 className="absolute" />
+											onValueChange={
+												handleToggleInviteOnly
+											}
+											className="absolute"
+										/>
 									</div>
 								</div>
 								<p className="text-base leading-4">
 									When enabled, users will need an invite to
 									join the channel.
 								</p>
-								<div className={twMerge("flex flex-col gap-4", !inviteOnlyEnabled && "brightness-50 pointer-events-none")}>
-
+								<div
+									className={twMerge(
+										"flex flex-col gap-4",
+										!inviteOnlyEnabled &&
+											"pointer-events-none brightness-50",
+									)}
+								>
 									<MemberControls
 										list={members}
 										controls={RevokeInviteButton}
-										/>
+									/>
 									<InviteBox />
 								</div>
 							</div>
@@ -827,6 +889,79 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	);
 }
 
+function DiscoverPage() {
+	return (
+		<div className="no-scrollbar flex min-h-full w-full flex-col overflow-y-scroll">
+			<div className="h-2/3 w-full shrink-0 p-12">
+				<div className="relative h-full w-full overflow-hidden rounded-xl bg-card-200">
+					<div className="h-full w-full">
+						<SuperImage
+							src="/background2.png"
+							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge	"
+						/>
+					</div>
+					<div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2">
+						<div className="flex items-end justify-center text-4xl font-medium">
+							Find your community on 1337
+						</div>
+						<p className="text-center text-foreground-500">
+							From gaming, to music, to learning, there's a place
+							for you.
+						</p>
+						<Input
+							classNames={{
+								container: "w-1/2 mt-4 bg-card-400 ",
+							}}
+							placeholder="Enter a keyword"
+							startContent={
+								<Search className="text-background-800" />
+							}
+						/>
+					</div>
+				</div>
+			</div>
+			<Divider className="shrink-0" />
+			<div className=" grid flex-1 flex-shrink-0 grid-cols-4 gap-4 p-12">
+				{Array.from({ length: 20 }).map((_, i) => (
+					<div className="aspect-video w-full rounded-3xl bg-card-200">
+						<div className="relative h-1/2 overflow-hidden rounded-t-3xl">
+							<SuperImage
+								src="/pfp.png"
+								className="absolute inset-0 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
+							/>
+						</div>
+						<div className="h-1/2 w-full flex flex-col gap-4">
+							<div className="flex h-16 items-center gap-20 pl-4 shrink-0">
+								<div className="aspect-square h-full">
+									<div className="relative aspect-square h-[200%] -translate-y-1/2">
+										<SuperImage
+											src="/pfp.png"
+											className="absolute inset-0 h-full w-full rounded-xl object-cover"
+										/>
+									</div>
+								</div>
+								<div className="flex h-12 w-full flex-col items-start justify-center">
+									<span>ddjkasjsksa</span>
+									<span className="flex text-xs text-foreground-500 items-center gap-1">
+									<Globe2 size={12} />										Public
+									</span>
+								</div>
+							</div>
+							<div className="flex-1 p-4 bg-black/25 rounded-b-3xl overflow-hidden text-foreground-400">
+								{
+									generateBullshitExpression(
+										"techBS",
+									)
+								}
+							</div>
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
 function ChatSection() {
 	const {
 		expanded,
@@ -834,7 +969,7 @@ function ChatSection() {
 		showMembers,
 		setShowMembers,
 		messages,
-		selectedServer
+		selectedServer,
 	} = useContext(ChatContext) as ChatContextType;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -858,8 +993,6 @@ function ChatSection() {
 		}
 	}, []);
 
-	if (!selectedServer) return null;
-
 	return (
 		<div
 			className={twMerge(
@@ -869,138 +1002,156 @@ function ChatSection() {
 			)}
 		>
 			<SettingsModal
+				key={selectedServer?.id}
 				isOpen={isOpen}
 				onClose={onClose}
 				onOpenChange={onOpenChange}
 			/>
-			{expanded && (
-				<div
-					onClick={() => setExpanded(false)}
-					className="absolute inset-0 z-10"
-				></div>
-			)}
-			<div className="flex h-full w-full gap-0">
-				<div className="flex flex-1 flex-col">
-					<div className="flex h-24 w-full flex-shrink-0 p-4 pr-0">
-						<div className="flex h-full w-full gap-2 rounded-full bg-card-275">
-							<div className="aspect-square h-full p-2">
-								<div className="relative h-full w-full flex-shrink-0">
-									<SuperImage
-										className="absolute inset-0 rounded-full"
-										src="/pfp.png"
-									/>
-								</div>
-							</div>
-							<div className="flex flex-col justify-center">
-								<div className="text-sm">{
-									selectedServer.name
-								}</div>
-								<div className="text-xs text-foreground-500">
-									{
-										selectedServer.description
-									}
-								</div>
-							</div>
-							<div className="flex flex-1 items-center justify-end gap-2 px-4">
-								<Button variant="ghost" iconOnly>
-									<UserPlus2 />
-								</Button>
-								<Button
-									iconOnly={showMembers == false}
-									variant={showMembers ? undefined : "ghost"}
-									onClick={() => setShowMembers(!showMembers)}
-								>
-									<Users2 />
-								</Button>
-								<SuperDropdown>
-									<DropdownTrigger>
-										<div>
-											<Button
-												variant="transparent"
-												iconOnly
-											>
-												<MoreHorizontal />
-											</Button>
-										</div>
-									</DropdownTrigger>
-									<SuperDropdownMenu
-										onAction={(action) => {
-											if (action == "settings") {
-												onOpen();
-											}
-										}}
-									>
-										<DropdownItem
-											key={"settings"}
-											startContent={<Settings2 />}
-										>
-											Settings
-										</DropdownItem>
-										<DropdownItem
-											startContent={<LogOut />}
-											data-exclude={true}
-											color="danger"
-											key={"leave"}
-										>
-											Leave
-										</DropdownItem>
-									</SuperDropdownMenu>
-								</SuperDropdown>
-							</div>
-						</div>
-					</div>
-					<div className="relative flex-1">
+			{selectedServer ? (
+				<>
+					{expanded && (
 						<div
-							ref={messageBoxRef}
-							className="no-scrollbar chatbox absolute inset-0 overflow-y-scroll"
-						>
-							<div
-								suppressHydrationWarning
-								className="flex min-h-full flex-col-reverse gap-0 p-2"
-							>
-								{messages.map((message, i) => {
-									return (
-										<MessageListEntry
-											key={i}
-											index={i}
-											message={message}
-										/>
-									);
-								})}
-								<div className="w-full p-8 pb-0">
-									<p className="text-foreground-500">
-										This is the start of the channel's history, it's a lonely place...
-									</p>
-									<p className="text-xl">
-										Invite some friends to get the conversation started!
-									</p>
-									<Button onClick={onOpen} className="mt-2" startContent={
-										<Pencil />
-									}>
-										Edit channel
-									</Button>
-									<Divider className="mt-4" />
+							onClick={() => setExpanded(false)}
+							className="absolute inset-0 z-10"
+						></div>
+					)}
+					<div className="flex h-full w-full gap-0">
+						<div className="flex flex-1 flex-col">
+							<div className="flex h-24 w-full flex-shrink-0 p-4 pr-0">
+								<div className="flex h-full w-full gap-2 rounded-full bg-card-275">
+									<div className="aspect-square h-full p-2">
+										<div className="relative h-full w-full flex-shrink-0">
+											<SuperImage
+												className="absolute inset-0 aspect-square rounded-full object-cover"
+												src={selectedServer.icon}
+											/>
+										</div>
+									</div>
+									<div className="flex flex-col justify-center">
+										<div className="text-sm">
+											{selectedServer.name}
+										</div>
+										<div className="text-xs text-foreground-500">
+											{selectedServer.description}
+										</div>
+									</div>
+									<div className="flex flex-1 items-center justify-end gap-2 px-4">
+										<Button variant="ghost" iconOnly>
+											<UserPlus2 />
+										</Button>
+										<Button
+											iconOnly={showMembers == false}
+											variant={
+												showMembers
+													? undefined
+													: "ghost"
+											}
+											onClick={() =>
+												setShowMembers(!showMembers)
+											}
+										>
+											<Users2 />
+										</Button>
+										<SuperDropdown>
+											<DropdownTrigger>
+												<div>
+													<Button
+														variant="transparent"
+														iconOnly
+													>
+														<MoreHorizontal />
+													</Button>
+												</div>
+											</DropdownTrigger>
+											<SuperDropdownMenu
+												onAction={(action) => {
+													if (action == "settings") {
+														onOpen();
+													}
+												}}
+											>
+												<DropdownItem
+													key={"settings"}
+													startContent={<Settings2 />}
+												>
+													Settings
+												</DropdownItem>
+												<DropdownItem
+													startContent={<LogOut />}
+													data-exclude={true}
+													color="danger"
+													key={"leave"}
+												>
+													Leave
+												</DropdownItem>
+											</SuperDropdownMenu>
+										</SuperDropdown>
+									</div>
 								</div>
 							</div>
+							<div className="relative flex-1">
+								<div
+									ref={messageBoxRef}
+									className="no-scrollbar chatbox absolute inset-0 overflow-y-scroll"
+								>
+									<div
+										suppressHydrationWarning
+										className="flex min-h-full flex-col-reverse gap-0 p-2"
+									>
+										{messages.map((message, i) => {
+											return (
+												<MessageListEntry
+													key={i}
+													index={i}
+													message={message}
+												/>
+											);
+										})}
+										<div className="w-full p-8 pb-0">
+											<p className="text-foreground-500">
+												This is the start of the
+												channel's history, it's a lonely
+												place...
+											</p>
+											<p className="text-xl">
+												Invite some friends to get the
+												conversation started!
+											</p>
+											<Button
+												onClick={onOpen}
+												className="mt-2"
+												startContent={<Pencil />}
+											>
+												Edit channel
+											</Button>
+											<Divider className="mt-4" />
+										</div>
+									</div>
+								</div>
+							</div>
+							<ChatInput />
 						</div>
+						<MemberList />
 					</div>
-					<ChatInput />
-				</div>
-				<MemberList />
-			</div>
+				</>
+			) : (
+				<DiscoverPage />
+			)}
 		</div>
 	);
 }
 
 const randomString = () => Math.random().toString(36).substring(7);
 
-function useServerList() {
-}
+function useServerList() {}
 
 export default function Page() {
 	const { data: fckUser } = useSWR("/user/profile/fck", fetcher) as any;
 	const { data: mrianUser } = useSWR("/user/profile/mrian", fetcher) as any;
-	const { data: servers } = useSWR("/chat/channel/list", fetcher) as any;
+	const { data: servers, mutate: serversMutate } = useSWR(
+		"/chat/channel/list",
+		fetcher,
+	) as any;
 
 	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
 	const [showMembers, setShowMembers] = useState(true);
@@ -1013,18 +1164,22 @@ export default function Page() {
 	const [selectedServerId, setSelectedServerId] = useState<string | null>(
 		servers?.[0]?.id || null,
 	);
-	const selectedServer = servers?.find(
-		(server: Server) => server.id == selectedServerId,
-	) || null;
+	const selectedServer =
+		servers?.find((server: Server) => server.id == selectedServerId) ||
+		null;
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
 
-	const [akashicRecords, setAkashicRecords] = useState<{ [key: string]: Message[] }>({});
+	const [akashicRecords, setAkashicRecords] = useState<{
+		[key: string]: Message[];
+	}>({});
 
-	console.log(akashicRecords);	
+	console.log(akashicRecords);
 
-	const messages = selectedServerId ? akashicRecords[selectedServerId] || [] : [];
+	const messages = selectedServerId
+		? akashicRecords[selectedServerId] || []
+		: [];
 
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
@@ -1057,24 +1212,25 @@ export default function Page() {
 		>
 			<ChatContext.Provider
 				value={{
-					servers,
-					expanded,
-					setExpanded,
-					listTab,
-					setListTab,
-					showMembers,
-					setShowMembers,
-					messages,
 					akashicRecords,
-					setAkashicRecords,
-					members,
-					setMembers,
 					displayedMessages,
-					setDisplayedMessages,
+					expanded,
+					listTab,
+					members,
 					messageParents,
+					messages,
 					selectedServer,
 					selectedServerId,
+					servers,
+					serversMutate,
+					setAkashicRecords,
+					setDisplayedMessages,
+					setExpanded,
+					setListTab,
+					setMembers,
 					setSelectedServerId,
+					setShowMembers,
+					showMembers,
 				}}
 			>
 				<ServerList />
