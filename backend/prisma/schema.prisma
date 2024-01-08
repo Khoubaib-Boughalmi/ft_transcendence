@@ -79,34 +79,20 @@ model FriendRequests {
   user2_id String
 }
 
-model Channel {
-  id         String   @id @default(uuid())
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  name         String
-  description  String
-  users        String[]
-  messages     String[]
-  type         String
-  invitedUsers String[]
-  password     String
-  admins       String[]
-}
-
 model Chat {
   id         String   @id @default(uuid())
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   chatName          String   @default("")
+  chatIcon          String   @default("")
+  chatDescription   String   @default("")
   users             String[]
   isGroupChat       Boolean  @default(false)
   groupAdmins       String[] @default([])
   invites           String[] @default([])
   passwordProtected Boolean  @default(false)
   chatPassword      String   @default("")
-  chatAvatar        String   @default("")
 }
 
 model Message {

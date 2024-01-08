@@ -50,6 +50,7 @@ import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
 import useSWR from "swr";
 import {
 	fetcher,
+	makeForm,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 } from "@/lib/utils";
 import ModalSet from "@/components/ModalSet";
@@ -83,7 +84,6 @@ type Message = {
 
 type ChatContextType = {
 	servers: Server[];
-	setServers: (servers: Server[]) => void;
 	expanded: boolean;
 	setExpanded: (expanded: boolean) => void;
 	listTab: "servers" | "friends";
@@ -145,13 +145,22 @@ function ServerListEntry({ server }: { server: Server }) {
 function ServerCreateButton() {
 	const { expanded } = useChatContext();
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+	const { sessionMutate } = useContext(PublicContext) as any;
+
 
 	const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
 		const name = (formData.get("name") as string).trim();
 		if (name == "") return;
-		console.log(name);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/chat/channel/create`,
+			makeForm({ name }),
+			undefined,
+			`Successfully created the channel`,
+			`Failed to create the channel`,
+			sessionMutate,
+		);
 		(e.target as HTMLFormElement).reset();
 	};
 
@@ -435,7 +444,7 @@ function ServerList() {
 			<div className="relative flex-1">
 				<div className="absolute inset-0">
 					<ScrollShadow size={64} className="h-full w-full">
-						{servers.map((server, i) => (
+						{servers?.map((server, i) => (
 							<ServerListEntry key={i} server={server} />
 						))}
 						<ServerCreateButton />
@@ -985,9 +994,13 @@ function ChatSection() {
 
 const randomString = () => Math.random().toString(36).substring(7);
 
+function useServerList() {
+}
+
 export default function Page() {
 	const { data: fckUser } = useSWR("/user/profile/fck", fetcher) as any;
 	const { data: mrianUser } = useSWR("/user/profile/mrian", fetcher) as any;
+	const { data: servers } = useSWR("/chat/channel/list", fetcher) as any;
 
 	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
 	const [showMembers, setShowMembers] = useState(true);
@@ -997,46 +1010,17 @@ export default function Page() {
 			i % 2 == 0 ? user1 : user2,
 		),
 	);
-	const [servers, setServers] = useState<Server[]>(
-		Array.from({ length: 7 }).map((_, i: number) => ({
-			name: generateBullshitExpression("cryptoBS"),
-			description: Array.from({ length: Math.max(1, Math.random() * 10) })
-				.map(() => generateBullshitExpression("cryptoBS"))
-				.join(" "),
-			icon: "/pfp.png",
-			id: randomString(),
-			members: Array.from({ length: 7 }).map((_, i: number) =>
-				i % 2 == 0 ? user1 : user2,
-			),
-		})),
-	);
 	const [selectedServerId, setSelectedServerId] = useState<string | null>(
-		servers[0].id,
+		servers?.[0]?.id || null,
 	);
-	const selectedServer = servers.find(
-		(server) => server.id == selectedServerId,
-	);
+	const selectedServer = servers?.find(
+		(server: Server) => server.id == selectedServerId,
+	) || null;
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
 
-	const [akashicRecords, setAkashicRecords] = useState<{ [key: string]: Message[] }>({
-		[servers[0].id]: Array.from({ length: 3 }).map((_, i: number) => ({
-			user: i % 4 === 0 ? user1 : user2,
-			time: new Date(),
-			content: Array.from({ length: Math.floor(Math.random() * 100) })
-				.map(() =>
-					generateBullshitExpression(
-						["cryptoBS", ""][Math.floor(Math.random() * 2)],
-					),
-				)
-				.join(" "),
-			noAvatar: false,
-			target: "server",
-			groupid: randomString(),
-			blocked: i % 4 !== 0,
-		})),
-	});
+	const [akashicRecords, setAkashicRecords] = useState<{ [key: string]: Message[] }>({});
 
 	console.log(akashicRecords);	
 
@@ -1074,7 +1058,6 @@ export default function Page() {
 			<ChatContext.Provider
 				value={{
 					servers,
-					setServers,
 					expanded,
 					setExpanded,
 					listTab,
