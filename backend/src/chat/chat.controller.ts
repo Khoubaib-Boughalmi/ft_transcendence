@@ -16,8 +16,10 @@ import {
 import { ChatService } from './chat.service';
 import {
 	IsArray,
+	IsBoolean,
 	IsLowercase,
 	IsOptional,
+	IsUUID,
 	Length,
 	ValidateNested,
 	isString,
@@ -36,9 +38,30 @@ export class UserDTO {
 	userId: string;
 }
 
-class GroupUsersDTO {
+export class GroupUsersDTO {
 	@Length(3, 100)
 	name: string;
+}
+
+export class ChannelUpdateDTO {
+	@IsUUID()
+	id: string;
+
+	@Length(3, 16)
+	@IsOptional()
+	name: string;
+
+	@Length(6, 120)
+	@IsOptional()
+	description: string;
+
+	@IsBoolean()
+	@IsOptional()
+	enable_password: boolean;
+
+	@Length(6, 120)
+	@IsOptional()
+	password: string;
 }
 
 @Controller('chat')
@@ -59,9 +82,32 @@ export class ChatController {
 	@FormDataRequest()
 	async channelCreate(@Req() req, @Body() body: GroupUsersDTO) {
 		const chat = await this.chatService.chat({ chatName: body.name });
-		if (chat) throw new HttpException('Chat name already in use', 400);
+		if (chat) throw new HttpException('Channel name already in use', 400);
 
 		return this.chatService.createOneToManyChat(req.user.id, body.name);
+	}
+
+	@Post('channel/update')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelUpdate(@Req() req, @Body() body: ChannelUpdateDTO) {
+		if (
+			!(await this.chatService.isChatOwnerOrAdmin(
+				req.user.id,
+				req.body.chatId,
+			))
+		)
+			throw new HttpException('You are not allowed to do that', 403);
+
+		await this.chatService.updateChat({
+			where: { id: body.id },
+			data: {
+				chatName: body.name,
+				chatDescription: body.description,
+				passwordProtected: body.enable_password,
+				chatPassword: body.password,
+			},
+		});
 	}
 
 	@UseGuards(JwtGuard)
@@ -72,6 +118,14 @@ export class ChatController {
 		@UploadedFile() file: Express.Multer.File,
 	) {
 		try {
+			// Validate the permissions
+			if (
+				!(await this.chatService.isChatOwnerOrAdmin(
+					req.user.id,
+					req.body.chatId,
+				))
+			)
+				throw new HttpException('You are not allowed to do that', 403);
 			// Validate the magic bytes
 			const fileType = filetypeinfo(file.buffer);
 			const isImage = fileType.some(({ typename }) =>
@@ -80,7 +134,6 @@ export class ChatController {
 			if (!isImage) throw new UnsupportedMediaTypeException();
 			// Upload to S3
 			const res = await this.appService.s3_upload(file);
-            // TODO: verify is a valid chat and user is admin
 			await this.chatService.updateChat({
 				where: { id: req.body.chatId },
 				data: { chatIcon: res },
@@ -91,11 +144,24 @@ export class ChatController {
 		}
 	}
 
-    @UseGuards(JwtGuard)
-    @Post('channel/delete-icon')
-    async updateSettingsDeleteAvatar(@Req() req) {
-        await this.chatService.updateChat({ where: { id: req.body.chatId }, data: { chatIcon: "https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg" } });
-        return { message: 'Icon deleted' };
+	@UseGuards(JwtGuard)
+	@Post('channel/delete-icon')
+	async updateSettingsDeleteAvatar(@Req() req) {
+		if (
+			!(await this.chatService.isChatOwnerOrAdmin(
+				req.user.id,
+				req.body.chatId,
+			))
+		)
+			throw new HttpException('You are not allowed to do that', 403);
+		await this.chatService.updateChat({
+			where: { id: req.body.chatId },
+			data: {
+				chatIcon:
+					'https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg',
+			},
+		});
+		return { message: 'Icon deleted' };
 	}
 
 	@UseGuards(JwtGuard)
@@ -148,7 +214,7 @@ export class ChatController {
 		}
 		return this.chatService.updateChat({
 			where: { id: chatId },
-			data: { chatName, groupAdmins, chatPassword },
+			data: { chatName, chatAdmins: groupAdmins, chatPassword },
 		});
 	}
 }

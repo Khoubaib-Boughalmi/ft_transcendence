@@ -102,7 +102,7 @@ export class ChatService {
 			isGroupChat: true,
 			chatName: groupName,
 			users: [userId],
-			groupAdmins: [userId],
+			chatOwner: userId,
 		});
 	}
 
@@ -166,4 +166,26 @@ export class ChatService {
 			where,
 		});
 	}
+
+    async isChatOwner(userId: string, chatId: string): Promise<boolean> {
+        const chat = await this.prisma.chat.findUnique({
+            where: {
+                id: chatId,
+            },
+        });
+        return chat?.chatOwner === userId || false;
+    }
+
+    async isChatAdmin(userId: string, chatId: string): Promise<boolean> {
+        const chat = await this.prisma.chat.findUnique({
+            where: {
+                id: chatId,
+            },
+        });
+        return chat?.chatAdmins?.includes(userId) || false;
+    }
+
+    async isChatOwnerOrAdmin(userId: string, chatId: string): Promise<boolean> {
+        return await this.isChatOwner(userId, chatId) || await this.isChatAdmin(userId, chatId);
+    }
 }

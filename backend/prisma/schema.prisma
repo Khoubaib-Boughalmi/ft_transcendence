@@ -84,12 +84,13 @@ model Chat {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  chatName          String   @default("") @unique
+  chatName          String   @unique @default("")
   chatIcon          String   @default("")
   chatDescription   String   @default("")
+  chatOwner         String   @default("")
+  chatAdmins        String[] @default([])
   users             String[]
   isGroupChat       Boolean  @default(false)
-  groupAdmins       String[] @default([])
   invites           String[] @default([])
   passwordProtected Boolean  @default(false)
   chatPassword      String   @default("")
