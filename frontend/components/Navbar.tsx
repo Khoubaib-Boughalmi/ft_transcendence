@@ -50,6 +50,7 @@ import {
 import UserList from "./UserList";
 import { user1 } from "@/mocks/profile";
 import socket from "@/lib/socket";
+import ThemeChanger from "./ThemePicker";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 
@@ -408,6 +409,7 @@ export function Navbar() {
 					</div>
 					<div className="flex h-full flex-1 items-center justify-end gap-4">
 						<div className="flex h-full items-center	 gap-2 rounded-full bg-card-300 p-2 px-2">
+							<ThemeChanger />
 							<FriendsButton />
 							<Divider orientation="vertical" />
 							<NotificationsButton />

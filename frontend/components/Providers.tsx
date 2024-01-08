@@ -10,6 +10,7 @@ import { useContext, useEffect, useState } from "react";
 import jwt from "jsonwebtoken";
 import { Toaster } from "react-hot-toast";
 import socket from "@/lib/socket";
+import { ThemeProvider } from "next-themes";
 
 export default function Providers({ accessToken, children }: any) {
 	const noRefresh = {
@@ -60,7 +61,9 @@ export default function Providers({ accessToken, children }: any) {
 				},
 			}}
 		>
-			<NextUIProvider>{children}</NextUIProvider>
+			<ThemeProvider>
+				<NextUIProvider>{children}</NextUIProvider>
+			</ThemeProvider>
 			<Toaster
 				toastOptions={{
 					className: "!bg-card-500 !text-white !p-4",
