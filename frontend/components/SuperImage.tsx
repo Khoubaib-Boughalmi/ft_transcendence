@@ -29,7 +29,7 @@ export default function SuperImage({ src, className, ...props }: any) {
 				key={src}	
 				className={twMerge(
 					className,
-					!className.includes("absolute") && `relative`,
+					!className?.includes("absolute") && `relative`,
 					"bg-card-200"
 				)}
 				onLoad={updateLoadedImages}
