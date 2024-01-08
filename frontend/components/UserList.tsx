@@ -15,7 +15,10 @@ type ClassNames = {
 	entryContainer?: string;
 };
 
-function SuperTooltip({children, ...props}: React.ComponentProps<typeof Tooltip>) {
+function SuperTooltip({
+	children,
+	...props
+}: React.ComponentProps<typeof Tooltip>) {
 	// const [portal, setPortal] = useState(null) as any;
 	// const updatePortal = () => {
 	// 	setPortal(document.querySelector(`*[data-slot="list"]`) || document.querySelector('*[role="dialog"]') || document.body);
@@ -26,27 +29,37 @@ function SuperTooltip({children, ...props}: React.ComponentProps<typeof Tooltip>
 	// }, []);
 
 	return (
-		<Tooltip className={twMerge("bg-card-200 p-2", props.className)}
+		<Tooltip
+			className={twMerge("bg-card-200 p-2", props.className)}
 			radius="lg"
 			// onMouseEnter={updatePortal}
 			classNames={{
 				arrow: twMerge("", props.classNames?.arrow),
 				base: twMerge("", props.classNames?.base),
-				content: twMerge("", props.classNames?.content)
+				content: twMerge("", props.classNames?.content),
 			}}
 			// portalContainer={portal}
 			{...props}
-			>
-				{children}
+		>
+			{children}
 		</Tooltip>
-	)
+	);
 }
 
-function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: number }) {
+function UserListGridEntry({
+	user,
+	hoverDelay,
+}: {
+	user: User;
+	hoverDelay?: number;
+}) {
 	const isOnline = useIsOnline(user);
 
 	return (
-		<SuperTooltip delay={hoverDelay || 250} content={<UserHover user={user} />}>
+		<SuperTooltip
+			delay={hoverDelay || 250}
+			content={<UserHover user={user} />}
+		>
 			<Link
 				href={`/profile/${user.username}`}
 				className={twMerge(
@@ -56,7 +69,10 @@ function UserListGridEntry({ user, hoverDelay }: { user: User, hoverDelay?: numb
 				)}
 			>
 				<div className="relative aspect-square h-24 w-24 overflow-hidden rounded-full">
-					<SuperImage src={user.avatar} className="h-full w-full object-cover" />
+					<SuperImage
+						src={user.avatar}
+						className="h-full w-full object-cover"
+					/>
 				</div>
 				<div className="w-full truncate text-center text-sm">
 					{user.username}
@@ -92,56 +108,59 @@ function UserListListEntry({
 		>
 			<div
 				className={twMerge(
-					`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all relative`,
+					`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all`,
 					size == "xs" && "gap-2 p-2",
 					!Controls && isOnline == false && "brightness-[60%]",
 					classNames?.entryContainer,
 				)}
 			>
-				{showBadge && (
-					<div className="absolute top-2 left-4 z-10">
-						<img
-							src="/owner.png"
-							className="h-3 w-3 object-cover"
-						/>
-					</div>
-				)}
-
 				<Link
 					href={`/profile/${user.username}`}
 					className={twMerge(
-						`flex flex-1 items-center gap-4 overflow-hidden text-white
+						`flex-1 gap-4 text-white relative
 						transition-all hover:scale-105 hover:brightness-110`,
-						!Controls &&
-							isOnline == false &&
-							"brightness-[60%]",
+						!Controls && isOnline == false && "brightness-[60%]",
 						size == "xs" && "gap-2",
 						classNames?.entry,
 					)}
 				>
-					<div
-						className={twMerge(
-							"relative aspect-square h-12 w-12 flex-shrink-0 overflow-hidden rounded-full",
-							size == "xs" && "h-8 w-8",
-						)}
-					>
-						<SuperImage
-							src={user.avatar}
-							className="h-full w-full object-cover"
-						/>
-					</div>
-					<div className="flex flex-1 flex-col items-start overflow-hidden">
+					{showBadge && (
+						<div className="absolute left-0 top-0 z-10">
+							<img
+								src="/owner.png"
+								className="h-3 w-3 object-cover"
+							/>
+						</div>
+					)}
+					<div className="flex h-full w-full items-center gap-4 overflow-hidden">
 						<div
 							className={twMerge(
-								"w-full truncate text-sm",
-								size == "xs" && "text-xs",
+								"relative aspect-square h-12 w-12 flex-shrink-0 overflow-hidden rounded-full",
+								size == "xs" && "h-8 w-8",
 							)}
 						>
-							{user.username}
+							<SuperImage
+								src={user.avatar}
+								className="h-full w-full object-cover"
+							/>
 						</div>
-						{!Controls && (
-							<Status isOnline={isOnline} size={size} user={user} />
-						)}
+						<div className="flex flex-1 flex-col items-start overflow-hidden">
+							<div
+								className={twMerge(
+									"w-full truncate text-sm",
+									size == "xs" && "text-xs",
+								)}
+							>
+								{user.username}
+							</div>
+							{!Controls && (
+								<Status
+									isOnline={isOnline}
+									size={size}
+									user={user}
+								/>
+							)}
+						</div>
 					</div>
 				</Link>
 				{Controls && <Controls user={user} />}
@@ -186,10 +205,19 @@ export default function UserList({
 		);
 
 	return (
-		<div className={twMerge(`h-46 grid grid-cols-7 gap-2`, users.length == 0 && "grid-cols-1")}>
+		<div
+			className={twMerge(
+				`h-46 grid grid-cols-7 gap-2`,
+				users.length == 0 && "grid-cols-1",
+			)}
+		>
 			{users.length == 0 && <NoData />}
 			{users.map((user, i) => (
-				<UserListGridEntry hoverDelay={hoverDelay} key={i} user={user} />
+				<UserListGridEntry
+					hoverDelay={hoverDelay}
+					key={i}
+					user={user}
+				/>
 			))}
 		</div>
 	);
