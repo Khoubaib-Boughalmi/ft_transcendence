@@ -8,22 +8,36 @@ export default function DeleteButton({
 	type,
     endpoint,
 	children,
+	data,
+	callback
 }: {
 	type: "avatar" | "banner" | "icon";
     endpoint: string;
 	children?: React.ReactNode;
+	data?: any;
+	callback?: any;
 }) {
 	const [loading, setLoading] = useState(false);
 	const { sessionMutate } = useContext(PublicContext) as any;
 
+	
+	const postCallback = async () => {
+		if (callback) await callback();
+		await sessionMutate();
+	}
+	
 	const handleImageDelete = async () => {
+		const formData = new FormData();
+		if (data)
+			for (const [key, value] of Object.entries(data) as any)
+				formData.append(key, value);
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			endpoint,
-			null,
+			formData,
 			setLoading,
 			`Successfully deleted ${type}`,
 			`Failed to delete ${type}`,
-			sessionMutate,
+			postCallback,
 		);
 	};
 
