@@ -10,6 +10,7 @@ type ChatChannel = {
 	icon: string;
 	id: string;
 	members: UserProfileMicro[];
+    enable_password: boolean;
 };
 
 @Injectable()
@@ -88,6 +89,7 @@ export class ChatService {
                 description: chat.chatDescription,
                 icon: chat.chatIcon,
                 members: chatMembers,
+                enable_password: chat.passwordProtected,
             });
         });
         return chats;
