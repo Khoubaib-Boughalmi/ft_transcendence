@@ -56,6 +56,7 @@ export class ChannelUpdateDTO {
 	description: string;
 
 	@IsBoolean()
+    @Type(() => Boolean)
 	@IsOptional()
 	enable_password: boolean;
 
