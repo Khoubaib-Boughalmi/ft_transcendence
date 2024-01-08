@@ -26,7 +26,7 @@ import {
 } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
 import { JwtGuard } from 'src/auth/auth.guards';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/user/user.controller';
 import filetypeinfo from 'magic-bytes.js';
@@ -56,7 +56,7 @@ export class ChannelUpdateDTO {
 	description: string;
 
 	@IsBoolean()
-    @Type(() => Boolean)
+    @Transform(({ value }) => { return [true, 'true', '1', 1].indexOf(value) > -1; })  
 	@IsOptional()
 	enable_password: boolean;
 
