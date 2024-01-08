@@ -45,7 +45,7 @@ export function getRank(rank: number) {
 
 export function makeForm(data: any) {
 	const formData = new FormData();
-	Object.keys(data).forEach((key) => formData.append(key, data[key]));
+	Object.keys(data).forEach((key) => data[key] && formData.append(key, data[key]));
 	return formData;
 }
 
