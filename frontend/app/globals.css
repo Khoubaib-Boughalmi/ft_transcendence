@@ -39,29 +39,29 @@
 	--background-800: #999999;
 	--background-900: #cccccc;
 
-	--card-default: #001f33;  /* Updated to a dark blue */
-	--card-100: #003366;     /* Updated to a medium blue */
-	--card-200: #004080;     /* Updated to a slightly lighter blue */
-	--card-250: #0160bf;     /* Updated to a darker blue */
-	--card-275: #004c9d;     /* Updated to a darker blue */
-	--card-300: #005199;     /* Updated to a lighter blue */			
-	--card-400: #0066b3;     /* Updated to a bright blue */
-	--card-500: #007acc;     /* Updated to a sky blue */
-	--card-600: #3399ff;     /* Updated to a vivid blue */
-	--card-700: #66b2ff;     /* Updated to a lighter vivid blue */
-	--card-800: #99ccff;     /* Updated to a pastel blue */
-	--card-900: #cce6ff;     /* Updated to a very light blue */
-  
-	--accent-default: #2c3e50;  /* Updated to a dark blue-gray */
-	--accent-100: #495b6e;      /* Updated to a medium blue-gray */
-	--accent-200: #607d8b;      /* Updated to a lighter blue-gray */
-	--accent-300: #7892a1;      /* Updated to a steel blue */
-	--accent-400: #94a7b2;      /* Updated to a soft blue */
-	--accent-500: #a5b8c3;      /* Updated to a light blue */
-	--accent-600: #bbcfd8;      /* Updated to a very light blue */
-	--accent-700: #d0e4eb;      /* Updated to a pale blue */
-	--accent-800: #e3f1f4;      /* Updated to a very pale blue */
-	--accent-900: #f5f9fa;      /* Updated to an almost white blue */
+	--card-default: #650000;
+	--card-100: #140000;
+	--card-200: #290000;
+	--card-250: #310000;
+	--card-275: #330000;
+	--card-300: #3d0000;
+	--card-400: #520000;
+	--card-500: #650000;
+	--card-600: #b80000;
+	--card-700: #ff0a0a;
+	--card-800: #ff5c5c;
+	--card-900: #ffadad;
+
+	--accent-default: #f03a47;
+	--accent-100: #370408;
+	--accent-200: #6e080f;
+	--accent-300: #a50c17;
+	--accent-400: #dc111e;
+	--accent-500: #f03a47;
+	--accent-600: #f36069;
+	--accent-700: #f6878f;
+	--accent-800: #f9afb4;
+	--accent-900: #fcd7da;
 
 	--primary-default: #f6ae2d;
 	--primary-100: #382502;
