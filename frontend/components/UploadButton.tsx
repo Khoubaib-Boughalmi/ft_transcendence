@@ -6,21 +6,34 @@ import { useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToasts
 export default function UploadButton({
 	children,
 	name,
-    endpoint,
+	endpoint,
+	data,
+	callback,
 	...props
 }: React.ComponentProps<typeof Button> & {
 	name: "avatar" | "banner" | "icon";
-    endpoint: string;
+	endpoint: string;
+	data?: any;
+	callback?: any;
 }) {
 	const ref = useRef<HTMLLabelElement>(null);
 	const formRef = useRef<HTMLFormElement>(null);
 	const [loading, setLoading] = useState(false);
 	const { sessionMutate } = useContext(PublicContext) as any;
 
+	const postCallback = async () => {
+		if (callback) await callback();
+		await sessionMutate();
+	};
+
 	const handleUpload = async (e: React.ChangeEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const file = formData.get(name);
+		if (data)
+			for (const [key, value] of Object.entries(data) as any)
+				formData.append(key, value);
+
 		if (file)
 			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 				endpoint,
@@ -28,7 +41,7 @@ export default function UploadButton({
 				setLoading,
 				`Successfully changed ${name}`,
 				`Failed to change ${name}`,
-				sessionMutate,
+				postCallback,
 			);
 		formRef.current?.reset();
 	};
