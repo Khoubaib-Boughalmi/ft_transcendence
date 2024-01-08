@@ -73,12 +73,14 @@ function UserListListEntry({
 	classNames,
 	hoverDelay,
 	Controls,
+	showBadge,
 }: {
 	user: User;
 	hoverDelay?: number;
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
 	Controls?: any;
+	showBadge?: boolean;
 }) {
 	const isOnline = useIsOnline(user);
 
@@ -90,16 +92,25 @@ function UserListListEntry({
 		>
 			<div
 				className={twMerge(
-					`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all`,
+					`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all relative`,
 					size == "xs" && "gap-2 p-2",
 					!Controls && isOnline == false && "brightness-[60%]",
 					classNames?.entryContainer,
 				)}
 			>
+				{showBadge && (
+					<div className="absolute top-2 left-4 z-10">
+						<img
+							src="/owner.png"
+							className="h-3 w-3 object-cover"
+						/>
+					</div>
+				)}
+
 				<Link
 					href={`/profile/${user.username}`}
 					className={twMerge(
-						`flex flex-1 items-center gap-4  overflow-hidden text-white
+						`flex flex-1 items-center gap-4 overflow-hidden text-white
 						transition-all hover:scale-105 hover:brightness-110`,
 						!Controls &&
 							isOnline == false &&
@@ -145,6 +156,7 @@ export default function UserList({
 	hoverDelay,
 	size,
 	classNames,
+	showBadge,
 	Controls,
 }: {
 	users: User[];
@@ -152,6 +164,7 @@ export default function UserList({
 	type: "list" | "grid";
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
+	showBadge?: boolean;
 	Controls?: ({ user }: { user: User }) => any;
 }) {
 	if (type == "list")
@@ -166,6 +179,7 @@ export default function UserList({
 						classNames={classNames}
 						size={size}
 						user={user}
+						showBadge={showBadge}
 					/>
 				))}
 			</div>

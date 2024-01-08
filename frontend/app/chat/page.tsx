@@ -472,6 +472,7 @@ function MemberList() {
 						entry: twMerge("", expanded && "hover:scale-100"),
 					}}
 					users={members}
+					showBadge={true}
 				/>
 			</div>
 		</div>
