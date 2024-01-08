@@ -19,6 +19,14 @@ export class ChatService {
         private userService: UserService,
     ) {}
 
+    async chat(
+		chatWhereUniqueInput: Prisma.ChatWhereUniqueInput,
+	): Promise<Chat | null> {
+		return this.prisma.chat.findUnique({
+			where: chatWhereUniqueInput,
+		});
+	}
+
 	async createChat(data: Prisma.ChatCreateInput): Promise<Chat> {
 		return this.prisma.chat.create({
 			data,

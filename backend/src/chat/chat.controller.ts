@@ -8,6 +8,7 @@ import {
 	Req,
 	Res,
 	UseGuards,
+    HttpException,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import {
@@ -50,6 +51,10 @@ export class ChatController {
 		@Req() req,
 		@Body() body: GroupUsersDTO,
 	) {
+        const chat = await this.chatService.chat({ chatName: body.name });
+        if (chat)
+            throw new HttpException('Chat name already in use', 400);
+
 		return this.chatService.createOneToManyChat(
 			req.user.id,
 			body.name,
