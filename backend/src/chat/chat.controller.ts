@@ -91,6 +91,13 @@ export class ChatController {
 		}
 	}
 
+    @UseGuards(JwtGuard)
+    @Post('channel/delete-icon')
+    async updateSettingsDeleteAvatar(@Req() req) {
+        await this.chatService.updateChat({ where: { id: req.body.chatId }, data: { chatIcon: "https://i.ytimg.com/vi/FNXf9XkUZ0M/maxresdefault.jpg" } });
+        return { message: 'Icon deleted' };
+	}
+
 	@UseGuards(JwtGuard)
 	@Post('/createOneToOneChat')
 	@FormDataRequest()
