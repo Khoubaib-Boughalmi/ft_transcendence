@@ -222,4 +222,17 @@ export class ChatService {
     async isChatOwnerOrAdmin(userId: string, chatId: string): Promise<boolean> {
         return await this.isChatOwner(userId, chatId) || await this.isChatAdmin(userId, chatId);
     }
+
+	async inviteToChat(chat: Chat, user: User) {
+		await this.prisma.chat.update({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				users: {
+					push: user.id,
+				},
+			},
+		});
+    }
 }

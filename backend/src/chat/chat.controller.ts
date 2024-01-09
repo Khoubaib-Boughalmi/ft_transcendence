@@ -31,6 +31,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/user/user.controller';
 import filetypeinfo from 'magic-bytes.js';
 import { AppService } from 'src/app.service';
+import { UserService } from 'src/user/user.service';
 
 export class UserDTO {
 	@IsLowercase()
@@ -50,6 +51,14 @@ export class ChannelJoinDTO {
     @Length(6, 120)
 	@IsOptional()
     password: string;
+}
+
+export class ChannelInviteDTO {
+    @IsUUID()
+	id: string;
+
+    @Length(3, 100)
+    name: string;
 }
 
 export class ChannelUpdateDTO {
@@ -84,6 +93,7 @@ export class ChatController {
 	constructor(
 		private readonly chatService: ChatService,
 		private readonly appService: AppService,
+        private readonly userService: UserService,
 	) {}
 
 	@Get('channel/list')
@@ -109,6 +119,7 @@ export class ChatController {
         const chat = await this.chatService.chat({ chatName: body.name });
         if (!chat) throw new HttpException('Channel not found', 404);
         if (chat.passwordProtected && body.password !== chat.chatPassword) throw new HttpException('Invalid password', 403);
+        if (chat.inviteOnly && !chat.invites.includes(req.user.id)) throw new HttpException('You are not allowed to do that', 403);
 
         return this.chatService.joinChat(chat, req.user.id, body.password);
     }
@@ -142,6 +153,21 @@ export class ChatController {
 			},
 		});
 	}
+
+    @Post('channel/invite')
+    @UseGuards(JwtGuard)
+    @FormDataRequest()
+    async channelInvite(@Req() req, @Body() body: ChannelInviteDTO) {
+        const user = await this.userService.user({ username: body.name });
+        if (!user) throw new HttpException('User not found', 404);
+
+        const chat = await this.chatService.chat({ id: body.id });
+        if (!chat) throw new HttpException('Channel not found', 404);
+        if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
+        if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id)) throw new HttpException('You are not allowed to do that', 403);
+
+        return this.chatService.inviteToChat(chat, user);
+    }
 
 	@UseGuards(JwtGuard)
 	@UseInterceptors(FileInterceptor('icon', multerConfig))
