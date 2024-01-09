@@ -1,5 +1,5 @@
 import { InteractionType, User } from "@/types/profile";
-import { InteractionFunctionality, getFlag, getRank } from "@/lib/utils";
+import { InteractionFunctionality, fetcher, getFlag, getRank } from "@/lib/utils";
 import Status from "./Status";
 import Divider from "./Divider";
 import SuperImage from "./SuperImage";
@@ -15,12 +15,21 @@ import {
 import { useContext, useState } from "react";
 import PublicContext from "@/contexts/PublicContext";
 import { twMerge } from "tailwind-merge";
+import useSWR from "swr";
+import { Skeleton } from "@nextui-org/react";
+import { SuperSkeleton } from "./SuperSkeleton";
+import { dummyUser } from "@/mocks/profile";
 
 export default function UserHover({ user }: { user: User }) {
 	const [loading, setLoading] = useState(false);
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 	const areFriends = session.friends.find((f: User) => f.id == user.id);
 	const isBlocked = session.blocked_users.find((f: User) => f.id == user.id);
+	const {data: fullData, isLoading} = useSWR(`/user/profile/${user.id}`, fetcher);
+	const fakeUser = {
+		...dummyUser,
+		...user
+	}
 
 	return (
 		<div className="flex w-48 flex-col gap-1">
@@ -56,6 +65,13 @@ export default function UserHover({ user }: { user: User }) {
 			<div className="rounded-full bg-card-250 p-2">
 				<Status user={user} size="sm" />
 			</div>
+			<Skeleton
+				isLoaded={!isLoading}
+				classNames={{
+					base: "after:dark:bg-card-250 before:dark:bg-card-250 dark:bg-card-250 rounded-xl",
+				}}
+			>
+
 			{session.id != user.id && (
 				<div className="flex w-full gap-2 rounded-full bg-card-250 p-2">
 					{!isBlocked && (
@@ -68,7 +84,7 @@ export default function UserHover({ user }: { user: User }) {
 								onClick={() => {
 									InteractionFunctionality(areFriends ? "unfriend" : "add", user, sessionMutate, setLoading);
 								}}
-							>
+								>
 								{areFriends ? <UserMinus2 /> : <UserPlus2 />}
 							</Button>
 							<Button
@@ -79,7 +95,7 @@ export default function UserHover({ user }: { user: User }) {
 								onClick={() => {
 									// InteractionFunctionality("block", user, sessionMutate, setLoading);
 								}}
-							>
+								>
 								<Swords />
 							</Button>
 							<Button
@@ -87,7 +103,7 @@ export default function UserHover({ user }: { user: User }) {
 								className="aspect-square flex-1"
 								iconOnly
 								variant="ghost"
-							>
+								>
 								<MessageSquareIcon />
 							</Button>
 						</>
@@ -100,7 +116,7 @@ export default function UserHover({ user }: { user: User }) {
 						onClick={() => {
 							InteractionFunctionality(isBlocked ? "unblock" : "block", user, sessionMutate, setLoading);
 						}}
-					>
+						>
 						{isBlocked ? <><HeartHandshake size={16}/> Unblock</> : <UserX2 />}
 					</Button>
 				</div>
@@ -110,12 +126,12 @@ export default function UserHover({ user }: { user: User }) {
 					className={`aspect-square h-16 shrink-0 overflow-hidden rounded-xl bg-red-500 ${
 						getRank(user.rank).color
 					} flex items-center justify-center`}
-				>
+					>
 					<div
 						className={`${
 							getRank(user.rank).color
 						} fuck-css text-3xl text-transparent mix-blend-plus-lighter`}
-					>
+						>
 						{getRank(user.rank).name}
 					</div>
 				</div>
@@ -133,7 +149,7 @@ export default function UserHover({ user }: { user: User }) {
 								{user.achievements.reduce(
 									(acc, curr) => acc + curr.score,
 									0,
-								)}
+									)}
 							</div>
 						</div>
 						<div className="flex w-full justify-between px-2">
@@ -144,20 +160,21 @@ export default function UserHover({ user }: { user: User }) {
 				</div>
 				{/* <div className="flex flex-1 flex-col gap-2">
 					<div className="relative h-3 w-full overflow-hidden rounded-xl bg-black">
-						<div className="h-full w-1/2 bg-gradient-to-r from-primary to-secondary"></div>
+					<div className="h-full w-1/2 bg-gradient-to-r from-primary to-secondary"></div>
 					</div>
 					<div className="relative h-3 w-full overflow-hidden rounded-xl bg-black">
-						<div className="h-full w-1/2 bg-secondary"></div>
+					<div className="h-full w-1/2 bg-secondary"></div>
 					</div>
 				</div> */}
 			</div>
 			{/* <div className="my-2 h-1 w-full overflow-hidden rounded-full bg-black">
 				<div className="h-full w-1/2 bg-gradient-to-r from-primary to-secondary"></div>
-			</div>
-			<div className="flex items-start gap-2">
+				</div>
+				<div className="flex items-start gap-2">
 				<span className="text-[0.55rem] leading-[0.55rem]">Level</span>
 				<span className="text-base leading-4">{user.level}</span>
 			</div> */}
+			</Skeleton>
 		</div>
 	);
 }
