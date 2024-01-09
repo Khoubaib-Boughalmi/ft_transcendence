@@ -103,7 +103,7 @@ export class ChatController {
     @UseGuards(JwtGuard)
     @FormDataRequest()
     async channelLeave(@Req() req, @Body() body: ChannelUpdateDTO) {
-        const chat = await this.chatService.chat({ chatName: body.name });
+        const chat = await this.chatService.chat({ id: body.id });
         if (!chat) throw new HttpException('Channel not found', 404);
         if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
 
