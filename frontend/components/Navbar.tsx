@@ -8,6 +8,7 @@ import {
 	LucideIcon,
 	MessageCircle,
 	MessageSquareIcon,
+	Paintbrush2,
 	Search,
 	Settings2,
 	User2,
@@ -32,6 +33,7 @@ import {
 	DropdownTrigger,
 	Skeleton,
 	Tooltip,
+	useDisclosure,
 } from "@nextui-org/react";
 import { SuperSkeleton } from "./SuperSkeleton";
 import SuperImage from "./SuperImage";
@@ -50,9 +52,18 @@ import {
 import UserList from "./UserList";
 import { user1 } from "@/mocks/profile";
 import socket from "@/lib/socket";
-import ThemeChanger from "./ThemePicker";
+import ModalSet from "./ModalSet";
+import { useTheme } from "next-themes";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
+const themes = [
+	{ name: "Red" },
+	{ name: "Green" },
+	{ name: "Blue" },
+	{ name: "Purple" },
+	{ name: "Pink" },
+	{ name: "Yellow" },
+];
 
 function Navigation() {
 	const [active, setActive] = useState(buttons[0]) as [
@@ -220,116 +231,158 @@ function FriendsButton() {
 }
 
 function ProfileButton({ user }: { user: User }) {
+	const [mounted, setMounted] = useState(false);
+
 	const router = useRouter();
 	const { sessionMutate, fullMutate, twoFactorAuthenticated } = useContext(
 		PublicContext,
 	) as any;
+	const { isOpen, onClose, onOpen, onOpenChange } = useDisclosure();
+	const { theme, setTheme } = useTheme();
+
+	useEffect(() => setMounted(true), []);
 
 	return (
-		<SuperDropdown>
-			<DropdownTrigger>
-				<div className="flex h-full items-center gap-2 text-xs text-white">
-					<div className="relative aspect-square h-full">
-						<SuperImage
-							src={user.avatar}
-							className="h-full w-full rounded-full object-cover"
-						/>
-					</div>
-				</div>
-			</DropdownTrigger>
-			<SuperDropdownMenu
-				onAction={(item) => {
-					if (item == "profile") {
-						router.push("/profile");
-					} else if (item == "settings") {
-						router.push("/settings");
-					} else if (item == "chat") {
-						router.push("/chat");
-					} else if (item == "logout") {
-						axios.get("/auth/logout").then(async () => {
-							await fullMutate();
-							socket.disconnect();
-							router.refresh();
-						});
-					}
-				}}
+		<>
+			<ModalSet
+				isOpen={isOpen}
+				onClose={onClose}
+				onOpen={onOpen}
+				size="xs"
+				title={"Theme"}
+				onOpenChange={onOpenChange}
 			>
-				{twoFactorAuthenticated && (
-					<DropdownItem
-						showDivider
-						key={"info"}
-						variant="solid"
-						className="relative overflow-hidden rounded-xl bg-black/25 p-0 opacity-100"
-						isReadOnly
-					>
-						<div className="flex">
-							<div
-								className={`h-12 w-1/3 flex-shrink-0 ${
-									getRank(user.rank).color
-								} flex items-center justify-center`}
+				<div className="flex flex-col gap-2 p-2">
+					{mounted &&
+						themes.map((t) => (
+							<Button
+								variant={
+									theme == t.name.toLowerCase()
+										? undefined
+										: "transparent"
+								}
+								onClick={() => setTheme(t.name.toLowerCase())}
+								className="w-full"
 							>
-								<span
-									className={`text-transparent ${
-										getRank(user.rank).color
-									} fuck-css text-2xl mix-blend-plus-lighter`}
-								>
-									{getRank(user.rank).name}
-								</span>
-							</div>
-							<div className="flex flex-1 flex-col items-center justify-center text-foreground-600">
-								<div className="font-medium leading-3">
-									{user.username}
-								</div>
-								<div className="flex gap-2 text-[0.65rem] leading-[0.65rem]">
-									<div className="font-flag">
-										{getFlag(user.country)}
-									</div>
-									<div>{user.country}</div>
-								</div>
-							</div>
+								{t.name}
+							</Button>
+						))}
+				</div>
+			</ModalSet>
+			<SuperDropdown>
+				<DropdownTrigger>
+					<div className="flex h-full items-center gap-2 text-xs text-white">
+						<div className="relative aspect-square h-full">
+							<SuperImage
+								src={user.avatar}
+								className="h-full w-full rounded-full object-cover"
+							/>
 						</div>
-						<Status
-							className="rounded-none px-4 text-white"
-							size="sm"
-							user={user}
-						/>
+					</div>
+				</DropdownTrigger>
+				<SuperDropdownMenu
+					onAction={(item) => {
+						if (item == "profile") {
+							router.push("/profile");
+						} else if (item == "settings") {
+							router.push("/settings");
+						} else if (item == "chat") {
+							router.push("/chat");
+						} else if (item == "logout") {
+							axios.get("/auth/logout").then(async () => {
+								await fullMutate();
+								socket.disconnect();
+								router.refresh();
+							});
+						} else if (item == "theme") {
+							onOpen();
+						}
+					}}
+				>
+					{twoFactorAuthenticated && (
+						<DropdownItem
+							showDivider
+							key={"info"}
+							variant="solid"
+							className="relative overflow-hidden rounded-xl bg-black/25 p-0 opacity-100"
+							isReadOnly
+						>
+							<div className="flex">
+								<div
+									className={`h-12 w-1/3 flex-shrink-0 ${
+										getRank(user.rank).color
+									} flex items-center justify-center`}
+								>
+									<span
+										className={`text-transparent ${
+											getRank(user.rank).color
+										} fuck-css text-2xl mix-blend-plus-lighter`}
+									>
+										{getRank(user.rank).name}
+									</span>
+								</div>
+								<div className="flex flex-1 flex-col items-center justify-center text-foreground-600">
+									<div className="font-medium leading-3">
+										{user.username}
+									</div>
+									<div className="flex gap-2 text-[0.65rem] leading-[0.65rem]">
+										<div className="font-flag">
+											{getFlag(user.country)}
+										</div>
+										<div>{user.country}</div>
+									</div>
+								</div>
+							</div>
+							<Status
+								className="rounded-none px-4 text-white"
+								size="sm"
+								user={user}
+							/>
+						</DropdownItem>
+					)}
+					<DropdownItem
+						variant="solid"
+						className={twMerge(!twoFactorAuthenticated && "hidden")}
+						key="profile"
+						startContent={<User2 />}
+					>
+						Profile
 					</DropdownItem>
-				)}
-				<DropdownItem
-					variant="solid"
-					className={twMerge(!twoFactorAuthenticated && "hidden")}
-					key="profile"
-					startContent={<User2 />}
-				>
-					Profile
-				</DropdownItem>
-				<DropdownItem
-					variant="solid"
-					className={twMerge(!twoFactorAuthenticated && "hidden")}
-					key="settings"
-					startContent={<Settings2 />}
-				>
-					Settings
-				</DropdownItem>
-				<DropdownItem
-					variant="solid"
-					className={twMerge(!twoFactorAuthenticated && "hidden")}
-					key="chat"
-					startContent={<MessageSquareIcon />}
-				>
-					Chat
-				</DropdownItem>
-				<DropdownItem
-					variant="solid"
-					data-exclude={false}
-					color="danger"
-					key="logout"
-					startContent={<LogOut />}
-				>
-					Logout
-				</DropdownItem>
-			</SuperDropdownMenu>
-		</SuperDropdown>
+					<DropdownItem
+						variant="solid"
+						className={twMerge(!twoFactorAuthenticated && "hidden")}
+						key="settings"
+						startContent={<Settings2 />}
+					>
+						Settings
+					</DropdownItem>
+					<DropdownItem
+						variant="solid"
+						className={twMerge(!twoFactorAuthenticated && "hidden")}
+						key="chat"
+						startContent={<MessageSquareIcon />}
+					>
+						Chat
+					</DropdownItem>
+					<DropdownItem
+						variant="solid"
+						key="theme"
+						startContent={<Paintbrush2 />}
+					>
+						Theme
+					</DropdownItem>
+					<DropdownItem
+						variant="solid"
+						data-exclude={false}
+						color="danger"
+						key="logout"
+						startContent={<LogOut />}
+					>
+						Logout
+					</DropdownItem>
+				</SuperDropdownMenu>
+			</SuperDropdown>
+		</>
 	);
 }
 
@@ -409,7 +462,6 @@ export function Navbar() {
 					</div>
 					<div className="flex h-full flex-1 items-center justify-end gap-4">
 						<div className="flex h-full items-center	 gap-2 rounded-full bg-card-300 p-2 px-2">
-							<ThemeChanger />
 							<FriendsButton />
 							<Divider orientation="vertical" />
 							<NotificationsButton />
