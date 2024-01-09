@@ -63,6 +63,7 @@ import SettingSection from "@/components/SettingSection";
 import SuperSwitch from "@/components/SuperSwitch";
 import UploadButton from "@/components/UploadButton";
 import DeleteButton from "@/components/DeleteButton";
+import { on } from "events";
 
 const ChatContext = createContext({});
 
@@ -73,6 +74,10 @@ type Server = {
 	id: string;
 	members: User[];
 	enable_password: boolean;
+	enable_inviteonly: boolean;
+	owner: string;
+	admins: string[];
+	invites: User[];
 };
 
 type Message = {
@@ -102,7 +107,6 @@ type ChatContextType = {
 	setDisplayedMessages: (displayedMessages: any) => void;
 	setExpanded: (expanded: boolean) => void;
 	setListTab: (tab: "servers" | "friends") => void;
-	setMembers: (members: User[]) => void;
 	setSelectedServerId: (selectedServerId: string | null) => void;
 	setShowMembers: (showMembers: boolean) => void;
 	showMembers: boolean;
@@ -113,7 +117,7 @@ function useChatContext() {
 }
 
 function ServerListEntry({ server }: { server: Server }) {
-	const { expanded, setSelectedServerId } = useChatContext();
+	const { expanded, selectedServerId, setSelectedServerId } = useChatContext();
 
 	return (
 		<Button
@@ -121,26 +125,30 @@ function ServerListEntry({ server }: { server: Server }) {
 				setSelectedServerId(server.id);
 			}}
 			variant="transparent"
-			className="left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0"
+			className={twMerge("left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0	", selectedServerId == server.id && "bg-card-400")}
 		>
 			<div className="relative aspect-square h-full flex-shrink-0 p-4">
 				<div className="relative aspect-square h-full">
 					<SuperImage
 						src={server.icon}
-						className="absolute inset-0 aspect-square rounded-2xl object-cover"
+						className="absolute inset-0 aspect-square h-full w-full rounded-2xl object-cover"
 					/>
 				</div>
 			</div>
-			<div
-				className={twMerge(
-					"flex h-full flex-col items-start justify-center overflow-hidden",
-					expanded && "animate-lefttoright",
-					!expanded && "animate-righttoleft",
-				)}
-			>
-				<div className="max-w-full truncate text-sm">{server.name}</div>
-				<div className="max-w-full truncate text-xs text-foreground-500">
-					{server.description}
+			<div className="flex-1 overflow-hidden">
+				<div
+					className={twMerge(
+						"flex h-full flex-col items-start justify-center overflow-hidden",
+						expanded && "animate-lefttoright",
+						!expanded && "animate-righttoleft",
+					)}
+				>
+					<div className="max-w-full truncate text-sm">
+						{server.name}
+					</div>
+					<div className="max-w-full truncate text-xs text-foreground-500">
+						{server.description}
+					</div>
 				</div>
 			</div>
 		</Button>
@@ -148,9 +156,12 @@ function ServerListEntry({ server }: { server: Server }) {
 }
 
 function ServerCreateButton() {
-	const { expanded } = useChatContext();
+	const { expanded, serversMutate, setSelectedServerId, servers } =
+		useChatContext();
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { sessionMutate } = useContext(PublicContext) as any;
+	const [createLoading, setCreateLoading] = useState(false);
+	const [joinLoading, setJoinLoading] = useState(false);
 
 	const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -160,12 +171,15 @@ function ServerCreateButton() {
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/create`,
 			makeForm({ name }),
-			undefined,
+			setCreateLoading,
 			`Successfully created the channel`,
 			`Failed to create the channel`,
-			sessionMutate,
+			async () => {
+				await serversMutate();
+				onClose();
+				(e.target as HTMLFormElement).reset();
+			},
 		);
-		(e.target as HTMLFormElement).reset();
 	};
 
 	const handleJoin = (e: React.FormEvent<HTMLFormElement>) => {
@@ -174,8 +188,18 @@ function ServerCreateButton() {
 		const name = (formData.get("name") as string).trim();
 		const password = (formData.get("password") as string).trim();
 		if (name == "") return;
-		console.log(name, password);
-		(e.target as HTMLFormElement).reset();
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/chat/channel/join`,
+			makeForm({ name, password }),
+			setJoinLoading,
+			`Successfully joined the channel`,
+			`Failed to join the channel`,
+			async () => {
+				await serversMutate();
+				onClose();
+				(e.target as HTMLFormElement).reset();
+			},
+		);
 	};
 
 	return (
@@ -206,17 +230,19 @@ function ServerCreateButton() {
 								/>
 							</div>
 						</div>
-						<div
-							className={twMerge(
-								"flex h-full flex-col items-start justify-center overflow-hidden",
-								expanded && "animate-lefttoright",
-								!expanded && "animate-righttoleft",
-							)}
-						>
-							<div className="max-w-full truncate text-sm">
-								Add a Channel
+						<div className="flex-1 overflow-hidden">
+							<div
+								className={twMerge(
+									"flex h-full flex-col items-start justify-center overflow-hidden",
+									expanded && "animate-lefttoright",
+									!expanded && "animate-righttoleft",
+								)}
+							>
+								<div className="max-w-full truncate text-sm">
+									Add a Channel
+								</div>
+								{/* <div className="text-xs text-foreground-500 truncate max-w-full"></div> */}
 							</div>
-							{/* <div className="text-xs text-foreground-500 truncate max-w-full"></div> */}
 						</div>
 					</div>
 				</Button>
@@ -241,6 +267,7 @@ function ServerCreateButton() {
 								classNames={{
 									container: "flex-1 w-auto",
 								}}
+								disabled={createLoading}
 							/>
 							<div className="flex aspect-square h-full items-center justify-center">
 								<Button
@@ -248,6 +275,7 @@ function ServerCreateButton() {
 									className="aspect-square flex-shrink-0 rounded-full"
 									startContent={<Plus />}
 									iconOnly
+									loading={createLoading}
 								></Button>
 							</div>
 						</div>
@@ -267,6 +295,7 @@ function ServerCreateButton() {
 						</p>
 						<div className="flex h-12 w-full">
 							<Input
+								disabled={joinLoading}
 								name="name"
 								placeholder="Enter the channel name"
 								classNames={{
@@ -276,6 +305,7 @@ function ServerCreateButton() {
 						</div>
 						<div className="flex h-12 w-full">
 							<Input
+								disabled={joinLoading}
 								name="password"
 								type="password"
 								placeholder="Enter the password (optional)"
@@ -288,6 +318,7 @@ function ServerCreateButton() {
 							type="submit"
 							className="h-12 flex-shrink-0 rounded-full pl-6"
 							endContent={<ArrowRight />}
+							loading={joinLoading}
 						>
 							Join
 						</Button>
@@ -447,7 +478,7 @@ function ServerList() {
 			</div>
 			<div className="relative flex-1">
 				<div className="absolute inset-0">
-					<ScrollShadow size={64} className="h-full w-full">
+					<ScrollShadow size={64} className={"h-full w-full"}>
 						{servers?.map((server, i) => (
 							<ServerListEntry key={i} server={server} />
 						))}
@@ -461,7 +492,7 @@ function ServerList() {
 }
 
 function MemberList() {
-	const { expanded, showMembers, members } = useChatContext();
+	const { expanded, showMembers, members, selectedServer } = useChatContext();
 
 	return (
 		<div
@@ -485,7 +516,9 @@ function MemberList() {
 						entry: twMerge("", expanded && "hover:scale-100"),
 					}}
 					users={members}
-					showBadge={true}
+					showBadge={(user) => {
+						return selectedServer?.owner == user.id;
+					}}
 				/>
 			</div>
 		</div>
@@ -586,17 +619,35 @@ function MemberControls({
 }
 
 function InviteBox() {
+	const { members, selectedServer, serversMutate } = useChatContext();
+	const [loading, setLoading] = useState(false);
+	const formRef = useRef<HTMLFormElement>(null);
+
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
 		const username = ((formData.get("name") as string) || "").trim();
 		console.log(username);
-		e.currentTarget.reset();
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/invite",
+			makeForm({
+				id: selectedServer?.id,
+				username,
+			}),
+			setLoading,
+			`Successfully invited ${username}`,
+			`Failed to invite ${username}`,
+			async () => {
+				await serversMutate();
+				formRef.current?.reset();
+			},
+		);
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="flex w-full gap-4">
+		<form ref={formRef} onSubmit={handleSubmit} className="flex w-full gap-4">
 			<Input
+				disabled={loading}
 				classNames={{
 					container: "flex-1 h-12",
 				}}
@@ -608,6 +659,7 @@ function InviteBox() {
 				className="h-12 rounded-full"
 				type="submit"
 				startContent={<Plus />}
+				loading={loading}
 			>
 				Invite
 			</Button>
@@ -616,8 +668,22 @@ function InviteBox() {
 }
 
 function RevokeInviteButton({ user }: { user: User }) {
+	const { members, selectedServer, serversMutate } = useChatContext();
+	const [loading, setLoading] = useState(false);
+
 	const handleRevokeInvite = (user: User) => {
-		console.log(user);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/revoke_invite",
+			makeForm({
+				chatId: selectedServer?.id,
+				userId: user.id,
+			}),
+			setLoading,
+			`Successfully revoked invite to ${user.username}`,
+			`Failed to revoke invite to ${user.username}`,
+			serversMutate,
+		);
+		
 	};
 
 	return (
@@ -627,6 +693,7 @@ function RevokeInviteButton({ user }: { user: User }) {
 				className="pl-3"
 				startContent={<X />}
 				variant="danger"
+				loading={loading}
 			>
 				Revoke Invite
 			</Button>
@@ -658,7 +725,9 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	const [passwordEnabled, setPasswordEnabled] = useState(
 		selectedServer?.enable_password,
 	);
-	const [inviteOnlyEnabled, setInviteOnlyEnabled] = useState(false);
+	const [inviteOnlyEnabled, setInviteOnlyEnabled] = useState(
+		selectedServer?.enable_inviteonly,
+	);
 	const formRef = useRef<HTMLFormElement>(null);
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -686,9 +755,6 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	};
 
 	const handleTogglePassword = (value: boolean) => {
-		console.log({
-			value,
-		});
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/update",
 			makeForm({
@@ -696,15 +762,25 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 				enable_password: value,
 			}),
 			undefined,
-			`Successfully enabled password protection`,
-			`Failed to enable password protection`,
+			`Successfully ${!value ? "disabled" : "enabled"} password protection`,
+			`Failed to ${!value ? "disable" : "enable"} password protection`,
 			serversMutate,
 		);
 		setPasswordEnabled(value);
 	};
 
 	const handleToggleInviteOnly = (value: boolean) => {
-		console.log(value);
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/update",
+			makeForm({
+				id: selectedServer?.id,
+				enable_inviteonly: value,
+			}),
+			undefined,
+			`Successfully ${!value ? "disabled" : "enabled"} invite only mode`,
+			`Failed to ${!value ? "disable" : "enable"} invite only mode`,
+			serversMutate,
+		);
 		setInviteOnlyEnabled(value);
 	};
 
@@ -745,7 +821,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 							<div className="aspect-square h-[252px] flex-shrink-0">
 								<div className="relative h-full w-full">
 									<SuperImage
-										className="absolute inset-0 aspect-square rounded-2xl object-cover"
+										className="absolute inset-0 aspect-square h-full w-full rounded-2xl object-cover"
 										src={selectedServer?.icon}
 									/>
 								</div>
@@ -863,7 +939,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 									)}
 								>
 									<MemberControls
-										list={members}
+										list={selectedServer?.invites || []}
 										controls={RevokeInviteButton}
 									/>
 									<InviteBox />
@@ -930,8 +1006,8 @@ function DiscoverPage() {
 								className="absolute inset-0 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
 							/>
 						</div>
-						<div className="h-1/2 w-full flex flex-col gap-4">
-							<div className="flex h-16 items-center gap-20 pl-4 shrink-0">
+						<div className="flex h-1/2 w-full flex-col gap-4">
+							<div className="flex h-16 shrink-0 items-center gap-20 pl-4">
 								<div className="aspect-square h-full">
 									<div className="relative aspect-square h-[200%] -translate-y-1/2">
 										<SuperImage
@@ -942,17 +1018,13 @@ function DiscoverPage() {
 								</div>
 								<div className="flex h-12 w-full flex-col items-start justify-center">
 									<span>ddjkasjsksa</span>
-									<span className="flex text-xs text-foreground-500 items-center gap-1">
-									<Globe2 size={12} />										Public
+									<span className="flex items-center gap-1 text-xs text-foreground-500">
+										<Globe2 size={12} /> Public
 									</span>
 								</div>
 							</div>
-							<div className="flex-1 p-4 bg-black/25 rounded-b-3xl overflow-hidden text-foreground-400">
-								{
-									generateBullshitExpression(
-										"techBS",
-									)
-								}
+							<div className="flex-1 overflow-hidden rounded-b-3xl bg-black/25 p-4 text-foreground-400">
+								{generateBullshitExpression("techBS")}
 							</div>
 						</div>
 					</div>
@@ -970,6 +1042,7 @@ function ChatSection() {
 		setShowMembers,
 		messages,
 		selectedServer,
+		serversMutate,
 	} = useContext(ChatContext) as ChatContextType;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -992,6 +1065,19 @@ function ChatSection() {
 			messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
 	}, []);
+
+	const handleLeave = () => {
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/leave",
+			makeForm({
+				id: selectedServer?.id,
+			}),
+			undefined,
+			`Successfully left the channel`,
+			`Failed to leave the channel`,
+			serversMutate,
+		);
+	};
 
 	return (
 		<div
@@ -1022,7 +1108,7 @@ function ChatSection() {
 									<div className="aspect-square h-full p-2">
 										<div className="relative h-full w-full flex-shrink-0">
 											<SuperImage
-												className="absolute inset-0 aspect-square rounded-full object-cover"
+												className="absolute inset-0 aspect-square h-full w-full rounded-full object-cover"
 												src={selectedServer.icon}
 											/>
 										</div>
@@ -1067,6 +1153,10 @@ function ChatSection() {
 												onAction={(action) => {
 													if (action == "settings") {
 														onOpen();
+													} else if (
+														action == "leave"
+													) {
+														handleLeave();
 													}
 												}}
 											>
@@ -1152,15 +1242,10 @@ export default function Page() {
 		"/chat/channel/list",
 		fetcher,
 	) as any;
-
+	const prevServers = useRef(null) as any;
 	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
 	const [showMembers, setShowMembers] = useState(true);
 	const [expanded, setExpanded] = useState(false);
-	const [members, setMembers] = useState<User[]>(
-		Array.from({ length: 7 }).map((_, i: number) =>
-			i % 2 == 0 ? user1 : user2,
-		),
-	);
 	const [selectedServerId, setSelectedServerId] = useState<string | null>(
 		servers?.[0]?.id || null,
 	);
@@ -1181,6 +1266,7 @@ export default function Page() {
 		? akashicRecords[selectedServerId] || []
 		: [];
 
+	const members = selectedServer?.members || [];
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user == messages[i + 1]?.user) {
@@ -1198,12 +1284,21 @@ export default function Page() {
 	}
 
 	useEffect(() => {
-		if (fckUser && mrianUser) setMembers([fckUser, mrianUser]);
-		else {
-			console.log("fckUser", fckUser);
-			console.log("mrianUser", mrianUser);
+		if (prevServers.current != null) {
+			const serversInServersButNotInPrevServers = servers?.filter(
+				(server: Server) =>
+					!prevServers.current?.find(
+						(prevServer: Server) => prevServer.id == server.id,
+					),
+			);
+
+			if (serversInServersButNotInPrevServers?.length > 0) {
+				setSelectedServerId(serversInServersButNotInPrevServers[0].id);
+			}
 		}
-	}, [fckUser, mrianUser]);
+
+		prevServers.current = servers;
+	}, [servers]);
 
 	return (
 		<div
@@ -1227,7 +1322,6 @@ export default function Page() {
 					setDisplayedMessages,
 					setExpanded,
 					setListTab,
-					setMembers,
 					setSelectedServerId,
 					setShowMembers,
 					showMembers,
