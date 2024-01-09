@@ -282,4 +282,17 @@ export class ChatService {
 			},
 		});
 	}
+
+	async revokeInvite(chat: Chat, user: User) {
+		await this.prisma.chat.update({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				invites: {
+					set: chat.invites.filter((id) => id !== user.id),
+				},
+			},
+		});
+	}
 }

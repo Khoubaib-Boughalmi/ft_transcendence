@@ -61,6 +61,17 @@ export class ChannelInviteDTO {
     name: string;
 }
 
+
+
+export class ChannelRevokeInviteDTO {
+    @IsUUID()
+	userId: string;
+
+    @IsUUID()
+    chatId: string;
+}
+
+
 export class ChannelUpdateDTO {
 	@IsUUID()
 	id: string;
@@ -167,6 +178,21 @@ export class ChatController {
         if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id)) throw new HttpException('You are not allowed to do that', 403);
 
         return this.chatService.inviteToChat(chat, user);
+    }
+
+    @Post('channel/revoke_invite')
+    @UseGuards(JwtGuard)
+    @FormDataRequest()
+    async channelRevokeInvite(@Req() req, @Body() body: ChannelRevokeInviteDTO) {
+        const user = await this.userService.user({ id: body.userId });
+        if (!user) throw new HttpException('User not found', 404);
+
+        const chat = await this.chatService.chat({ id: body.chatId });
+        if (!chat) throw new HttpException('Channel not found', 404);
+        if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
+        if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id)) throw new HttpException('You are not allowed to do that', 403);
+
+        return this.chatService.revokeInvite(chat, user);
     }
 
 	@UseGuards(JwtGuard)
