@@ -74,7 +74,7 @@ export class ChatService {
 				},
 			},
             orderBy: {
-                id: 'asc',
+				created_at: 'asc',
             },
 		});
 
