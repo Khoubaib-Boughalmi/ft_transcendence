@@ -204,10 +204,13 @@ export class ChatService {
 		});
 	}
 
-	async deleteChat(chat: Chat) {
+	async deleteEmptyChat(chat: Chat) {
 		await this.prisma.chat.delete({
 			where: {
 				id: chat.id,
+				users: {
+					isEmpty: true,
+				},
 			},
 		});
 	}
@@ -233,8 +236,7 @@ export class ChatService {
 			this.removeOwnerFromChat(chat, userId);
 
 		// If the chat is empty, delete it
-		if (chat.users.length === 0)
-			this.deleteChat(chat);
+		this.deleteEmptyChat(chat);
 	}
 
     async updateChat(params: {
