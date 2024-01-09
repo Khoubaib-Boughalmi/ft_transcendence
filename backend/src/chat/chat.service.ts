@@ -9,7 +9,9 @@ type ChatChannel = {
 	description: string;
 	icon: string;
 	id: string;
+	owner: string;
 	members: UserProfileMicro[];
+	admins: string[];
     enable_password: boolean;
 };
 
@@ -87,7 +89,9 @@ export class ChatService {
                 name: chat.chatName,
                 description: chat.chatDescription,
                 icon: chat.chatIcon,
+				owner: chat.chatOwner,
                 members: chatMembers,
+				admins: chat.chatAdmins,
                 enable_password: chat.passwordProtected,
             });
         }
