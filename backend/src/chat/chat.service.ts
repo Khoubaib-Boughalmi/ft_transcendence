@@ -61,6 +61,7 @@ export class ChatService {
 		return this.createChat({
 			isGroupChat: false,
 			users: [userId1, userId2],
+			chatName: '',
 		});
 	}
 
