@@ -14,6 +14,7 @@ type ChatChannel = {
 	admins: string[];
     enable_password: boolean;
 	enable_inviteonly: boolean;
+	invites: UserProfileMicro[];
 };
 
 @Injectable()
@@ -84,6 +85,7 @@ export class ChatService {
         for (const chat of userChats) {
             // Get the micro profile of each chat member
             const chatMembers: UserProfileMicro[] = await this.userService.getMicroProfiles(chat.users);
+			const chatInvites: UserProfileMicro[] = await this.userService.getMicroProfiles(chat.invites);
 
             // Populate the chat channel info
             chats.push({
@@ -96,6 +98,7 @@ export class ChatService {
 				admins: chat.chatAdmins,
                 enable_password: chat.passwordProtected,
 				enable_inviteonly: chat.inviteOnly,
+				invites: chatInvites,
             });
         }
         return chats;
