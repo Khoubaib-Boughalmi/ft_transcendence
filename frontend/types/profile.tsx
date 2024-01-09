@@ -61,7 +61,7 @@ export type Match = {
 // 
 
 export type User = {
-	id: number;
+	id: string;
 	username: string;
 	avatar: string;
 	banner: string;
