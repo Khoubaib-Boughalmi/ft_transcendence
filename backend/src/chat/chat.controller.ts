@@ -48,6 +48,7 @@ export class ChannelJoinDTO {
     name: string;
 
     @Length(6, 120)
+	@IsOptional()
     password: string;
 }
 
