@@ -84,8 +84,8 @@ model Chat {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  chatName          String   @unique @default("")
-  chatIcon          String   @default("")
+  chatName          String   @unique
+  chatIcon          String   @default("https://dslv9ilpbe7p1.cloudfront.net/6P2tJV-6qxBDs2T8q21wZg_store_banner_image.jpeg")
   chatDescription   String   @default("")
   chatOwner         String   @default("")
   chatAdmins        String[] @default([])
