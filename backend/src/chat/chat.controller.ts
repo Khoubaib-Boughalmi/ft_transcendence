@@ -32,6 +32,7 @@ import { multerConfig } from 'src/user/user.controller';
 import filetypeinfo from 'magic-bytes.js';
 import { AppService } from 'src/app.service';
 import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcrypt';
 
 export class UserDTO {
 	@IsLowercase()
@@ -131,7 +132,7 @@ export class ChatController {
 	async channelJoin(@Req() req, @Body() body: ChannelJoinDTO) {
 		const chat = await this.chatService.chat({ chatName: body.name });
 		if (!chat) throw new HttpException('Channel not found', 404);
-		if (chat.passwordProtected && body.password !== chat.chatPassword)
+		if (chat.passwordProtected && bcrypt.compareSync(body.password, chat.chatPassword))
 			throw new HttpException('Invalid password', 403);
 		if (chat.inviteOnly && !chat.invites.includes(req.user.id))
 			throw new HttpException('You are not allowed to do that', 403);
@@ -167,7 +168,7 @@ export class ChatController {
 				chatName: body.name,
 				chatDescription: body.description,
 				passwordProtected: body.enable_password,
-				chatPassword: body.password,
+				chatPassword: bcrypt.hashSync(body.password, 10),
 				inviteOnly: body.enable_inviteonly,
 			},
 		});
