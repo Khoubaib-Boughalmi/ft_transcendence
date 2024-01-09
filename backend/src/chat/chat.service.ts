@@ -77,13 +77,9 @@ export class ChatService {
 
         // Create the list of chat channels
         let chats: ChatChannel[] = [];
-        userChats.forEach(chat => {
+        for (const chat of userChats) {
             // Get the micro profile of each chat member
-            const chatMembers: UserProfileMicro[] = [];
-            chat.users.forEach(async userId => {
-                const user = await this.userService.getProfileMicro({ id: userId });
-                chatMembers.push(user);
-            });
+            const chatMembers: UserProfileMicro[] = await this.userService.getMicroProfiles(chat.users);
 
             // Populate the chat channel info
             chats.push({
@@ -94,7 +90,7 @@ export class ChatService {
                 members: chatMembers,
                 enable_password: chat.passwordProtected,
             });
-        });
+        }
         return chats;
     }
 

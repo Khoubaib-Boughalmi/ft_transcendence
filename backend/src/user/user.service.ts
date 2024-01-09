@@ -21,9 +21,6 @@ export type UserProfile = {
 	country: string;
 	level: number;
 	level_percentage: number;
-	wins: number;
-	losses: number;
-	matches: number;
 	rank: number;
 	division: string;
 	achievements: Achievement[];
@@ -33,6 +30,9 @@ export type UserProfile = {
 export type UserProfileMicro = UserProfile;
 
 export type UserProfileMini = UserProfile & {
+	wins: number;
+	losses: number;
+	matches: number;
 	friends: UserProfileMicro[];
 };
 
@@ -88,7 +88,7 @@ export class UserService {
 		}
 	}
 
-	async getProfileBase(user: User): Promise<UserProfileMicro> {
+	async getMatchesInfo(user: User): Promise<any> {
 		// Find matches with ids in user.history
 		const matches = await this.prisma.gameMatch.findMany({
 			where: {
@@ -97,10 +97,15 @@ export class UserService {
 				},
 			},
 		});
-		const total_matches = matches.length;
-		const matches_won = matches.filter(
-			(match) => match.winner_id === user.id,
-		).length;
+		return {
+			matches: matches.length,
+			wins: matches.filter((match) => match.winner_id === user.id).length,
+			losses: matches.filter((match) => match.winner_id !== user.id)
+				.length,
+		};
+	}
+
+	getProfileBase(user: User): UserProfileMicro {
 		return {
 			id: user.id,
 			username: user.username,
@@ -111,10 +116,6 @@ export class UserService {
 			country: user.country,
 			level: user.level,
 			level_percentage: (user.level_exp * 100) / 1000,
-			matches: matches.length,
-			wins: matches.filter((match) => match.winner_id === user.id).length,
-			losses: matches.filter((match) => match.winner_id !== user.id)
-				.length,
 			rank: user.rank,
 			division: user.division,
 			achievements: [],
@@ -128,7 +129,8 @@ export class UserService {
 		const user = await this.user(userWhereUniqueInput);
 		if (!user) return null;
 		return {
-			...(await this.getProfileBase(user)),
+			...this.getProfileBase(user),
+			...(await this.getMatchesInfo(user)),
 			two_factor: user.two_factor,
 			friends: await this.getFriends(user.id),
 			friend_requests: await this.getFriendRequests(user.id),
@@ -142,7 +144,8 @@ export class UserService {
 		const user = await this.user(userWhereUniqueInput);
 		if (!user) return null;
 		return {
-			...(await this.getProfileBase(user)),
+			...this.getProfileBase(user),
+			...(await this.getMatchesInfo(user)),
 			friends: await this.getFriends(user.id),
 		};
 	}
@@ -153,6 +156,17 @@ export class UserService {
 		const user = await this.user(userWhereUniqueInput);
 		if (!user) return null;
 		return this.getProfileBase(user);
+	}
+
+	async getMicroProfiles(user_ids: string[]): Promise<UserProfileMicro[]> {
+		const users = await this.prisma.user.findMany({
+			where: {
+				id: {
+					in: user_ids,
+				},
+			},
+		});
+		return users.map((user) => this.getProfileBase(user));
 	}
 
 	async gainExp(id: string, exp: number): Promise<void> {
