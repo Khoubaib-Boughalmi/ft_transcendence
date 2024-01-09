@@ -139,32 +139,6 @@
 }
 
 [data-theme='purple'] {
-	--card-default: #330033;
-	--card-100: #190019;
-	--card-200: #290029;
-	--card-250: #310031;
-	--card-275: #330033;
-	--card-300: #3d003d;
-	--card-400: #520052;
-	--card-500: #650065;
-	--card-600: #b800b8;
-	--card-700: #ff0aff;
-	--card-800: #ff5cff;
-	--card-900: #ffadff;
-
-	--accent-default: #660066;
-	--accent-100: #4a044a;
-	--accent-200: #6e086e;
-	--accent-300: #a50ca5;
-	--accent-400: #dc11dc;
-	--accent-500: #cc66cc;
-	--accent-600: #d18fd1;
-	--accent-700: #e1b4e1;
-	--accent-800: #f0d9f0;
-	--accent-900: #f9f0f9;
-}
-
-[data-theme='pink'] {
 	--card-default: #400033;
 	--card-100: #1a0010;
 	--card-200: #360029;
@@ -190,31 +164,56 @@
 	--accent-900: #fcd7eb;
 }
 
+[data-theme='pink'] {
+	--card-default: #ff69b4;
+	--card-100: #f25b9f;
+	--card-200: #e64d8a;
+	--card-250: #dd4075;
+	--card-275: #d43360;
+	--card-300: #8e0e39;
+	--card-400: #ae1938;
+	--card-500: #c0264c;
+	--card-600: #f8a6e6;
+	--card-700: #f696d9;
+	--card-800: #f487ce;
+	--card-900: #f277c3;
+ 
+	--accent-default: #ff0066;
+	--accent-100: #c70048;
+	--accent-200: #9e0030;
+	--accent-300: #7d0018;
+	--accent-400: #5c0006;
+	--accent-500: #ff0066;
+	--accent-600: #ff4d99;
+	--accent-700: #ff8ab3;
+	--accent-800: #ffcad0;
+	--accent-900: #ffe2e6;
+}
 
 [data-theme='yellow'] {
-	--card-default: #664c00;
-	--card-100: #402800;
-	--card-200: #7f5b00;
-	--card-250: #997000;
-	--card-275: #aa7e00;
-	--card-300: #cc9900;
-	--card-400: #ffbf00;
-	--card-500: #ffcc33;
-	--card-600: #ffd966;
-	--card-700: #ffeb99;
-	--card-800: #fff2b2;
-	--card-900: #fff8cc;
+    --card-default: #f7d300;
+    --card-100: #774f00;
+    --card-200: #996600;
+    --card-250: #aa7700;
+    --card-275: #b38000;
+    --card-300: #cc9900;
+    --card-400: #eece00;
+    --card-500: #ffff00;
+    --card-600: #ffef26;
+    --card-700: #ffff99;
+    --card-800: #ffffc2;
+    --card-900: #ffffea;
 
-	--accent-default: #996600;
-	--accent-100: #704a04;
-	--accent-200: #b78e0f;
-	--accent-300: #cca31a;
-	--accent-400: #e6b824;
-	--accent-500: #ffcc33;
-	--accent-600: #ffd966;
-	--accent-700: #ffe688;
-	--accent-800: #ffedb2;
-	--accent-900: #fff5cc;
+    --accent-default: #f4c634;
+    --accent-100: #664400;
+    --accent-200: #b37704;
+    --accent-300: #f0a508;
+    --accent-400: #ffc211;
+    --accent-500: #ffff99;
+    --accent-600: #ffffdd;
+    --accent-700: #ffffe6;
+    --accent-800: #fffff9;
+    --accent-900: #fffffc;
 }
 
 .bronze {
