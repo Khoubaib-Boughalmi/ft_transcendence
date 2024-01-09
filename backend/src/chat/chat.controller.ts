@@ -45,32 +45,30 @@ export class GroupUsersDTO {
 }
 
 export class ChannelJoinDTO {
-    @Length(3, 100)
-    name: string;
+	@Length(3, 100)
+	name: string;
 
-    @Length(6, 120)
+	@Length(6, 120)
 	@IsOptional()
-    password: string;
+	password: string;
 }
 
 export class ChannelInviteDTO {
-    @IsUUID()
+	@IsUUID()
 	id: string;
 
-    @Length(3, 100)
-    name: string;
+	@IsLowercase()
+    @Length(1, 36)
+	username: string;
 }
-
-
 
 export class ChannelRevokeInviteDTO {
-    @IsUUID()
+	@IsUUID()
 	userId: string;
 
-    @IsUUID()
-    chatId: string;
+	@IsUUID()
+	chatId: string;
 }
-
 
 export class ChannelUpdateDTO {
 	@IsUUID()
@@ -85,7 +83,9 @@ export class ChannelUpdateDTO {
 	description: string;
 
 	@IsBoolean()
-    @Transform(({ value }) => { return [true, 'true', '1', 1].indexOf(value) > -1; })  
+	@Transform(({ value }) => {
+		return [true, 'true', '1', 1].indexOf(value) > -1;
+	})
 	@IsOptional()
 	enable_password: boolean;
 
@@ -93,8 +93,10 @@ export class ChannelUpdateDTO {
 	@IsOptional()
 	password: string;
 
-    @IsBoolean()
-    @Transform(({ value }) => { return [true, 'true', '1', 1].indexOf(value) > -1; })  
+	@IsBoolean()
+	@Transform(({ value }) => {
+		return [true, 'true', '1', 1].indexOf(value) > -1;
+	})
 	@IsOptional()
 	enable_inviteonly: boolean;
 }
@@ -104,7 +106,7 @@ export class ChatController {
 	constructor(
 		private readonly chatService: ChatService,
 		private readonly appService: AppService,
-        private readonly userService: UserService,
+		private readonly userService: UserService,
 	) {}
 
 	@Get('channel/list')
@@ -123,28 +125,34 @@ export class ChatController {
 		return this.chatService.createOneToManyChat(req.user.id, body.name);
 	}
 
-    @Post('channel/join')
-    @UseGuards(JwtGuard)
-    @FormDataRequest()
-    async channelJoin(@Req() req, @Body() body: ChannelJoinDTO) {
-        const chat = await this.chatService.chat({ chatName: body.name });
-        if (!chat) throw new HttpException('Channel not found', 404);
-        if (chat.passwordProtected && body.password !== chat.chatPassword) throw new HttpException('Invalid password', 403);
-        if (chat.inviteOnly && !chat.invites.includes(req.user.id)) throw new HttpException('You are not allowed to do that', 403);
+	@Post('channel/join')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelJoin(@Req() req, @Body() body: ChannelJoinDTO) {
+		const chat = await this.chatService.chat({ chatName: body.name });
+		if (!chat) throw new HttpException('Channel not found', 404);
+		if (chat.passwordProtected && body.password !== chat.chatPassword)
+			throw new HttpException('Invalid password', 403);
+		if (chat.inviteOnly && !chat.invites.includes(req.user.id))
+			throw new HttpException('You are not allowed to do that', 403);
 
-        return this.chatService.joinChat(chat, req.user.id, body.password);
-    }
+		return this.chatService.joinChat(chat, req.user.id, body.password);
+	}
 
-    @Post('channel/leave')
-    @UseGuards(JwtGuard)
-    @FormDataRequest()
-    async channelLeave(@Req() req, @Body() body: ChannelUpdateDTO) {
-        const chat = await this.chatService.chat({ id: body.id });
-        if (!chat) throw new HttpException('Channel not found', 404);
-        if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
+	@Post('channel/leave')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelLeave(@Req() req, @Body() body: ChannelUpdateDTO) {
+		const chat = await this.chatService.chat({ id: body.id });
+		if (!chat) throw new HttpException('Channel not found', 404);
+		if (!chat.users.includes(req.user.id))
+			throw new HttpException(
+				'You are not a member of this channel',
+				403,
+			);
 
-        return this.chatService.leaveChat(chat, req.user.id);
-    }
+		return this.chatService.leaveChat(chat, req.user.id);
+	}
 
 	@Post('channel/update')
 	@UseGuards(JwtGuard)
@@ -160,40 +168,53 @@ export class ChatController {
 				chatDescription: body.description,
 				passwordProtected: body.enable_password,
 				chatPassword: body.password,
-                inviteOnly: body.enable_inviteonly,
+				inviteOnly: body.enable_inviteonly,
 			},
 		});
 	}
 
-    @Post('channel/invite')
-    @UseGuards(JwtGuard)
-    @FormDataRequest()
-    async channelInvite(@Req() req, @Body() body: ChannelInviteDTO) {
-        const user = await this.userService.user({ username: body.name });
-        if (!user) throw new HttpException('User not found', 404);
+	@Post('channel/invite')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelInvite(@Req() req, @Body() body: ChannelInviteDTO) {
+		const user = await this.userService.user({ username: body.username });
+		if (!user) throw new HttpException('User not found', 404);
 
-        const chat = await this.chatService.chat({ id: body.id });
-        if (!chat) throw new HttpException('Channel not found', 404);
-        if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
-        if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id)) throw new HttpException('You are not allowed to do that', 403);
+		const chat = await this.chatService.chat({ id: body.id });
+		if (!chat) throw new HttpException('Channel not found', 404);
+		if (!chat.users.includes(req.user.id))
+			throw new HttpException(
+				'You are not a member of this channel',
+				403,
+			);
+		if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id))
+			throw new HttpException('You are not allowed to do that', 403);
 
-        return this.chatService.inviteToChat(chat, user);
-    }
+		return this.chatService.inviteToChat(chat, user);
+	}
 
-    @Post('channel/revoke_invite')
-    @UseGuards(JwtGuard)
-    @FormDataRequest()
-    async channelRevokeInvite(@Req() req, @Body() body: ChannelRevokeInviteDTO) {
-        const user = await this.userService.user({ id: body.userId });
-        if (!user) throw new HttpException('User not found', 404);
+	@Post('channel/revoke_invite')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelRevokeInvite(
+		@Req() req,
+		@Body() body: ChannelRevokeInviteDTO,
+	) {
+		const user = await this.userService.user({ id: body.userId });
+		if (!user) throw new HttpException('User not found', 404);
 
-        const chat = await this.chatService.chat({ id: body.chatId });
-        if (!chat) throw new HttpException('Channel not found', 404);
-        if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
-        if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id)) throw new HttpException('You are not allowed to do that', 403);
+		const chat = await this.chatService.chat({ id: body.chatId });
+		if (!chat) throw new HttpException('Channel not found', 404);
+		if (!chat.users.includes(req.user.id))
+			throw new HttpException(
+				'You are not a member of this channel',
+				403,
+			);
+		if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id))
+			throw new HttpException('You are not allowed to do that', 403);
 
-        return this.chatService.revokeInvite(chat, user);
-    }
+		return this.chatService.revokeInvite(chat, user);
+	}
 
 	@UseGuards(JwtGuard)
 	@UseInterceptors(FileInterceptor('icon', multerConfig))
