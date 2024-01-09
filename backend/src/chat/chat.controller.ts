@@ -88,6 +88,28 @@ export class ChatController {
 		return this.chatService.createOneToManyChat(req.user.id, body.name);
 	}
 
+    @Post('channel/join')
+    @UseGuards(JwtGuard)
+    @FormDataRequest()
+    async channelJoin(@Req() req, @Body() body: ChannelUpdateDTO) {
+        const chat = await this.chatService.chat({ chatName: body.name });
+        if (!chat) throw new HttpException('Channel not found', 404);
+        if (chat.passwordProtected && body.password !== chat.chatPassword) throw new HttpException('Invalid password', 403);
+
+        return this.chatService.joinChat(chat, req.user.id, body.password);
+    }
+
+    @Post('channel/leave')
+    @UseGuards(JwtGuard)
+    @FormDataRequest()
+    async channelLeave(@Req() req, @Body() body: ChannelUpdateDTO) {
+        const chat = await this.chatService.chat({ chatName: body.name });
+        if (!chat) throw new HttpException('Channel not found', 404);
+        if (!chat.users.includes(req.user.id)) throw new HttpException('You are not a member of this channel', 403);
+
+        return this.chatService.leaveChat(chat, req.user.id);
+    }
+
 	@Post('channel/update')
 	@UseGuards(JwtGuard)
 	@FormDataRequest()

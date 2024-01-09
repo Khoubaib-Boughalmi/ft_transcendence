@@ -162,6 +162,32 @@ export class ChatService {
 		return messagesWithUsers;
 	}
 
+	async joinChat(chat: Chat, userId: string, password?: string) {
+		await this.prisma.chat.update({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				users: {
+					push: userId,
+				},
+			},
+		});
+	}
+
+	async leaveChat(chat: Chat, userId: string) {
+		await this.prisma.chat.update({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				users: {
+					set: chat.users.filter((id) => id !== userId),
+				},
+			},
+		});
+	}
+
     async updateChat(params: {
 		where: Prisma.ChatWhereUniqueInput;
 		data: Prisma.ChatUpdateInput;
