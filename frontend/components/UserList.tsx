@@ -96,7 +96,7 @@ function UserListListEntry({
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
 	Controls?: any;
-	showBadge?: boolean;
+	showBadge?: (user: User) => boolean;
 }) {
 	const isOnline = useIsOnline(user);
 
@@ -124,7 +124,7 @@ function UserListListEntry({
 						classNames?.entry,
 					)}
 				>
-					{showBadge && (
+					{(showBadge && showBadge(user)) && (
 						<div className="absolute left-0 top-0 z-10">
 							<img
 								src="/owner.png"
@@ -183,7 +183,7 @@ export default function UserList({
 	type: "list" | "grid";
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
-	showBadge?: boolean;
+	showBadge?: (user: User) => boolean;
 	Controls?: ({ user }: { user: User }) => any;
 }) {
 	if (type == "list")
