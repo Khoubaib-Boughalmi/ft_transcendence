@@ -276,7 +276,7 @@ export class ChatService {
 				id: chat.id,
 			},
 			data: {
-				users: {
+				invites: {
 					push: user.id,
 				},
 			},
