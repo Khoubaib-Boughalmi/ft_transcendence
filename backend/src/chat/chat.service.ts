@@ -229,14 +229,14 @@ export class ChatService {
 
 		// If you were a chat admin, remove you from the chat admins
 		if (chat.chatAdmins.includes(userId))
-			this.removeAdminFromChat(chat, userId);
+			await this.removeAdminFromChat(chat, userId);
 
 		// If you were the chat owner, remove the chat owner
 		if (chat.chatOwner === userId)
-			this.removeOwnerFromChat(chat, userId);
+			await this.removeOwnerFromChat(chat, userId);
 
 		// If the chat is empty, delete it
-		this.deleteEmptyChat(chat);
+		await this.deleteEmptyChat(chat);
 	}
 
     async updateChat(params: {
