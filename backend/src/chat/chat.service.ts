@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Message, Chat, Prisma } from '@prisma/client';
+import { Message, Chat, Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { UserDTO } from './chat.controller';
 import { UserProfileMicro, UserService } from 'src/user/user.service';
@@ -177,6 +177,38 @@ export class ChatService {
 		});
 	}
 
+	async removeAdminFromChat(chat: Chat, userId: string) {
+		await this.prisma.chat.update({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				chatAdmins: {
+					set: chat.chatAdmins.filter((id) => id !== userId),
+				},
+			},
+		});
+	}
+
+	async removeOwnerFromChat(chat: Chat, userId: string) {
+		await this.prisma.chat.update({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				chatOwner: null,
+			},
+		});
+	}
+
+	async deleteChat(chat: Chat) {
+		await this.prisma.chat.delete({
+			where: {
+				id: chat.id,
+			},
+		});
+	}
+
 	async leaveChat(chat: Chat, userId: string) {
 		await this.prisma.chat.update({
 			where: {
@@ -188,6 +220,18 @@ export class ChatService {
 				},
 			},
 		});
+
+		// If you were a chat admin, remove you from the chat admins
+		if (chat.chatAdmins.includes(userId))
+			this.removeAdminFromChat(chat, userId);
+
+		// If you were the chat owner, remove the chat owner
+		if (chat.chatOwner === userId)
+			this.removeOwnerFromChat(chat, userId);
+
+		// If the chat is empty, delete it
+		if (chat.users.length === 0)
+			this.deleteChat(chat);
 	}
 
     async updateChat(params: {
@@ -234,5 +278,5 @@ export class ChatService {
 				},
 			},
 		});
-    }
+	}
 }
