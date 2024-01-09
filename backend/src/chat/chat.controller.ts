@@ -43,6 +43,14 @@ export class GroupUsersDTO {
 	name: string;
 }
 
+export class ChannelJoinDTO {
+    @Length(3, 100)
+    name: string;
+
+    @Length(6, 120)
+    password: string;
+}
+
 export class ChannelUpdateDTO {
 	@IsUUID()
 	id: string;
@@ -91,7 +99,7 @@ export class ChatController {
     @Post('channel/join')
     @UseGuards(JwtGuard)
     @FormDataRequest()
-    async channelJoin(@Req() req, @Body() body: ChannelUpdateDTO) {
+    async channelJoin(@Req() req, @Body() body: ChannelJoinDTO) {
         const chat = await this.chatService.chat({ chatName: body.name });
         if (!chat) throw new HttpException('Channel not found', 404);
         if (chat.passwordProtected && body.password !== chat.chatPassword) throw new HttpException('Invalid password', 403);
