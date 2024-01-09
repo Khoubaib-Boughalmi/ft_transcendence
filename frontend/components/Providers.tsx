@@ -61,7 +61,7 @@ export default function Providers({ accessToken, children }: any) {
 				},
 			}}
 		>
-			<ThemeProvider>
+			<ThemeProvider defaultTheme="red">
 				<NextUIProvider>{children}</NextUIProvider>
 			</ThemeProvider>
 			<Toaster
