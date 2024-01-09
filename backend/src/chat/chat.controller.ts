@@ -72,6 +72,11 @@ export class ChannelUpdateDTO {
 	@Length(6, 120)
 	@IsOptional()
 	password: string;
+
+    @IsBoolean()
+    @Transform(({ value }) => { return [true, 'true', '1', 1].indexOf(value) > -1; })  
+	@IsOptional()
+	enable_inviteonly: boolean;
 }
 
 @Controller('chat')
@@ -133,6 +138,7 @@ export class ChatController {
 				chatDescription: body.description,
 				passwordProtected: body.enable_password,
 				chatPassword: body.password,
+                inviteOnly: body.enable_inviteonly,
 			},
 		});
 	}

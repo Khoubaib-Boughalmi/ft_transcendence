@@ -13,6 +13,7 @@ type ChatChannel = {
 	members: UserProfileMicro[];
 	admins: string[];
     enable_password: boolean;
+	enable_inviteonly: boolean;
 };
 
 @Injectable()
@@ -94,6 +95,7 @@ export class ChatService {
                 members: chatMembers,
 				admins: chat.chatAdmins,
                 enable_password: chat.passwordProtected,
+				enable_inviteonly: chat.inviteOnly,
             });
         }
         return chats;

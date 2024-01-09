@@ -91,6 +91,7 @@ model Chat {
   chatAdmins        String[] @default([])
   users             String[]
   isGroupChat       Boolean  @default(false)
+  inviteOnly        Boolean  @default(false)
   invites           String[] @default([])
   passwordProtected Boolean  @default(false)
   chatPassword      String   @default("")
