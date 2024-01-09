@@ -205,14 +205,17 @@ export class ChatService {
 	}
 
 	async deleteEmptyChat(chat: Chat) {
-		await this.prisma.chat.delete({
-			where: {
-				id: chat.id,
-				users: {
-					isEmpty: true,
+		// Try to delete the chat if it's empty
+		try {
+			await this.prisma.chat.delete({
+				where: {
+					id: chat.id,
+					users: {
+						isEmpty: true,
+					},
 				},
-			},
-		});
+			});
+		} catch (e) {}
 	}
 
 	async leaveChat(chat: Chat, userId: string) {
