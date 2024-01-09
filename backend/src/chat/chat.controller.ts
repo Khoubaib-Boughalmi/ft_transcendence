@@ -132,7 +132,7 @@ export class ChatController {
 	async channelJoin(@Req() req, @Body() body: ChannelJoinDTO) {
 		const chat = await this.chatService.chat({ chatName: body.name });
 		if (!chat) throw new HttpException('Channel not found', 404);
-		if (chat.passwordProtected && bcrypt.compareSync(body.password, chat.chatPassword))
+		if (chat.passwordProtected && body.password && bcrypt.compareSync(body.password, chat.chatPassword))
 			throw new HttpException('Invalid password', 403);
 		if (chat.inviteOnly && !chat.invites.includes(req.user.id))
 			throw new HttpException('You are not allowed to do that', 403);
@@ -162,13 +162,16 @@ export class ChatController {
 		if (!(await this.chatService.isChatOwnerOrAdmin(req.user.id, body.id)))
 			throw new HttpException('You are not allowed to do that', 403);
 
+        if (body.password)
+            body.password = bcrypt.hashSync(body.password, 10);
+
 		await this.chatService.updateChat({
 			where: { id: body.id },
 			data: {
 				chatName: body.name,
 				chatDescription: body.description,
 				passwordProtected: body.enable_password,
-				chatPassword: bcrypt.hashSync(body.password, 10),
+				chatPassword: body.password,
 				inviteOnly: body.enable_inviteonly,
 			},
 		});
