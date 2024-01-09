@@ -199,7 +199,7 @@ export class ChatService {
 				id: chat.id,
 			},
 			data: {
-				chatOwner: null,
+				chatOwner: "",
 			},
 		});
 	}
