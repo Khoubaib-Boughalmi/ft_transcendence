@@ -330,14 +330,14 @@ export class ChatService {
 		});
 	}
 
-	async joinChannelOnSocket(userId: string, chatId: string) {
+	async joinChannelOnSocket(chatId: string, userId: string) {
 		const sockets = this.socketService.getUserSockets(userId);
 		if (!sockets) return;
 		for (const socket of sockets)
 			socket.join(chatId);
 	}
 
-	async leaveChannelOnSocket(userId: string, chatId: string) {
+	async leaveChannelOnSocket(chatId: string, userId: string) {
 		const sockets = this.socketService.getUserSockets(userId);
 		if (!sockets) return;
 		for (const socket of sockets)
