@@ -164,6 +164,9 @@ export class ChatService {
 			where: {
 				chat_id: chatId,
 			},
+			orderBy: {
+				created_at: 'desc',
+			},
 		});
 
 		// Create a set of unique user ids and get their micro profiles
