@@ -153,10 +153,17 @@ export class ChatService {
 		};
 	}
 
-	async createMessage(data: Prisma.MessageCreateInput): Promise<Message> {
-		return this.prisma.message.create({
-			data,
-		});
+	async createMessage(data: Prisma.MessageCreateInput): Promise<ChatMessage> {
+		const message = await this.prisma.message.create({ data });
+		const userProfile = await this.userService.getProfileMicro({ id: data.user_id });
+		return {
+			id: message.id,
+			chatId: message.chat_id,
+			user: userProfile,
+			content: message.content,
+			createdAt: message.created_at,
+			updatedAt: message.updated_at,
+		}
 	}
 
 	async getChatMessages(chatId: string) {
