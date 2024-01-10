@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
+import { SocketModule } from './socket/socket.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -30,6 +31,7 @@ import * as Joi from 'joi';
 		AuthModule,
 		UserModule,
 		ChatModule,
+		SocketModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

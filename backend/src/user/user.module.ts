@@ -8,6 +8,7 @@ import { UserGateway } from './user.gateway';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatService } from 'src/chat/chat.service';
+import { SocketService } from 'src/socket/socket.service';
 
 @Module({
 	providers: [
@@ -17,6 +18,7 @@ import { ChatService } from 'src/chat/chat.service';
 		UserGateway,
 		AuthService,
 		ChatService,
+		SocketService,
 	],
 	controllers: [UserController],
 	exports: [UserService],

@@ -9,6 +9,7 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from './user.service';
 import { ChatService } from 'src/chat/chat.service';
+import { SocketService } from 'src/socket/socket.service';
 
 @WebSocketGateway({
 	cors: {
@@ -21,11 +22,11 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		private authService: AuthService,
 		private userService: UserService,
 		private chatService: ChatService,
+		private socketService: SocketService,
 	) {}
 
 	@WebSocketServer()
 	private server: Server;
-	private onlineUsers: Map<string, Socket[]> = new Map();
 
 	async handleConnection(client: Socket) {
 		console.log(`Client connected: ${client.id}`);
@@ -43,11 +44,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	handleDisconnect(client: Socket) {
 		console.log(`Client disconnected: ${client.id}`);
 		if (!client.data) return;
-		const sockets = this.onlineUsers[client.data.id];
-		if (!sockets) return;
-		const index = sockets.indexOf(client);
-		if (index === -1) return;
-		sockets.splice(index, 1);
+		this.socketService.removeUserSocket(client.data.id, client);
 	}
 
 	async login(client: Socket, access_token: string) {
@@ -55,14 +52,13 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!payload) return client.disconnect();
 		if (!payload?.two_factor_passed) return client.disconnect();
 
-		this.onlineUsers[payload.id] = this.onlineUsers[payload.id] || [];
-		this.onlineUsers[payload.id].push(client);
+		this.socketService.addUserSocket(payload.id, client);
 		client.data = { id: payload.id };
 		console.log(`Client logged in: ${client.id}`);
 	}
 
 	async isOnline(id: string): Promise<boolean> {
-		const sockets = this.onlineUsers[id];
+		const sockets = this.socketService.getUserSockets(id);
 		if (!sockets) return false;
 		return sockets.length > 0;
 	}
