@@ -41,6 +41,7 @@ import {
 	DropdownItem,
 	DropdownTrigger,
 	ScrollShadow,
+	Spinner,
 	Switch,
 	Textarea,
 	useDisclosure,
@@ -1055,6 +1056,23 @@ function DiscoverPage() {
 	);
 }
 
+function SectionContainer({
+	children,
+}: any) {
+	const { expanded } = useChatContext();
+
+	return (
+		<div
+			className={twMerge(
+				"absolute inset-0 flex translate-x-full flex-col overflow-hidden rounded-r-3xl bg-gradient-to-tr from-card-300 from-40% to-card-500 transition-all @md:left-20 @md:translate-x-0",
+				expanded &&
+					"translate-x-0 select-none brightness-50 @md:translate-x-56",
+			)}>
+			{children}
+		</div>
+	)
+}
+
 function ChatSection() {
 	const {
 		expanded,
@@ -1063,6 +1081,7 @@ function ChatSection() {
 		setShowMembers,
 		messages,
 		selectedServer,
+		selectedServerId,
 		serversMutate,
 	} = useContext(ChatContext) as ChatContextType;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
@@ -1071,6 +1090,7 @@ function ChatSection() {
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
 		if (messageBox) {
+			console.log("attmepting to scroll")
 			const currentScroll = messageBox.scrollTop;
 			const currentHeight = messageBox.scrollHeight;
 			const visibleHeight = messageBox.clientHeight;
@@ -1078,14 +1098,14 @@ function ChatSection() {
 			if (currentHeight - currentScroll < visibleHeight * 2)
 				messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
-	}, [messages]);
+	}, [messages, selectedServerId, messageBoxRef]);
 
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
 		if (messageBox) {
 			messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
-	}, []);
+	}, [messageBoxRef]);
 
 	const handleLeave = () => {
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
@@ -1101,13 +1121,7 @@ function ChatSection() {
 	};
 
 	return (
-		<div
-			className={twMerge(
-				"absolute inset-0 flex translate-x-full flex-col overflow-hidden rounded-r-3xl bg-gradient-to-tr from-card-300 from-40% to-card-500 transition-all @md:left-20 @md:translate-x-0",
-				expanded &&
-					"translate-x-0 select-none brightness-50 @md:translate-x-56",
-			)}
-		>
+		<SectionContainer>
 			<SettingsModal
 				key={selectedServer?.id}
 				isOpen={isOpen}
@@ -1248,13 +1262,37 @@ function ChatSection() {
 			) : (
 				<DiscoverPage />
 			)}
-		</div>
+		</SectionContainer>
 	);
 }
 
 const randomString = () => Math.random().toString(36).substring(7);
 
-function useServerList() {}
+function LoadingSection({
+	isLoading,
+}: {
+	isLoading?: boolean;
+}) {
+	const [visible, setVisible] = useState(true);
+
+	useEffect(() => {
+		if (isLoading == false)
+			setTimeout(() => {
+				setVisible(false);
+			}, 500);
+
+	}, [isLoading]);
+
+	return (
+		visible && <div className={twMerge("z-20 absolute inset-0 transition-opacity opacity-100 duration-500", !isLoading && "opacity-0")} >
+			<SectionContainer>
+				<div className="flex h-full w-full justify-center items-center">
+					<Spinner/>
+				</div>
+			</SectionContainer>
+		</div>
+	)
+}
 
 export default function Page() {
 	const { session } = useContext(PublicContext) as any;
@@ -1294,6 +1332,7 @@ export default function Page() {
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
+	const loadingSectionVisible = selectedServerMessagesLoading && (selectedServerMessages == null);
 
 	const messages = selectedServerId
 		? akashicRecords[selectedServerId] || []
@@ -1316,8 +1355,6 @@ export default function Page() {
 		}
 	}
 
-	console.log({ selectedServerId	});
-
 	useEffect(() => {
 		if (prevServers.current != null) {
 			const serversInServersButNotInPrevServers = servers?.filter(
@@ -1336,31 +1373,22 @@ export default function Page() {
 	}, [servers]);
 
 	useEffect(() => {
-		console.log("socked on");
 		socket.on("message", (message: Message) => {
-			console.log("message received", message);
-			const akashicRecordsServer = akashicRecords[message.chatId];
-			console.log("akashic records", akashicRecords)
-			console.log("akashic records server", akashicRecordsServer);
+			const akashicRecordsServer = [...akashicRecords[message.chatId]];
 			if (akashicRecordsServer && message.user.id != session.id) {
-				console.log("server present", message.chatId);
 				akashicRecordsServer.push(message);
-				console.log("unshifted to the server", akashicRecordsServer);
 				const sortedByTime = akashicRecordsServer.sort(
 					(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 				);
-				console.log("sorted by time", sortedByTime);
 				setAkashicRecords({
 					...akashicRecords,
 					[message.chatId]: sortedByTime,
 				});
-				console.log("set akashic records");
 			}
 
 		});
 		return () => {
 			socket.off("message");
-			console.log("socket off");
 		}
 	}, [akashicRecords]);
 
@@ -1392,7 +1420,8 @@ export default function Page() {
 				}}
 			>
 				<ServerList />
-				<ChatSection />
+				<LoadingSection key={selectedServerId} isLoading={loadingSectionVisible} />
+				{!loadingSectionVisible && <ChatSection key={selectedServerId} />}
 			</ChatContext.Provider>
 		</div>
 	);
