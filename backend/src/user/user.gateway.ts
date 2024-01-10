@@ -36,7 +36,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			.find((cookie: string) => cookie.startsWith('access_token'))!
 			.split('=')[1];
 		await this.login(client, access_token);
-		if (!client.data) return;
+		if (!client.data || !client.data.id) return;
 		await this.join_channels(client);
 	}
 
