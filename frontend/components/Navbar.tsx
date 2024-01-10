@@ -256,6 +256,7 @@ function ProfileButton({ user }: { user: User }) {
 					{mounted &&
 						themes.map((t) => (
 							<Button
+								key={t.name}
 								variant={
 									theme == t.name.toLowerCase()
 										? undefined
