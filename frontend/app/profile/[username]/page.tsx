@@ -488,10 +488,12 @@ function ProfileNavigation() {
 function InteractionButton({
 	type,
 	user,
+	callback,
 	...props
 }: {
 	type: InteractionType;
 	user: User;
+	callback?: any;
 } & React.ComponentProps<typeof Button>) {
 	const { sessionMutate } = useContext(PublicContext) as any;
 	const [loading, setLoading] = useState(false);
@@ -499,7 +501,10 @@ function InteractionButton({
 
 	return (
 		<Button loading={loading} onClick={() => {
-			InteractionFunctionality(type, user, sessionMutate, setLoading);
+			InteractionFunctionality(type, user, async () => {
+				await sessionMutate();
+				callback && callback();
+			}, setLoading);
 		}} {...props}>
 			{buttonText}
 		</Button>
@@ -620,6 +625,7 @@ function ProfileTop({ user }: { user: User }) {
 											startContent={<UserX2 size={18} />}
 											className="justify-start"
 											variant="danger"
+											callback={onClose}
 										/>
 									</div>
 								</ModalSet>
