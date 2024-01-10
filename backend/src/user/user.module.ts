@@ -7,6 +7,7 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { UserGateway } from './user.gateway';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatService } from 'src/chat/chat.service';
 
 @Module({
 	providers: [
@@ -15,6 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
 		AppService,
 		UserGateway,
 		AuthService,
+		ChatService,
 	],
 	controllers: [UserController],
 	exports: [UserService],

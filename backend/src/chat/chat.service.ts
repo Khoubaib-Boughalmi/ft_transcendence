@@ -153,6 +153,12 @@ export class ChatService {
 		};
 	}
 
+	async createMessage(data: Prisma.MessageCreateInput): Promise<Message> {
+		return this.prisma.message.create({
+			data,
+		});
+	}
+
 	async getChatMessages(chatId: string) {
 		const chatMessages = await this.prisma.message.findMany({
 			where: {

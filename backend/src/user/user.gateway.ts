@@ -7,6 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
+import { UserService } from './user.service';
+import { ChatService } from 'src/chat/chat.service';
 
 @WebSocketGateway({
 	cors: {
@@ -15,7 +17,11 @@ import { AuthService } from 'src/auth/auth.service';
 	},
 })
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
-	constructor(private authService: AuthService) {}
+	constructor(
+		private authService: AuthService,
+		private userService: UserService,
+		private chatService: ChatService,
+	) {}
 
 	@WebSocketServer()
 	private server: Server;
@@ -30,6 +36,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			.find((cookie: string) => cookie.startsWith('access_token'))!
 			.split('=')[1];
 		await this.login(client, access_token);
+		if (!client.data) return;
+		await this.join_channels(client);
 	}
 
 	handleDisconnect(client: Socket) {
@@ -57,5 +65,33 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const sockets = this.onlineUsers[id];
 		if (!sockets) return false;
 		return sockets.length > 0;
+	}
+
+	async join_channels(client: Socket) {
+		const user = await this.userService.user({ id: client.data.id });
+		if (!user) return client.disconnect();
+
+		const channels = await this.chatService.getCurrentUserChats(user.id);
+		if (!channels) return;
+		for (const channel of channels) {
+			client.join(channel.id);
+		}
+	}
+
+	@SubscribeMessage('message')
+	async handleMessage(client: Socket, payload: any) {
+		const user = await this.userService.user({ id: client.data.id });
+		if (!user) return client.disconnect();
+
+		const chat = await this.chatService.chat({ id: payload.chat_id });
+		if (!chat) return client.disconnect();
+
+		const message = await this.chatService.createMessage({
+			chat_id: chat.id,
+			user_id: user.id,
+			content: payload.message,
+		});
+
+		this.server.to(chat.id).emit('message', message);
 	}
 }
