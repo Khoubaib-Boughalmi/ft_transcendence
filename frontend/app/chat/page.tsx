@@ -63,7 +63,7 @@ import SettingSection from "@/components/SettingSection";
 import SuperSwitch from "@/components/SuperSwitch";
 import UploadButton from "@/components/UploadButton";
 import DeleteButton from "@/components/DeleteButton";
-import { on } from "events";
+import socket from "@/lib/socket";
 
 const ChatContext = createContext({});
 
@@ -81,14 +81,17 @@ type Server = {
 };
 
 type Message = {
+	id: string;
 	user: User;
-	time: Date;
+	createdAt: Date;
+	updatedAt: Date;
 	content: string;
 	target: string;
 	noAvatar: boolean;
 	blocked?: boolean;
-	groupid: string;
+	chatId: string;
 	parent?: boolean;
+	groupid: string;
 };
 
 type ChatContextType = {
@@ -117,7 +120,8 @@ function useChatContext() {
 }
 
 function ServerListEntry({ server }: { server: Server }) {
-	const { expanded, selectedServerId, setSelectedServerId } = useChatContext();
+	const { expanded, selectedServerId, setSelectedServerId } =
+		useChatContext();
 
 	return (
 		<Button
@@ -125,7 +129,10 @@ function ServerListEntry({ server }: { server: Server }) {
 				setSelectedServerId(server.id);
 			}}
 			variant="transparent"
-			className={twMerge("left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0	", selectedServerId == server.id && "bg-card-400")}
+			className={twMerge(
+				"left-20 flex h-20 w-full justify-start gap-0 rounded-none p-0 pr-4 !outline-0 !ring-0	",
+				selectedServerId == server.id && "bg-card-400",
+			)}
 		>
 			<div className="relative aspect-square h-full flex-shrink-0 p-4">
 				<div className="relative aspect-square h-full">
@@ -336,8 +343,8 @@ function MessageListEntry({
 	message: Message;
 	index: number;
 }) {
-	const date = message.time.toLocaleDateString();
-	const time = message.time.toLocaleTimeString();
+	const date = new Date(message.createdAt).toLocaleDateString();
+	const time = new Date(message.createdAt).toLocaleTimeString();
 	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
 	const { displayedMessages, setDisplayedMessages, messageParents } =
 		useChatContext();
@@ -528,6 +535,7 @@ function MemberList() {
 function ChatInput() {
 	const { messages, akashicRecords, setAkashicRecords, selectedServerId } =
 		useChatContext();
+	const { session } = useContext(PublicContext) as any;
 
 	return (
 		<div className="flex h-20 items-center gap-4 p-4 pr-1">
@@ -539,19 +547,28 @@ function ChatInput() {
 					const message = (formData.get("message") as string).trim();
 					if (message == "") return;
 					(e.target as HTMLFormElement).reset();
+					const newId = randomString();
 					setAkashicRecords({
 						...akashicRecords,
 						[selectedServerId]: [
 							{
-								user: user1,
-								time: new Date(),
+								user: session,
+								createdAt: new Date(),
 								content: message,
 								noAvatar: false,
 								target: "server",
-								groupid: randomString(),
+								groupid: newId,
+								chatId: selectedServerId,
+								id: newId,
+								updatedAt: new Date(),
 							},
 							...messages,
 						],
+					});
+
+					socket.emit("message", {
+						chatId: selectedServerId,
+						message,
 					});
 				}}
 				className="h-full w-full flex-1 flex-shrink-0 bg-card-300"
@@ -627,7 +644,6 @@ function InviteBox() {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
 		const username = ((formData.get("name") as string) || "").trim();
-		console.log(username);
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/invite",
 			makeForm({
@@ -645,7 +661,11 @@ function InviteBox() {
 	};
 
 	return (
-		<form ref={formRef} onSubmit={handleSubmit} className="flex w-full gap-4">
+		<form
+			ref={formRef}
+			onSubmit={handleSubmit}
+			className="flex w-full gap-4"
+		>
 			<Input
 				disabled={loading}
 				classNames={{
@@ -683,7 +703,6 @@ function RevokeInviteButton({ user }: { user: User }) {
 			`Failed to revoke invite to ${user.username}`,
 			serversMutate,
 		);
-		
 	};
 
 	return (
@@ -762,7 +781,9 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 				enable_password: value,
 			}),
 			undefined,
-			`Successfully ${!value ? "disabled" : "enabled"} password protection`,
+			`Successfully ${
+				!value ? "disabled" : "enabled"
+			} password protection`,
 			`Failed to ${!value ? "disable" : "enable"} password protection`,
 			serversMutate,
 		);
@@ -999,7 +1020,7 @@ function DiscoverPage() {
 			<Divider className="shrink-0" />
 			<div className=" grid flex-1 flex-shrink-0 grid-cols-4 gap-4 p-12">
 				{Array.from({ length: 20 }).map((_, i) => (
-					<div className="aspect-video w-full rounded-3xl bg-card-200">
+					<div key={i} className="aspect-video w-full rounded-3xl bg-card-200">
 						<div className="relative h-1/2 overflow-hidden rounded-t-3xl">
 							<SuperImage
 								src="/pfp.png"
@@ -1236,8 +1257,7 @@ const randomString = () => Math.random().toString(36).substring(7);
 function useServerList() {}
 
 export default function Page() {
-	const { data: fckUser } = useSWR("/user/profile/fck", fetcher) as any;
-	const { data: mrianUser } = useSWR("/user/profile/mrian", fetcher) as any;
+	const { session } = useContext(PublicContext) as any;
 	const { data: servers, mutate: serversMutate } = useSWR(
 		"/chat/channel/list",
 		fetcher,
@@ -1253,14 +1273,27 @@ export default function Page() {
 		servers?.find((server: Server) => server.id == selectedServerId) ||
 		null;
 
-	const [displayedMessages, setDisplayedMessages] = useState({});
-	const messageParents = useRef({}) as any;
-
 	const [akashicRecords, setAkashicRecords] = useState<{
 		[key: string]: Message[];
 	}>({});
+	const {
+		data: selectedServerMessages,
+		isLoading: selectedServerMessagesLoading,
+	} = useSWR(`/chat/channel/messages/${selectedServerId}`, fetcher, {
+		onSuccess: (data) => {
+			if (selectedServerId)
+				setAkashicRecords({
+					...akashicRecords,
+					[selectedServerId]: ((data as any) || []).map((message: Message) => {
+						message.groupid = message.id;
+						return message;
+					})
+				});
+		},
+	}) as any;
 
-	console.log(akashicRecords);
+	const [displayedMessages, setDisplayedMessages] = useState({});
+	const messageParents = useRef({}) as any;
 
 	const messages = selectedServerId
 		? akashicRecords[selectedServerId] || []
@@ -1269,7 +1302,7 @@ export default function Page() {
 	const members = selectedServer?.members || [];
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
-		if (messages[i].user == messages[i + 1]?.user) {
+		if (messages[i].user.id == messages[i + 1]?.user.id) {
 			messages[i].noAvatar = true;
 		}
 		messages[i].parent = true;
@@ -1282,6 +1315,8 @@ export default function Page() {
 			messages[i].groupid = messages[i - 1].groupid;
 		}
 	}
+
+	console.log({ selectedServerId	});
 
 	useEffect(() => {
 		if (prevServers.current != null) {
@@ -1299,6 +1334,35 @@ export default function Page() {
 
 		prevServers.current = servers;
 	}, [servers]);
+
+	useEffect(() => {
+		console.log("socked on");
+		socket.on("message", (message: Message) => {
+			console.log("message received", message);
+			const akashicRecordsServer = akashicRecords[message.chatId];
+			console.log("akashic records", akashicRecords)
+			console.log("akashic records server", akashicRecordsServer);
+			if (akashicRecordsServer && message.user.id != session.id) {
+				console.log("server present", message.chatId);
+				akashicRecordsServer.push(message);
+				console.log("unshifted to the server", akashicRecordsServer);
+				const sortedByTime = akashicRecordsServer.sort(
+					(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				);
+				console.log("sorted by time", sortedByTime);
+				setAkashicRecords({
+					...akashicRecords,
+					[message.chatId]: sortedByTime,
+				});
+				console.log("set akashic records");
+			}
+
+		});
+		return () => {
+			socket.off("message");
+			console.log("socket off");
+		}
+	}, [akashicRecords]);
 
 	return (
 		<div
