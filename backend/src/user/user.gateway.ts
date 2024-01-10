@@ -83,7 +83,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user = await this.userService.user({ id: client.data.id });
 		if (!user) return client.disconnect();
 
-		const chat = await this.chatService.chat({ id: payload.chat_id });
+		const chat = await this.chatService.chat({ id: payload.chatId });
 		if (!chat) return client.disconnect();
 
 		const message = await this.chatService.createMessage({
