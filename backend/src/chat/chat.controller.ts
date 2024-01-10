@@ -116,6 +116,12 @@ export class ChatController {
 		return this.chatService.getCurrentUserChats(req.user.id);
 	}
 
+	@Get('channel/messages/:id')
+	@UseGuards(JwtGuard)
+	async channelMessages(@Req() req, @Param() params: ChannelUpdateDTO) {
+		return this.chatService.getChatMessages(params.id);
+	}
+
 	@Post('channel/create')
 	@UseGuards(JwtGuard)
 	@FormDataRequest()

@@ -17,6 +17,15 @@ type ChatChannel = {
 	invites: UserProfileMicro[];
 };
 
+type ChatMessage = {
+	id: string;
+	chatId: string;
+	user: UserProfileMicro;
+	content: string;
+	createdAt: Date;
+	updatedAt: Date;
+};
+
 @Injectable()
 export class ChatService {
 	constructor(
@@ -145,26 +154,28 @@ export class ChatService {
 	}
 
 	async getChatMessages(chatId: string) {
-		const messages = await this.prisma.message.findMany({
+		const chatMessages = await this.prisma.message.findMany({
 			where: {
 				chat_id: chatId,
 			},
 		});
-		// populate the messages with the users
-		let messagesWithUsers = [];
-		for (let i = 0; i < messages.length; i++) {
-			const message = messages[i];
-			const user = await this.prisma.user.findUnique({
-				where: {
-					id: message.user_id,
-				},
+
+		// Create a set of unique user ids and get their micro profiles
+		const userProfiles = await this.userService.getMicroProfiles([...new Set(chatMessages.map(message => message.user_id))]);
+
+		// Populate the messages with the user and chat
+		let messages: ChatMessage[] = [];
+		for (const message of chatMessages) {
+			messages.push({
+				id: message.id,
+				chatId: message.chat_id,
+				user: userProfiles.find((user) => user.id === message.user_id),
+				content: message.content,
+				createdAt: message.created_at,
+				updatedAt: message.updated_at,
 			});
-			messagesWithUsers[i] = {
-				...message,
-				user,
-			};
 		}
-		return messagesWithUsers;
+		return messages;
 	}
 
 	async joinChat(chat: Chat, userId: string, password?: string) {
