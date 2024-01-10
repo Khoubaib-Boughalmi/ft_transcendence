@@ -129,7 +129,8 @@ export class ChatController {
 		const chat = await this.chatService.chat({ chatName: body.name });
 		if (chat) throw new HttpException('Channel name already in use', 400);
 
-		return this.chatService.createOneToManyChat(req.user.id, body.name);
+		const newChannel = await this.chatService.createChannel(req.user.id, body.name);
+		await this.chatService.joinChannelOnSocket(newChannel.id, req.user.id);
 	}
 
 	@Post('channel/join')
@@ -143,7 +144,8 @@ export class ChatController {
 		if (chat.inviteOnly && !chat.invites.includes(req.user.id))
 			throw new HttpException('You are not allowed to do that', 403);
 
-		return this.chatService.joinChat(chat, req.user.id, body.password);
+		await this.chatService.joinChat(chat, req.user.id, body.password);
+		await this.chatService.joinChannelOnSocket(chat.id, req.user.id);
 	}
 
 	@Post('channel/leave')
@@ -158,7 +160,8 @@ export class ChatController {
 				403,
 			);
 
-		return this.chatService.leaveChat(chat, req.user.id);
+		await this.chatService.leaveChat(chat, req.user.id);
+		await this.chatService.leaveChannelOnSocket(chat.id, req.user.id);
 	}
 
 	@Post('channel/update')

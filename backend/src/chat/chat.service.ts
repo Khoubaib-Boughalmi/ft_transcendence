@@ -3,6 +3,7 @@ import { Message, Chat, Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { UserDTO } from './chat.controller';
 import { UserProfileMicro, UserService } from 'src/user/user.service';
+import { SocketService } from 'src/socket/socket.service';
 
 type ChatChannel = {
     name: string;
@@ -31,6 +32,7 @@ export class ChatService {
 	constructor(
         private prisma: PrismaService,
         private userService: UserService,
+		private socketService: SocketService,
     ) {}
 
     async chat(
@@ -113,17 +115,17 @@ export class ChatService {
         return chats;
     }
 
-	async createOneToManyChat(
+	async createChannel(
 		userId: string,
-		groupName: string,
+		channelName: string,
 	) {
-		// create the chat
 		const chat = await this.createChat({
 			isGroupChat: true,
-			chatName: groupName,
+			chatName: channelName,
 			users: [userId],
 			chatOwner: userId,
 		});
+		return chat;
 	}
 
 	async sendMessage(userId: string, chatId: string, content: string) {
@@ -326,5 +328,19 @@ export class ChatService {
 				},
 			},
 		});
+	}
+
+	async joinChannelOnSocket(userId: string, chatId: string) {
+		const sockets = this.socketService.getUserSockets(userId);
+		if (!sockets) return;
+		for (const socket of sockets)
+			socket.join(chatId);
+	}
+
+	async leaveChannelOnSocket(userId: string, chatId: string) {
+		const sockets = this.socketService.getUserSockets(userId);
+		if (!sockets) return;
+		for (const socket of sockets)
+			socket.leave(chatId);
 	}
 }
