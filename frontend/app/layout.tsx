@@ -34,7 +34,7 @@ export default function RootLayout({
 	const accessToken = cookieStore.get("access_token");
 
 	return (
-		<html lang="en" className="dark">
+		<html suppressHydrationWarning lang="en" className="dark">
 			<body className={poppins.className + " bg-black " + flags.variable}>
 				<Providers accessToken={accessToken}>
 					<div className="min-w-screen grid min-h-screen grid-cols-1">
