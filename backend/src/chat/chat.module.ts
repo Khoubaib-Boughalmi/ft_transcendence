@@ -5,11 +5,11 @@ import { PrismaService } from 'src/prisma.service';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 import { UserService } from 'src/user/user.service';
 import { AppService } from 'src/app.service';
-import { SocketService } from 'src/socket/socket.service';
+import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
   controllers: [ChatController],
-  providers: [ChatService, PrismaService, UserService, AppService, SocketService],
-  imports: [NestjsFormDataModule],
+  providers: [ChatService, PrismaService, UserService, AppService],
+  imports: [NestjsFormDataModule, SocketModule],
 })
 export class ChatModule {}
