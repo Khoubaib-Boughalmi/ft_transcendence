@@ -1008,7 +1008,7 @@ function DiscoverPage() {
 						</p>
 						<Input
 							classNames={{
-								container: "w-1/2 mt-4 bg-card-400 ",
+								container: "w-1/2 mt-4 bg-card-400 px-3  ",
 							}}
 							placeholder="Enter a keyword"
 							startContent={
@@ -1019,46 +1019,72 @@ function DiscoverPage() {
 				</div>
 			</div>
 			<Divider className="shrink-0" />
-			<div className=" grid flex-1 flex-shrink-0 grid-cols-4 gap-4 p-12">
-				{Array.from({ length: 20 }).map((_, i) => (
-					<div key={i} className="aspect-video w-full rounded-3xl bg-card-200">
-						<div className="relative h-1/2 overflow-hidden rounded-t-3xl">
-							<SuperImage
-								src="/pfp.png"
-								className="absolute inset-0 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
-							/>
-						</div>
-						<div className="flex h-1/2 w-full flex-col gap-4">
-							<div className="flex h-16 shrink-0 items-center gap-20 pl-4">
-								<div className="aspect-square h-full">
-									<div className="relative aspect-square h-[200%] -translate-y-1/2">
-										<SuperImage
-											src="/pfp.png"
-											className="absolute inset-0 h-full w-full rounded-xl object-cover"
-										/>
+			<div className="@container  flex-1 flex-shrink-0 grid-cols-1 gap-4 p-12">
+				<div className="grid grid-cols-1 gap-4
+					@3xl:grid-cols-2 @6xl:grid-cols-3 @[96rem]:grid-cols-4
+				">
+					{Array.from({ length: 20 }).map((_, i) => (
+						<div
+							key={i}
+							className="flex aspect-video w-full flex-col rounded-3xl bg-card-200"
+						>
+							<div className="relative z-10 flex-1 overflow-hidden rounded-t-3xl">
+								<SuperImage
+									src="/pfp.png"
+									className="absolute inset-0 -z-10 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
+								/>
+								<div className="flex h-full w-full items-end justify-end p-4">
+									<div className="flex gap-0 rounded-3xl bg-card-300 p-2">
+										<div className="flex items-center justify-center gap-1 px-4">
+											<Users2 size={18} />
+											<span className="text-xs">
+												{Math.floor(
+													Math.random() * 100,
+												)}
+											</span>
+										</div>
+										<Button
+											startContent={<Plus size={18} />}
+										>
+											Join
+										</Button>
 									</div>
 								</div>
-								<div className="flex h-12 w-full flex-col items-start justify-center">
-									<span>ddjkasjsksa</span>
-									<span className="flex items-center gap-1 text-xs text-foreground-500">
-										<Globe2 size={12} /> Public
-									</span>
+							</div>
+							<div className="z-20 flex min-h-[50%] w-full shrink-0 flex-col gap-4">
+								<div className="flex h-16 	items-center gap-4 pl-4">
+									<div className="relative h-full w-24 shrink-0 bg-black">
+										<div className="absolute inset-x-0 bottom-0 aspect-square">
+											<SuperImage
+												src="/pfp.png"
+												className="absolute inset-0 h-full w-full rounded-xl object-cover"
+											/>
+										</div>
+									</div>
+									<div className="flex h-12 w-full min-w-0 flex-col items-start justify-center overflow-hidden">
+										<span className="truncate">
+											ddjkasjsksa
+										</span>
+										<span className="flex items-center gap-1 truncate text-xs text-foreground-500">
+											<Globe2 size={12} /> Public
+										</span>
+									</div>
+								</div>
+								<div className="rounded-b-3xl bg-black/25 p-4 text-foreground-400 flex-1">
+									<div className="line-clamp-1">
+										{generateBullshitExpression("techBS")}
+									</div>
 								</div>
 							</div>
-							<div className="flex-1 overflow-hidden rounded-b-3xl bg-black/25 p-4 text-foreground-400">
-								{generateBullshitExpression("techBS")}
-							</div>
 						</div>
-					</div>
-				))}
+					))}
+				</div>
 			</div>
 		</div>
 	);
 }
 
-function SectionContainer({
-	children,
-}: any) {
+function SectionContainer({ children }: any) {
 	const { expanded } = useChatContext();
 
 	return (
@@ -1067,10 +1093,11 @@ function SectionContainer({
 				"absolute inset-0 flex translate-x-full flex-col overflow-hidden rounded-r-3xl bg-gradient-to-tr from-card-300 from-40% to-card-500 transition-all @md:left-20 @md:translate-x-0",
 				expanded &&
 					"translate-x-0 select-none brightness-50 @md:translate-x-56",
-			)}>
+			)}
+		>
 			{children}
 		</div>
-	)
+	);
 }
 
 function ChatSection() {
@@ -1090,7 +1117,7 @@ function ChatSection() {
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
 		if (messageBox) {
-			console.log("attmepting to scroll")
+			console.log("attmepting to scroll");
 			const currentScroll = messageBox.scrollTop;
 			const currentHeight = messageBox.scrollHeight;
 			const visibleHeight = messageBox.clientHeight;
@@ -1268,11 +1295,7 @@ function ChatSection() {
 
 const randomString = () => Math.random().toString(36).substring(7);
 
-function LoadingSection({
-	isLoading,
-}: {
-	isLoading?: boolean;
-}) {
+function LoadingSection({ isLoading }: { isLoading?: boolean }) {
 	const [visible, setVisible] = useState(true);
 
 	useEffect(() => {
@@ -1280,18 +1303,24 @@ function LoadingSection({
 			setTimeout(() => {
 				setVisible(false);
 			}, 500);
-
 	}, [isLoading]);
 
 	return (
-		visible && <div className={twMerge("z-20 absolute inset-0 transition-opacity opacity-100 duration-500", !isLoading && "opacity-0")} >
-			<SectionContainer>
-				<div className="flex h-full w-full justify-center items-center">
-					<Spinner/>
-				</div>
-			</SectionContainer>
-		</div>
-	)
+		visible && (
+			<div
+				className={twMerge(
+					"absolute inset-0 z-20 opacity-100 transition-opacity duration-500",
+					!isLoading && "opacity-0",
+				)}
+			>
+				<SectionContainer>
+					<div className="flex h-full w-full items-center justify-center">
+						<Spinner />
+					</div>
+				</SectionContainer>
+			</div>
+		)
+	);
 }
 
 export default function Page() {
@@ -1322,17 +1351,23 @@ export default function Page() {
 			if (selectedServerId)
 				setAkashicRecords({
 					...akashicRecords,
-					[selectedServerId]: ((data as any) || []).map((message: Message) => {
-						message.groupid = message.id;
-						return message;
-					})
+					[selectedServerId]: ((data as any) || []).map(
+						(message: Message) => {
+							message.groupid = message.id;
+							message.blocked = session.blocked_users.some((user: User) => {
+								return user.id == message.user.id;
+							});
+							return message;
+						},
+					),
 				});
 		},
 	}) as any;
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
-	const loadingSectionVisible = selectedServerMessagesLoading && (selectedServerMessages == null);
+	const loadingSectionVisible =
+		selectedServerMessagesLoading && selectedServerMessages == null;
 
 	const messages = selectedServerId
 		? akashicRecords[selectedServerId] || []
@@ -1378,18 +1413,19 @@ export default function Page() {
 			if (akashicRecordsServer && message.user.id != session.id) {
 				akashicRecordsServer.push(message);
 				const sortedByTime = akashicRecordsServer.sort(
-					(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+					(a, b) =>
+						new Date(b.createdAt).getTime() -
+						new Date(a.createdAt).getTime(),
 				);
 				setAkashicRecords({
 					...akashicRecords,
 					[message.chatId]: sortedByTime,
 				});
 			}
-
 		});
 		return () => {
 			socket.off("message");
-		}
+		};
 	}, [akashicRecords]);
 
 	return (
@@ -1420,8 +1456,13 @@ export default function Page() {
 				}}
 			>
 				<ServerList />
-				<LoadingSection key={selectedServerId} isLoading={loadingSectionVisible} />
-				{!loadingSectionVisible && <ChatSection key={selectedServerId} />}
+				<LoadingSection
+					key={selectedServerId}
+					isLoading={loadingSectionVisible}
+				/>
+				{!loadingSectionVisible && (
+					<ChatSection key={selectedServerId} />
+				)}
 			</ChatContext.Provider>
 		</div>
 	);
