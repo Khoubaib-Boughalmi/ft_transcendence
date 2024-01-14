@@ -116,6 +116,27 @@ export class ChatController {
 		return this.chatService.getCurrentUserChats(req.user.id);
 	}
 
+	@Get('channel/search/:name?')
+	@UseGuards(JwtGuard)
+	async channelSearch(@Req() req, @Param() params) {
+		console.log("requested", params)
+		const search = params?.name || '';
+
+		const final = await this.chatService.chats({
+			take: 8,
+			where: { 
+				OR: [
+					{ chatName: { contains: search, mode: "insensitive" }, },
+					{ chatDescription: { contains: search, mode: "insensitive" } }
+				],
+				passwordProtected: false,
+				inviteOnly: false,
+			},
+		});
+		console.log(final);
+		return final;
+	}
+
 	@Get('channel/messages/:id')
 	@UseGuards(JwtGuard)
 	async channelMessages(@Req() req, @Param() params: ChannelUpdateDTO) {
