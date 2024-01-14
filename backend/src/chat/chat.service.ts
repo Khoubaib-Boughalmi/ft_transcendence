@@ -6,16 +6,17 @@ import { UserProfileMicro, UserService } from 'src/user/user.service';
 import { SocketService } from 'src/socket/socket.service';
 
 type ChatChannel = {
-    name: string;
+	name: string;
 	description: string;
 	icon: string;
 	id: string;
 	owner: string;
-	members: UserProfileMicro[];
+	members?: UserProfileMicro[];
 	admins: string[];
-    enable_password: boolean;
+	enable_password: boolean;
 	enable_inviteonly: boolean;
-	invites: UserProfileMicro[];
+	invites?: UserProfileMicro[];
+	size?: number;
 };
 
 type ChatMessage = {
@@ -30,17 +31,38 @@ type ChatMessage = {
 @Injectable()
 export class ChatService {
 	constructor(
-        private prisma: PrismaService,
-        private userService: UserService,
+		private prisma: PrismaService,
+		private userService: UserService,
 		private socketService: SocketService,
-    ) {}
+	) {}
 
-    async chat(
+	async chat(
 		chatWhereUniqueInput: Prisma.ChatWhereUniqueInput,
 	): Promise<Chat | null> {
 		return this.prisma.chat.findUnique({
 			where: chatWhereUniqueInput,
 		});
+	}
+
+	async chats(params: {
+		skip?: number;
+		take?: number;
+		cursor?: Prisma.ChatWhereUniqueInput;
+		where?: Prisma.ChatWhereInput;
+	}): Promise<ChatChannel[]> {
+		const { skip, take, cursor, where } = params;
+		const result = await this.prisma.chat.findMany({
+			skip,
+			take,
+			cursor,
+			where,
+		});
+		result.sort((a, b) => b.users.length - a.users.length);
+		const chats = await this.convertChatsFormat(result, {
+			members: false,
+			invites: false,
+		});
+		return chats;
 	}
 
 	async createChat(data: Prisma.ChatCreateInput): Promise<Chat> {
@@ -78,47 +100,63 @@ export class ChatService {
 		});
 	}
 
+	async convertChatsFormat(
+		inputChats: Chat[],
+		include: {
+			members: boolean;
+			invites: boolean;
+		} = {
+			members: true,
+			invites: true,
+		},
+	): Promise<ChatChannel[]> {
+		let chats: ChatChannel[] = [];
+		for (const chat of inputChats) {
+			// Get the micro profile of each chat member
+			const chatMembers: UserProfileMicro[] =
+				include.members &&
+				(await this.userService.getMicroProfiles(chat.users));
+			const chatInvites: UserProfileMicro[] =
+				include.invites &&
+				(await this.userService.getMicroProfiles(chat.invites));
+
+			// Populate the chat channel info
+			chats.push({
+				id: chat.id,
+				name: chat.chatName,
+				description: chat.chatDescription,
+				icon: chat.chatIcon,
+				owner: chat.chatOwner,
+				members: chatMembers,
+				admins: chat.chatAdmins,
+				enable_password: chat.passwordProtected,
+				enable_inviteonly: chat.inviteOnly,
+				invites: chatInvites,
+				size: chat.users.length,
+			});
+		}
+		return chats;
+	}
+
 	async getCurrentUserChats(userId: string) {
-        // Find all the chats where the user is a member
+		// Find all the chats where the user is a member
 		const userChats = await this.prisma.chat.findMany({
 			where: {
 				users: {
 					has: userId,
 				},
 			},
-            orderBy: {
+			orderBy: {
 				created_at: 'asc',
-            },
+			},
 		});
 
-        // Create the list of chat channels
-        let chats: ChatChannel[] = [];
-        for (const chat of userChats) {
-            // Get the micro profile of each chat member
-            const chatMembers: UserProfileMicro[] = await this.userService.getMicroProfiles(chat.users);
-			const chatInvites: UserProfileMicro[] = await this.userService.getMicroProfiles(chat.invites);
+		// Create the list of chat channels
+		const chats = await this.convertChatsFormat(userChats);
+		return chats;
+	}
 
-            // Populate the chat channel info
-            chats.push({
-                id: chat.id,
-                name: chat.chatName,
-                description: chat.chatDescription,
-                icon: chat.chatIcon,
-				owner: chat.chatOwner,
-                members: chatMembers,
-				admins: chat.chatAdmins,
-                enable_password: chat.passwordProtected,
-				enable_inviteonly: chat.inviteOnly,
-				invites: chatInvites,
-            });
-        }
-        return chats;
-    }
-
-	async createChannel(
-		userId: string,
-		channelName: string,
-	) {
+	async createChannel(userId: string, channelName: string) {
 		const chat = await this.createChat({
 			isGroupChat: true,
 			chatName: channelName,
@@ -157,7 +195,9 @@ export class ChatService {
 
 	async createMessage(data: Prisma.MessageCreateInput): Promise<ChatMessage> {
 		const message = await this.prisma.message.create({ data });
-		const userProfile = await this.userService.getProfileMicro({ id: data.user_id });
+		const userProfile = await this.userService.getProfileMicro({
+			id: data.user_id,
+		});
 		return {
 			id: message.id,
 			chatId: message.chat_id,
@@ -165,7 +205,7 @@ export class ChatService {
 			content: message.content,
 			createdAt: message.created_at,
 			updatedAt: message.updated_at,
-		}
+		};
 	}
 
 	async getChatMessages(chatId: string) {
@@ -179,7 +219,9 @@ export class ChatService {
 		});
 
 		// Create a set of unique user ids and get their micro profiles
-		const userProfiles = await this.userService.getMicroProfiles([...new Set(chatMessages.map(message => message.user_id))]);
+		const userProfiles = await this.userService.getMicroProfiles([
+			...new Set(chatMessages.map((message) => message.user_id)),
+		]);
 
 		// Populate the messages with the user and chat
 		let messages: ChatMessage[] = [];
@@ -228,7 +270,7 @@ export class ChatService {
 				id: chat.id,
 			},
 			data: {
-				chatOwner: "",
+				chatOwner: '',
 			},
 		});
 	}
@@ -271,7 +313,7 @@ export class ChatService {
 		await this.deleteEmptyChat(chat);
 	}
 
-    async updateChat(params: {
+	async updateChat(params: {
 		where: Prisma.ChatWhereUniqueInput;
 		data: Prisma.ChatUpdateInput;
 	}): Promise<Chat> {
@@ -282,27 +324,30 @@ export class ChatService {
 		});
 	}
 
-    async isChatOwner(userId: string, chatId: string): Promise<boolean> {
-        const chat = await this.prisma.chat.findUnique({
-            where: {
-                id: chatId,
-            },
-        });
-        return chat?.chatOwner === userId || false;
-    }
+	async isChatOwner(userId: string, chatId: string): Promise<boolean> {
+		const chat = await this.prisma.chat.findUnique({
+			where: {
+				id: chatId,
+			},
+		});
+		return chat?.chatOwner === userId || false;
+	}
 
-    async isChatAdmin(userId: string, chatId: string): Promise<boolean> {
-        const chat = await this.prisma.chat.findUnique({
-            where: {
-                id: chatId,
-            },
-        });
-        return chat?.chatAdmins?.includes(userId) || false;
-    }
+	async isChatAdmin(userId: string, chatId: string): Promise<boolean> {
+		const chat = await this.prisma.chat.findUnique({
+			where: {
+				id: chatId,
+			},
+		});
+		return chat?.chatAdmins?.includes(userId) || false;
+	}
 
-    async isChatOwnerOrAdmin(userId: string, chatId: string): Promise<boolean> {
-        return await this.isChatOwner(userId, chatId) || await this.isChatAdmin(userId, chatId);
-    }
+	async isChatOwnerOrAdmin(userId: string, chatId: string): Promise<boolean> {
+		return (
+			(await this.isChatOwner(userId, chatId)) ||
+			(await this.isChatAdmin(userId, chatId))
+		);
+	}
 
 	async inviteToChat(chat: Chat, user: User) {
 		await this.prisma.chat.update({
@@ -333,14 +378,12 @@ export class ChatService {
 	async joinChannelOnSocket(chatId: string, userId: string) {
 		const sockets = this.socketService.getUserSockets(userId);
 		if (!sockets) return;
-		for (const socket of sockets)
-			socket.join(chatId);
+		for (const socket of sockets) socket.join(chatId);
 	}
 
 	async leaveChannelOnSocket(chatId: string, userId: string) {
 		const sockets = this.socketService.getUserSockets(userId);
 		if (!sockets) return;
-		for (const socket of sockets)
-			socket.leave(chatId);
+		for (const socket of sockets) socket.leave(chatId);
 	}
 }
