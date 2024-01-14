@@ -17,7 +17,7 @@ import {
 	Plus,
 	Search,
 	SendHorizontal,
-	Server,
+	Server as ServerIcon,
 	Settings2,
 	Sparkles,
 	Trash2,
@@ -51,7 +51,7 @@ import { User } from "@/types/profile";
 import generateBullshitExpression from "@/lib/bullshit";
 import Divider from "@/components/Divider";
 import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
-import useSWR from "swr";
+import useSWR, { SWRConfig, useSWRConfig } from "swr";
 import {
 	fetcher,
 	makeForm,
@@ -65,6 +65,7 @@ import SuperSwitch from "@/components/SuperSwitch";
 import UploadButton from "@/components/UploadButton";
 import DeleteButton from "@/components/DeleteButton";
 import socket from "@/lib/socket";
+import NoData from "@/components/NoData";
 
 const ChatContext = createContext({});
 
@@ -79,6 +80,7 @@ type Server = {
 	owner: string;
 	admins: string[];
 	invites: User[];
+	size?: number;
 };
 
 type Message = {
@@ -463,7 +465,7 @@ function ServerList() {
 					</Button>
 					<div className="flex flex-1 bg-card-250">
 						{[
-							["servers", Server, "Channels"],
+							["servers", ServerIcon, "Channels"],
 							["friends", Users2, "Friends"],
 						].map(([tab, Icon, text]: any) => (
 							<Button
@@ -987,10 +989,108 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	);
 }
 
+function DiscoverListEntry({ server }: { server: Server }) {
+	const { servers } = useChatContext();
+	const { serversMutate } = useChatContext();
+	const [loading, setLoading] = useState(false);
+
+	const handleJoin = () => {
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			`/chat/channel/join`,
+			makeForm({ name: server.name }),
+			setLoading,
+			`Successfully joined the channel`,
+			`Failed to join the channel`,
+			async () => {
+				await serversMutate();
+			},
+		);
+	};
+
+	return (
+		<div className="flex aspect-video w-full flex-col rounded-3xl bg-card-200">
+			<div className="relative z-10 flex-1 overflow-hidden rounded-t-3xl">
+				<SuperImage
+					src={server.icon}
+					className="absolute inset-0 -z-10 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
+				/>
+				<div className="flex h-full w-full items-end justify-end p-4">
+					<div className="flex gap-0 rounded-3xl bg-card-300 p-2">
+						<div className="flex items-center justify-center gap-1 px-4">
+							<Users2 size={18} />
+							<span className="text-xs">{server.size}</span>
+						</div>
+						{!servers?.find((s) => s.id == server.id) ? (
+							<Button
+								loading={loading}
+								onClick={handleJoin}
+								startContent={<Plus size={18} />}
+							>
+								Join
+							</Button>
+						) : (
+							<Button disabled startContent={<Check size={18} />}>
+								Joined
+							</Button>
+						)}
+					</div>
+				</div>
+			</div>
+			<div className="z-20 flex min-h-[50%] w-full shrink-0 flex-col gap-4">
+				<div className="flex h-16 	items-center gap-4 pl-4">
+					<div className="relative h-full w-24 shrink-0 bg-black">
+						<div className="absolute inset-x-0 bottom-0 aspect-square">
+							<SuperImage
+								src={server.icon}
+								className="absolute inset-0 h-full w-full rounded-xl object-cover"
+							/>
+						</div>
+					</div>
+					<div className="flex h-12 w-full min-w-0 flex-col items-start justify-center overflow-hidden">
+						<span className="truncate">{server.name}</span>
+						<span className="flex items-center gap-1 truncate text-xs text-foreground-500">
+							<Globe2 size={12} /> Public
+						</span>
+					</div>
+				</div>
+				<div className="flex-1 rounded-b-3xl bg-black/25 p-4 text-foreground-400">
+					<div className="line-clamp-1">{server.description}</div>
+				</div>
+			</div>
+		</div>
+	);
+}
+
 function DiscoverPage() {
+	const { cache } = useSWRConfig();
+	const [query, setQuery] = useState("");
+	const [realQuery, setRealQuery] = useState("");
+	console.log({ query, realQuery });
+	const { data: servers, isLoading } = useSWR(
+		`/chat/channel/search/${realQuery}`,
+		fetcher,
+	) as any;
+
+	useEffect(() => {
+		const timeout = setTimeout(() => {
+			setRealQuery(query);
+		}, 500);
+		return () => {
+			clearTimeout(timeout);
+			cache.delete(`/chat/channel/search/${realQuery}`);
+		};
+	}, [query]);
+
+	console.log(servers);
+
 	return (
 		<div className="no-scrollbar flex min-h-full w-full flex-col overflow-y-scroll">
-			<div className="h-2/3 w-full shrink-0 p-12">
+			<div
+				className={twMerge(
+					"h-2/3 w-full shrink-0 p-12 transition-all",
+					isLoading && "h-full",
+				)}
+			>
 				<div className="relative h-full w-full overflow-hidden rounded-xl bg-card-200">
 					<div className="h-full w-full">
 						<SuperImage
@@ -1007,6 +1107,8 @@ function DiscoverPage() {
 							for you.
 						</p>
 						<Input
+							value={query}
+							onChange={(e) => setQuery(e.target.value)}
 							classNames={{
 								container: "w-1/2 mt-4 bg-card-400 px-3  ",
 							}}
@@ -1019,64 +1121,19 @@ function DiscoverPage() {
 				</div>
 			</div>
 			<Divider className="shrink-0" />
-			<div className="@container  flex-1 flex-shrink-0 grid-cols-1 gap-4 p-12">
-				<div className="grid grid-cols-1 gap-4
+			<div className="relative  flex-1 flex-shrink-0 grid-cols-1 gap-4 p-12 @container">
+				{servers?.length == 0 && (
+					<div className="flex h-full items-center justify-center">
+						<NoData />
+					</div>
+				)}
+				<div
+					className="grid grid-cols-1 gap-4
 					@3xl:grid-cols-2 @6xl:grid-cols-3 @[96rem]:grid-cols-4
-				">
-					{Array.from({ length: 20 }).map((_, i) => (
-						<div
-							key={i}
-							className="flex aspect-video w-full flex-col rounded-3xl bg-card-200"
-						>
-							<div className="relative z-10 flex-1 overflow-hidden rounded-t-3xl">
-								<SuperImage
-									src="/pfp.png"
-									className="absolute inset-0 -z-10 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
-								/>
-								<div className="flex h-full w-full items-end justify-end p-4">
-									<div className="flex gap-0 rounded-3xl bg-card-300 p-2">
-										<div className="flex items-center justify-center gap-1 px-4">
-											<Users2 size={18} />
-											<span className="text-xs">
-												{Math.floor(
-													Math.random() * 100,
-												)}
-											</span>
-										</div>
-										<Button
-											startContent={<Plus size={18} />}
-										>
-											Join
-										</Button>
-									</div>
-								</div>
-							</div>
-							<div className="z-20 flex min-h-[50%] w-full shrink-0 flex-col gap-4">
-								<div className="flex h-16 	items-center gap-4 pl-4">
-									<div className="relative h-full w-24 shrink-0 bg-black">
-										<div className="absolute inset-x-0 bottom-0 aspect-square">
-											<SuperImage
-												src="/pfp.png"
-												className="absolute inset-0 h-full w-full rounded-xl object-cover"
-											/>
-										</div>
-									</div>
-									<div className="flex h-12 w-full min-w-0 flex-col items-start justify-center overflow-hidden">
-										<span className="truncate">
-											ddjkasjsksa
-										</span>
-										<span className="flex items-center gap-1 truncate text-xs text-foreground-500">
-											<Globe2 size={12} /> Public
-										</span>
-									</div>
-								</div>
-								<div className="rounded-b-3xl bg-black/25 p-4 text-foreground-400 flex-1">
-									<div className="line-clamp-1">
-										{generateBullshitExpression("techBS")}
-									</div>
-								</div>
-							</div>
-						</div>
+				"
+				>
+					{servers?.map((server: Server, i: number) => (
+						<DiscoverListEntry key={i} server={server} />
 					))}
 				</div>
 			</div>
@@ -1354,9 +1411,11 @@ export default function Page() {
 					[selectedServerId]: ((data as any) || []).map(
 						(message: Message) => {
 							message.groupid = message.id;
-							message.blocked = session.blocked_users.some((user: User) => {
-								return user.id == message.user.id;
-							});
+							message.blocked = session.blocked_users.some(
+								(user: User) => {
+									return user.id == message.user.id;
+								},
+							);
 							return message;
 						},
 					),
