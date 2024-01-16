@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma.service';
 import { UserDTO } from './chat.controller';
 import { UserProfileMicro, UserService } from 'src/user/user.service';
 import { SocketService } from 'src/socket/socket.service';
+import { WsException } from '@nestjs/websockets';
 
 type ChatChannel = {
 	name: string;
@@ -193,19 +194,164 @@ export class ChatService {
 		};
 	}
 
-	async createMessage(data: Prisma.MessageCreateInput): Promise<ChatMessage> {
-		const message = await this.prisma.message.create({ data });
-		const userProfile = await this.userService.getProfileMicro({
-			id: data.user_id,
-		});
-		return {
-			id: message.id,
-			chatId: message.chat_id,
-			user: userProfile,
-			content: message.content,
-			createdAt: message.created_at,
-			updatedAt: message.updated_at,
+	async processCommand(data: Prisma.MessageCreateInput) {
+		const errors = {
+			invalidCommand: 'Invalid command.',
+			invalidArgs: 'Invalid arguments.',
+			invalidTarget: 'Invalid target.',
+			invalidDuration: 'Invalid duration.',
+			invalidChat: 'Invalid channel.',
+			invalidPermissions: 'Invalid permissions.',
 		};
+		const commands = {
+			kick: async (args: string[], chat: Chat) => {
+				if (!args[0]) throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!target) throw new WsException(errors.invalidTarget);
+				await this.leaveChat(chat, target.id);
+				await this.leaveChannelOnSocket(chat.id, target.id);
+				return `${target.username} has been kicked from the channel.`;
+			},
+			ban: async (args: string[], chat: Chat) => {
+				if (!args[0]) throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!target) throw new WsException(errors.invalidTarget);
+				await this.leaveChat(chat, target.id);
+				await this.leaveChannelOnSocket(chat.id, target.id);
+				await this.prisma.chat.update({
+					where: {
+						id: chat.id,
+					},
+					data: {
+						bans: {
+							push: target.id,
+						},
+					},
+				});
+				return `${target.username} has been banned from the channel.`;
+			},
+			unban: async (args: string[], chat: Chat) => {
+				if (!args[0]) throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!target) throw new WsException(errors.invalidTarget);
+				await this.prisma.chat.update({
+					where: {
+						id: chat.id,
+					},
+					data: {
+						bans: {
+							set: chat.bans.filter((id) => id !== target.id),
+						},
+					},
+				});
+				return `${target.username} has been unbanned from the channel.`;
+			},
+			mute: async (args: string[], chat: Chat) => {
+				if (!args[0] || !args[1])
+					throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!target) throw new WsException(errors.invalidTarget);
+				const duration = Number(args[1]);
+				if (isNaN(duration))
+					throw new WsException(errors.invalidDuration);
+				const endTimestamp = Date.now() + duration * 1000;
+				await this.prisma.chat.update({
+					where: {
+						id: chat.id,
+					},
+					data: {
+						mutes: {
+							push: `${target.id}:${endTimestamp}`,
+						},
+					},
+				});
+				return `${target.username} has been muted for ${duration} seconds.`;
+			},
+			unmute: async (args: string[], chat: Chat) => {
+				if (!args[0]) throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!target) throw new WsException(errors.invalidTarget);
+				await this.prisma.chat.update({
+					where: {
+						id: chat.id,
+					},
+					data: {
+						mutes: {
+							set: chat.mutes.filter(
+								(mute) => mute.split(':')[0] !== target.id,
+							),
+						},
+					},
+				});
+				return `${target.username} has been unmuted.`;
+			},
+		};
+		const { content, chat_id } = data;
+		if (!content.startsWith('/')) return null;
+		const args = content.split(' ');
+		const command = args.shift().slice(1);
+		const chat = await this.prisma.chat.findUnique({
+			where: {
+				id: chat_id,
+			},
+		});
+		if (!chat) throw new WsException(errors.invalidChat);
+		if (
+			!(
+				chat.chatAdmins.includes(data.user_id) ||
+				chat.chatOwner === data.user_id
+			)
+		)
+			throw new WsException(errors.invalidPermissions);
+		if (!chat.isGroupChat) throw new WsException(errors.invalidChat);
+		if (!commands[command]) throw new WsException(errors.invalidCommand);
+
+		return await commands[command](args, chat);
+	}
+
+	async createMessage(data: Prisma.MessageCreateInput): Promise<ChatMessage> {
+		const serverMessage = await this.processCommand(data);
+		if (serverMessage !== null) {
+			const newData = {
+				...data,
+				content: serverMessage,
+				user_id: 'server',
+			};
+			const message = await this.prisma.message.create({ data: newData });
+			return {
+				id: message.id,
+				chatId: message.chat_id,
+				user: {
+					id: 'server',
+				} as any,
+				content: message.content,
+				createdAt: message.created_at,
+				updatedAt: message.updated_at,
+			};
+		} else {
+			const message = await this.prisma.message.create({ data });
+			const userProfile = await this.userService.getProfileMicro({
+				id: data.user_id,
+			});
+			return {
+				id: message.id,
+				chatId: message.chat_id,
+				user: userProfile,
+				content: message.content,
+				createdAt: message.created_at,
+				updatedAt: message.updated_at,
+			};
+		}
 	}
 
 	async getChatMessages(chatId: string) {
@@ -229,7 +375,14 @@ export class ChatService {
 			messages.push({
 				id: message.id,
 				chatId: message.chat_id,
-				user: userProfiles.find((user) => user.id === message.user_id),
+				user:
+					message.user_id == 'server'
+						? ({
+								id: 'server',
+						  } as any)
+						: userProfiles.find(
+								(user) => user.id === message.user_id,
+						  ),
 				content: message.content,
 				createdAt: message.created_at,
 				updatedAt: message.updated_at,
