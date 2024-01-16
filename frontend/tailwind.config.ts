@@ -39,6 +39,7 @@ const config: Config = {
 			animation: {
 				popup: "popup 0.1s ease-in-out",
 				overlay: "overlay 0.5s ease-in-out",
+				overlayfast: "overlay 0.125s ease-in-out",
 				lefttoright: "lefttoright 0.25s ease-in-out",
 				righttoleft: "righttoleft 0.25s ease-in-out",
 			},
