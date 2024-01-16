@@ -88,6 +88,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			content: payload.message,
 		});
 
-		this.server.to(chat.id).emit('message', message);
+		if (message)
+			this.server.to(chat.id).emit('message', message);
 	}
 }
