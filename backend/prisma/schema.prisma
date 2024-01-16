@@ -95,6 +95,9 @@ model Chat {
   invites           String[] @default([])
   passwordProtected Boolean  @default(false)
   chatPassword      String   @default("")
+  bans              String[] @default([])
+  mutes             String[] @default([])
+  
 }
 
 model Message {
