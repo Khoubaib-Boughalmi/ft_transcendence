@@ -22,7 +22,7 @@ export class AuthService {
             email: profile.emails[0].value,
             country: profile._json.campus[0].country,
         });
-        return { id: newUser.id, two_factor_passed: user.two_factor ? false : true };
+        return { id: newUser.id, two_factor_passed: true };
     }
 
     async validateJwt(jwtPayload: any, two_factor_verify: boolean): Promise<any> {
