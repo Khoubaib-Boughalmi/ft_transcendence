@@ -30,6 +30,7 @@ import {
 	createContext,
 	useContext,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -44,6 +45,7 @@ import {
 	Spinner,
 	Switch,
 	Textarea,
+	Tooltip,
 	useDisclosure,
 } from "@nextui-org/react";
 import Input from "@/components/Input";
@@ -66,6 +68,7 @@ import UploadButton from "@/components/UploadButton";
 import DeleteButton from "@/components/DeleteButton";
 import socket from "@/lib/socket";
 import NoData from "@/components/NoData";
+import toast from "react-hot-toast";
 
 const ChatContext = createContext({});
 
@@ -356,51 +359,64 @@ function MessageListEntry({
 
 	if (message.blocked && !message.parent && displayed != true) return null;
 
+	console.log(message.user.id);
+
 	return (
 		<>
-			{displayed && (
-				<div
-					className={twMerge(
-						"flex gap-4 px-4",
-						!message.noAvatar && "mt-4",
-					)}
-				>
-					<div
-						className={twMerge(
-							"relative h-0 w-12 flex-shrink-0",
-							message.noAvatar && "opacity-0",
-						)}
-					>
-						{!message.noAvatar && (
-							<SuperImage
-								src={message.user.avatar}
-								className="absolute inset-0 rounded-full"
-							/>
-						)}
+			{message.user.id == "server" ? (
+				<div className="w-full p-2 pb-0 mt-2 text-foreground-500 flex items-center gap-2">
+					<div className="p-2 px-4 text-xs bg-card-100 rounded-full text-white">
+						SERVER
 					</div>
-					<div className={twMerge("flex flex-col")}>
-						{!message.noAvatar && (
-							<div
-								className={twMerge(
-									"flex items-center gap-2 text-sm text-foreground-600",
-								)}
-							>
-								<div className="line-clamp-1">
-									{message.user.username}
-								</div>
-								<div
-									suppressHydrationWarning
-									className="flex-shrink-0 text-xs text-foreground-500"
-								>
-									{dateStr + " at " + time}
-								</div>
-							</div>
-						)}
-						<div className="text-foreground-800">
-							{message.content}
-						</div>
+					<div>
+						{message.content}
 					</div>
 				</div>
+			) : (
+				displayed && (
+					<div
+						className={twMerge(
+							"flex gap-4 px-4",
+							!message.noAvatar && "mt-4",
+						)}
+					>
+						<div
+							className={twMerge(
+								"relative h-0 w-12 flex-shrink-0",
+								message.noAvatar && "opacity-0",
+							)}
+						>
+							{!message.noAvatar && (
+								<SuperImage
+									src={message.user.avatar}
+									className="absolute inset-0 rounded-full"
+								/>
+							)}
+						</div>
+						<div className={twMerge("flex flex-col")}>
+							{!message.noAvatar && (
+								<div
+									className={twMerge(
+										"flex items-center gap-2 text-sm text-foreground-600",
+									)}
+								>
+									<div className="line-clamp-1">
+										{message.user.username}
+									</div>
+									<div
+										suppressHydrationWarning
+										className="flex-shrink-0 text-xs text-foreground-500"
+									>
+										{dateStr + " at " + time}
+									</div>
+								</div>
+							)}
+							<div className="text-foreground-800">
+								{message.content}
+							</div>
+						</div>
+					</div>
+				)
 			)}
 			{message.blocked && message.parent && (
 				<div className="mt-4 flex w-full justify-center gap-4 px-4 font-semibold">
@@ -535,10 +551,88 @@ function MemberList() {
 	);
 }
 
+type Argument = {
+	name: string;
+	description: string;
+};
+
+type Command = {
+	name: string;
+	description: string;
+	arguments: Argument[];
+};
+
+const commands: Command[] = [
+	{
+		name: "/kick",
+		description: "Removes a user from the channel.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to kick.",
+			},
+		],
+	},
+	{
+		name: "/ban",
+		description: "Bans a user from the channel.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to ban.",
+			},
+		],
+	},
+	{
+		name: "/unban",
+		description: "Unbans a user from the channel.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to unban.",
+			},
+		],
+	},
+	{
+		name: "/mute",
+		description: "Mutes a user in the channel.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to mute.",
+			},
+			{
+				name: "duration",
+				description: "The duration of the mute in seconds.",
+			},
+		],
+	},
+	{
+		name: "/unmute",
+		description: "Unmutes a user in the channel.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to unmute.",
+			},
+		],
+	},
+];
+
 function ChatInput() {
 	const { messages, akashicRecords, setAkashicRecords, selectedServerId } =
 		useChatContext();
 	const { session } = useContext(PublicContext) as any;
+	const [message, setMessage] = useState("");
+	const [showCommands, commandsToShow] = useMemo(() => {
+		const showCommands = message.startsWith("/");
+		const commandsToShow = showCommands
+			? commands.filter((command) =>
+					command.name.startsWith(message.split(" ")[0]),
+				)
+			: [];
+		return [showCommands, commandsToShow];
+	}, [message]);
 
 	return (
 		<div className="flex h-20 items-center gap-4 p-4 pr-1">
@@ -549,25 +643,30 @@ function ChatInput() {
 					const formData = new FormData(e.target as HTMLFormElement);
 					const message = (formData.get("message") as string).trim();
 					if (message == "") return;
-					(e.target as HTMLFormElement).reset();
 					const newId = randomString();
-					setAkashicRecords({
-						...akashicRecords,
-						[selectedServerId]: [
-							{
-								user: session,
-								createdAt: new Date(),
-								content: message,
-								noAvatar: false,
-								target: "server",
-								groupid: newId,
-								chatId: selectedServerId,
-								id: newId,
-								updatedAt: new Date(),
-							},
-							...messages,
-						],
-					});
+					if (!showCommands)
+						setAkashicRecords({
+							...akashicRecords,
+							[selectedServerId]: [
+								{
+									user: session,
+									createdAt: new Date(),
+									content: message,
+									noAvatar: false,
+									target: "server",
+									groupid: newId,
+									chatId: selectedServerId,
+									id: newId,
+									updatedAt: new Date(),
+								},
+								...messages,
+							],
+						});
+					if (
+						!showCommands ||
+						(showCommands && commandsToShow.length > 0)
+					)
+						setMessage("");
 
 					socket.emit("message", {
 						chatId: selectedServerId,
@@ -576,24 +675,80 @@ function ChatInput() {
 				}}
 				className="h-full w-full flex-1 flex-shrink-0 bg-card-300"
 			>
-				<Input
-					id="message"
-					autoComplete="off"
-					name="message"
-					placeholder="Send a message"
-					classNames={{
-						container: "pr-0",
-					}}
-					endContent={
-						<Button
-							startContent={<SendHorizontal />}
-							type="submit	"
-							variant="transparent"
-							className="h-full rounded-none !border-0 px-4 !outline-none !ring-0"
-							iconOnly
-						></Button>
-					}
-				/>
+				<div className="relative">
+					{showCommands && (
+						<div className="animate-overlayfast absolute bottom-0 flex  w-full flex-col rounded-3xl bg-card-200 pb-12">
+							<div className="p-2">
+								<div className="flex flex-col overflow-hidden rounded-3xl bg-card-300">
+									{commandsToShow.length == 0 && (
+										<div className="p-4 text-sm text-foreground-500">
+											No commands found.
+										</div>
+									)}
+									{commandsToShow.map((command) => (
+										<div
+											key={command.name}
+											className="w-full animate-overlay p-4 text-sm"
+										>
+											<div className="flex gap-1">
+												<span className="font-medium">
+													{command.name}
+												</span>
+												{command.arguments.map(
+													(arg) => (
+														<Tooltip
+															key={arg.name}
+															content={
+																arg.description
+															}
+														>
+															<div className="transition-colors hover:bg-black/25">
+																<span className="text-foreground-600">
+																	{`{`}
+																</span>
+																<span className="text-foreground-500">
+																	{arg.name}
+																</span>
+																<span className="text-foreground-600">
+																	{`}`}
+																</span>
+															</div>
+														</Tooltip>
+													),
+												)}
+											</div>
+											<div className="text-foreground-500">
+												{command.description}
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					)}
+					<Input
+						value={message}
+						onChange={(e) => {
+							setMessage(e.target.value);
+						}}
+						id="message"
+						autoComplete="off"
+						name="message"
+						placeholder="Send a message"
+						classNames={{
+							container: "pr-0",
+						}}
+						endContent={
+							<Button
+								startContent={<SendHorizontal />}
+								type="submit"
+								variant="transparent"
+								className="h-full rounded-none !border-0 px-4 !outline-none !ring-0"
+								iconOnly
+							></Button>
+						}
+					/>
+				</div>
 			</form>
 			<Button
 				className="aspect-square flex-shrink-0"
@@ -1467,8 +1622,10 @@ export default function Page() {
 	}, [servers]);
 
 	useEffect(() => {
-		socket.on("message", (message: Message) => {
+		socket.on("message", async (message: Message) => {
 			const akashicRecordsServer = [...akashicRecords[message.chatId]];
+			if (message.user.id == "server")
+				await serversMutate();
 			if (akashicRecordsServer && message.user.id != session.id) {
 				akashicRecordsServer.push(message);
 				const sortedByTime = akashicRecordsServer.sort(
@@ -1482,8 +1639,14 @@ export default function Page() {
 				});
 			}
 		});
+
+		socket.on("exception", (error: any) => {
+			toast.error(error.message);
+		});
+
 		return () => {
 			socket.off("message");
+			socket.off("exception");
 		};
 	}, [akashicRecords]);
 
@@ -1516,11 +1679,11 @@ export default function Page() {
 			>
 				<ServerList />
 				<LoadingSection
-					key={selectedServerId}
+					key={selectedServerId + "loading"}
 					isLoading={loadingSectionVisible}
 				/>
 				{!loadingSectionVisible && (
-					<ChatSection key={selectedServerId} />
+					<ChatSection key={selectedServerId + "chat"} />
 				)}
 			</ChatContext.Provider>
 		</div>
