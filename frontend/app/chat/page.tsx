@@ -98,6 +98,7 @@ type Message = {
 	chatId: string;
 	parent?: boolean;
 	groupid: string;
+	loaded: boolean;
 };
 
 type ChatContextType = {
@@ -119,6 +120,7 @@ type ChatContextType = {
 	setSelectedServerId: (selectedServerId: string | null) => void;
 	setShowMembers: (showMembers: boolean) => void;
 	showMembers: boolean;
+	serverMutate: () => Promise<void>;
 };
 
 function useChatContext() {
@@ -378,6 +380,7 @@ function MessageListEntry({
 						className={twMerge(
 							"flex gap-4 px-4",
 							!message.noAvatar && "mt-4",
+							!message.loaded && "opacity-50",
 						)}
 					>
 						<div
@@ -658,6 +661,7 @@ function ChatInput() {
 									chatId: selectedServerId,
 									id: newId,
 									updatedAt: new Date(),
+									loaded: false,
 								},
 								...messages,
 							],
@@ -1558,6 +1562,7 @@ export default function Page() {
 	const {
 		data: selectedServerMessages,
 		isLoading: selectedServerMessagesLoading,
+		mutate: selectedServerMessagesMutate,
 	} = useSWR(`/chat/channel/messages/${selectedServerId}`, fetcher, {
 		onSuccess: (data) => {
 			if (selectedServerId)
@@ -1571,23 +1576,30 @@ export default function Page() {
 									return user.id == message.user.id;
 								},
 							);
+							message.loaded = true;
 							return message;
 						},
 					),
 				});
 		},
 	}) as any;
+	const {
+		data: selectedServerMembers,
+		isLoading: selectedServerMembersLoading,
+		mutate: selectedServerMembersMutate,
+	} = useSWR(`/chat/channel/members/${selectedServerId}`, fetcher) as any;
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
 	const loadingSectionVisible =
-		selectedServerMessagesLoading && selectedServerMessages == null;
+		(selectedServerMessagesLoading && selectedServerMessages == null) ||
+		(selectedServerMembersLoading && selectedServerMembers == null)
 
 	const messages = selectedServerId
 		? akashicRecords[selectedServerId] || []
 		: [];
 
-	const members = selectedServer?.members || [];
+	const members = selectedServerMembers || [];
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user.id == messages[i + 1]?.user.id) {
@@ -1602,6 +1614,11 @@ export default function Page() {
 			messageParents.current[messages[i].groupid] += 1;
 			messages[i].groupid = messages[i - 1].groupid;
 		}
+	}
+
+	const serverMutate = async () => {
+		await selectedServerMessagesMutate();
+		await selectedServerMembersMutate();
 	}
 
 	useEffect(() => {
@@ -1624,8 +1641,8 @@ export default function Page() {
 	useEffect(() => {
 		socket.on("message", async (message: Message) => {
 			const akashicRecordsServer = [...akashicRecords[message.chatId]];
-			if (message.user.id == "server")
-				await serversMutate();
+			if (message.user.id == "server" && message.chatId == selectedServerId)
+				await serverMutate();
 			if (akashicRecordsServer && message.user.id != session.id) {
 				akashicRecordsServer.push(message);
 				const sortedByTime = akashicRecordsServer.sort(
@@ -1638,15 +1655,34 @@ export default function Page() {
 					[message.chatId]: sortedByTime,
 				});
 			}
+			else if (akashicRecordsServer && message.user.id == session.id) {
+				setAkashicRecords((prev) => {
+					const newAkashicRecords = {
+						...prev,
+						[message.chatId]: prev[message.chatId].map((m) => {
+							if (m.content == message.content && !m.loaded) {
+								m.loaded = true;
+							}
+							return m;
+						}),
+					};
+					return newAkashicRecords;
+				})
+			}
 		});
 
 		socket.on("exception", (error: any) => {
 			toast.error(error.message);
 		});
 
+		// socket.on("mutate", async () => {
+		// 	await serversMutate();
+		// });
+
 		return () => {
 			socket.off("message");
 			socket.off("exception");
+			// socket.off("mutate");
 		};
 	}, [akashicRecords]);
 
@@ -1675,6 +1711,7 @@ export default function Page() {
 					setSelectedServerId,
 					setShowMembers,
 					showMembers,
+					serverMutate,
 				}}
 			>
 				<ServerList />
