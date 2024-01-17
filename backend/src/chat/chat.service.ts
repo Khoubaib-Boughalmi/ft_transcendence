@@ -153,7 +153,10 @@ export class ChatService {
 		});
 
 		// Create the list of chat channels
-		const chats = await this.convertChatsFormat(userChats);
+		const chats = await this.convertChatsFormat(userChats, {
+			invites: false,
+			members: false,
+		});
 		return chats;
 	}
 
@@ -212,6 +215,7 @@ export class ChatService {
 				if (!target) throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
+				this.socketService.getUserSockets(target.id)?.forEach((socket) => socket.emit('mutate', `/chat/channel/list`));
 				return `${target.username} has been kicked from the channel.`;
 			},
 			ban: async (args: string[], chat: Chat) => {
@@ -232,6 +236,7 @@ export class ChatService {
 						},
 					},
 				});
+				this.socketService.getUserSockets(target.id)?.forEach((socket) => socket.emit('mutate', `/chat/channel/list`));
 				return `${target.username} has been banned from the channel.`;
 			},
 			unban: async (args: string[], chat: Chat) => {
@@ -263,13 +268,17 @@ export class ChatService {
 				if (isNaN(duration))
 					throw new WsException(errors.invalidDuration);
 				const endTimestamp = Date.now() + duration * 1000;
+				const newMutes = chat.mutes.filter(
+					(mute) => mute.split(':')[0] !== target.id && Number(mute.split(':')[1]) > Date.now()
+				);
+				newMutes.push(`${target.id}:${endTimestamp}`);
 				await this.prisma.chat.update({
 					where: {
 						id: chat.id,
 					},
 					data: {
 						mutes: {
-							push: `${target.id}:${endTimestamp}`,
+							set: newMutes,
 						},
 					},
 				});
@@ -339,6 +348,19 @@ export class ChatService {
 				updatedAt: message.updated_at,
 			};
 		} else {
+			const chat = await this.prisma.chat.findUnique({
+				where: {
+					id: data.chat_id,
+				},
+			});
+			if (!chat) throw new WsException('Invalid chat');
+			const mute = chat.mutes.find(
+				(mute) =>
+					mute.split(':')[0] === data.user_id &&
+					Number(mute.split(':')[1]) > Date.now(),
+			);
+			if (mute) throw new WsException(`You are muted for ${Math.ceil((Number(mute.split(':')[1]) - Date.now()) / 1000)} more seconds.`);
+
 			const message = await this.prisma.message.create({ data });
 			const userProfile = await this.userService.getProfileMicro({
 				id: data.user_id,
@@ -389,6 +411,17 @@ export class ChatService {
 			});
 		}
 		return messages;
+	}
+
+	async getChatMembers(chatId: string): Promise<UserProfileMicro[]> {
+		const chat = await this.prisma.chat.findUnique({
+			where: {
+				id: chatId,
+			},
+		});
+		if (!chat) return [];
+		const members = await this.userService.getMicroProfiles(chat.users);
+		return members;
 	}
 
 	async joinChat(chat: Chat, userId: string, password?: string) {
