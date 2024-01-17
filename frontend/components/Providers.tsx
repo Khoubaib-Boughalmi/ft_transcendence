@@ -4,7 +4,7 @@ import PublicContext from "@/contexts/PublicContext";
 import { NextUIProvider } from "@nextui-org/react";
 import axios from "@/lib/axios";
 import { fetcher } from "@/lib/utils";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { dummyUser } from "@/mocks/profile";
 import { useContext, useEffect, useState } from "react";
 import jwt from "jsonwebtoken";
@@ -37,8 +37,12 @@ export default function Providers({ accessToken, children }: any) {
 		socket.connect();
 		socket.on("disconnect", () => {
 		});
+		socket.on("mutate", (key) => {
+			mutate(key);
+		});
 		return () => {
 			socket.off("disconnect");
+			socket.off("mutate");
 		}
 	}, [accessToken]);
 
