@@ -143,6 +143,12 @@ export class ChatController {
 		return this.chatService.getChatMessages(params.id);
 	}
 
+	@Get('channel/members/:id')
+	@UseGuards(JwtGuard)
+	async channelMembers(@Req() req, @Param() params: ChannelUpdateDTO) {
+		return this.chatService.getChatMembers(params.id);
+	}
+
 	@Post('channel/create')
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
@@ -162,6 +168,8 @@ export class ChatController {
 		if (!chat) throw new HttpException('Channel not found', 404);
 		if (chat.passwordProtected && (!body.password || !bcrypt.compareSync(body?.password, chat.chatPassword)))
 			throw new HttpException('Invalid password', 403);
+		if (chat.bans.includes(req.user.id))
+			throw new HttpException('You are banned from this channel', 403);
 		if (chat.inviteOnly && !chat.invites.includes(req.user.id))
 			throw new HttpException('You are not allowed to do that', 403);
 
