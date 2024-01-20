@@ -3,7 +3,7 @@ import { User, Match, Achievement } from "@/types/profile";
 const activities = [100, 0, 5, 10, 15, 20, 0, 0, 0, 0, 12, 18];
 
 export const user1: User = {
-	id: 1,
+	id: "1",
 	username: "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
 	avatar: "/pfp.png",
 	banner: "/background2.png",
@@ -27,7 +27,7 @@ export const user1: User = {
 
 export const user2: User = {
 	...user1,
-	id: 2,
+	id: "2",
 	username: "mrian",
 	avatar: "/mrian.jpeg",
 	banner: "/background2.png",
@@ -77,7 +77,7 @@ user2.friends = friends;
 
 
 export const dummyUser: User = {
-	id: 1,
+	id: "1",
 	username: "",
 	avatar: "/placeholder.png",
 	banner: "/placeholder.png",
