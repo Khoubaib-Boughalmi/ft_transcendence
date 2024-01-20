@@ -145,6 +145,9 @@ function ServerListEntry({ server }: { server: Server }) {
 			<div className="relative aspect-square h-full flex-shrink-0 p-4">
 				<div className="relative aspect-square h-full">
 					<SuperImage
+						width={64}
+						height={64}
+						alt={server.name}
 						src={server.icon}
 						className="absolute inset-0 aspect-square h-full w-full rounded-2xl object-cover"
 					/>
@@ -391,6 +394,9 @@ function MessageListEntry({
 						>
 							{!message.noAvatar && (
 								<SuperImage
+									width={48}
+									height={48}
+									alt={message.user.username}
 									src={message.user.avatar}
 									className="absolute inset-0 rounded-full"
 								/>
@@ -458,6 +464,8 @@ function MessageListEntry({
 function ServerList() {
 	const { expanded, setExpanded, listTab, setListTab, servers } =
 		useChatContext();
+
+	console.log("rerernedered");
 
 	return (
 		<div className="flex h-full w-full flex-col overflow-hidden rounded-l-3xl bg-card-300 @md:w-[19rem]">
@@ -1004,6 +1012,9 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 							<div className="aspect-square h-[252px] flex-shrink-0">
 								<div className="relative h-full w-full">
 									<SuperImage
+										width={252}
+										height={252}
+										alt={selectedServer?.name}
 										className="absolute inset-0 aspect-square h-full w-full rounded-2xl object-cover"
 										src={selectedServer?.icon}
 									/>
@@ -1150,7 +1161,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 
 function DiscoverListEntry({ server }: { server: Server }) {
 	const { servers } = useChatContext();
-	const { serversMutate } = useChatContext();
+	const { serversMutate, setSelectedServerId } = useChatContext();
 	const [loading, setLoading] = useState(false);
 
 	const handleJoin = () => {
@@ -1170,6 +1181,9 @@ function DiscoverListEntry({ server }: { server: Server }) {
 		<div className="flex aspect-video w-full flex-col rounded-3xl bg-card-200">
 			<div className="relative z-10 flex-1 overflow-hidden rounded-t-3xl">
 				<SuperImage
+					width={64}
+					height={64}
+					alt={server.name}
 					src={server.icon}
 					className="absolute inset-0 -z-10 h-full w-full scale-150 rounded object-cover opacity-75 blur-md"
 				/>
@@ -1188,8 +1202,10 @@ function DiscoverListEntry({ server }: { server: Server }) {
 								Join
 							</Button>
 						) : (
-							<Button disabled startContent={<Check size={18} />}>
-								Joined
+							<Button onClick={() => {
+								setSelectedServerId(server.id);
+							}} startContent={<Check size={18} />}>
+								Open
 							</Button>
 						)}
 					</div>
@@ -1200,6 +1216,9 @@ function DiscoverListEntry({ server }: { server: Server }) {
 					<div className="relative h-full w-24 shrink-0 bg-black">
 						<div className="absolute inset-x-0 bottom-0 aspect-square">
 							<SuperImage
+								width={64}
+								height={64}
+								alt={server.name}
 								src={server.icon}
 								className="absolute inset-0 h-full w-full rounded-xl object-cover"
 							/>
@@ -1253,6 +1272,9 @@ function DiscoverPage() {
 				<div className="relative h-full w-full overflow-hidden rounded-xl bg-card-200">
 					<div className="h-full w-full">
 						<SuperImage
+							width={256}
+							height={256}
+							alt="background"
 							src="/background2.png"
 							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge	"
 						/>
@@ -1386,6 +1408,9 @@ function ChatSection() {
 									<div className="aspect-square h-full p-2">
 										<div className="relative h-full w-full flex-shrink-0">
 											<SuperImage
+												width={64}
+												height={64}
+												alt={selectedServer.name}
 												className="absolute inset-0 aspect-square h-full w-full rounded-full object-cover"
 												src={selectedServer.icon}
 											/>
@@ -1675,16 +1700,13 @@ export default function Page() {
 			toast.error(error.message);
 		});
 
-		// socket.on("mutate", async () => {
-		// 	await serversMutate();
-		// });
-
 		return () => {
 			socket.off("message");
 			socket.off("exception");
-			// socket.off("mutate");
 		};
 	}, [akashicRecords]);
+
+	console.log("rerendered");
 
 	return (
 		<div

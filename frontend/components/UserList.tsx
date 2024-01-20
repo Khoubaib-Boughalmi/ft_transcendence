@@ -70,6 +70,9 @@ function UserListGridEntry({
 			>
 				<div className="relative aspect-square h-24 w-24 overflow-hidden rounded-full">
 					<SuperImage
+						alt={user.username}
+						width={64}
+						height={64}
 						src={user.avatar}
 						className="h-full w-full object-cover"
 					/>
@@ -140,6 +143,9 @@ function UserListListEntry({
 							)}
 						>
 							<SuperImage
+								alt={user.username}
+								width={64}
+								height={64}
 								src={user.avatar}
 								className="h-full w-full object-cover"
 							/>

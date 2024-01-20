@@ -41,15 +41,24 @@ export default function UserHover({ user }: { user: User }) {
 			"
 				>
 					<SuperImage
+						width={480}
+						height={270}
+						alt={user.username}
 						src={user.banner}
 						className="h-full w-full object-cover"
 					/>
 				</div>
 				<div className="relative flex h-8 w-full gap-2 rounded-b-xl bg-card-250">
+					<div className="h-[200%] aspect-square relative shrink-0 -translate-y-1/2">
+
 					<SuperImage
+						width={32}
+						height={32}
+						alt={user.username}
 						src={user.avatar}
-						className="aspect-square h-[200%] flex-shrink-0 -translate-y-1/2 rounded-full object-cover"
-					/>
+						className="absolute inset-0 w-full h-full rounded-full object-cover"
+						/>
+						</div>
 					<div className="relative flex flex-1 flex-col justify-center text-sm leading-3 text-white">
 						<div className="absolute inset-0 flex -translate-y-full items-end pb-2"></div>
 						<span className="w-28 truncate pr-2 text-xs leading-3">

@@ -127,12 +127,18 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 				className="group relative flex flex-1 gap-2 overflow-hidden p-2"
 			>
 				<SuperImage
+					width={256}
+					height={256}
+					alt="Background"
 					src={user.banner}
 					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm brightness-50"
 				/>
 				<div className="z-10 flex w-full items-center gap-4 text-white group-data-[side=right]:flex-row-reverse">
 					<div className="relative aspect-square h-full flex-shrink-0 overflow-hidden rounded-full">
 						<SuperImage
+							height={64}
+							width={64}
+							alt={user.username}
 							src={user.avatar}
 							className="h-full w-full"
 						/>
@@ -171,12 +177,18 @@ function MatchHistoryEntry({ match }: { match: Match }) {
 			"
 			>
 				<SuperImage
+					width={256}
+					height={256}
+					alt="banner"
 					src={user.banner}
 					className="h-full w-full object-cover"
 				/>
 				<div className="absolute inset-0 z-10 flex items-center justify-between p-16 group-data-[side=right]:flex-row-reverse">
 					<div className="relative aspect-square h-full overflow-hidden rounded-full">
 						<SuperImage
+							height={64}
+							width={64}
+							alt={user.username}
 							src={user.avatar}
 							className="h-full w-full"
 						/>
@@ -530,6 +542,9 @@ function ProfileTop({ user }: { user: User }) {
 			<SessionLoadingSkeleton />
 			<div className="relative h-96 w-full overflow-hidden rounded-t-3xl">
 				<SuperImage
+					width={1280}
+					height={720}
+					alt="banner"
 					src={user.banner}
 					className="h-full w-full object-cover"
 				/>
@@ -638,6 +653,9 @@ function ProfileTop({ user }: { user: User }) {
 			<div className="z-10 flex h-24 w-full rounded-b-3xl bg-card-300 px-8">
 				<div className="relative aspect-square h-[150%]">
 					<SuperImage
+						width={256}
+						height={256}
+						alt={user.username}
 						className="h-full w-full -translate-y-1/2 rounded-full object-cover"
 						src={user.avatar}
 					/>
@@ -705,6 +723,9 @@ function AchievementsEntry({ achievement }: { achievement: Achievement }) {
 							rounded-full after:absolute after:inset-0 after:translate-x-1/2 after:bg-gradient-to-r after:from-transparent after:via-card-400 after:to-transparent after:content-['']"
 			>
 				<SuperImage
+					width={256}
+					height={256}
+					alt={achievement.name}
 					src={achievement.icon}
 					className="h-full w-full object-cover"
 				/>

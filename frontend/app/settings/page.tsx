@@ -104,6 +104,9 @@ function TwoFactorAuthenticationSetup({
 			<div className="relative mt-4 aspect-square w-1/4 overflow-hidden rounded-xl bg-white">
 				{data && (
 					<SuperImage
+						alt="QR code"
+						width={256}
+						height={256}
 						src={data}
 						className="h-full w-full object-cover"
 					/>

@@ -40,6 +40,9 @@ export default function RootLayout({
 					<div className="min-w-screen grid min-h-screen grid-cols-1">
 						<div className="fixed inset-0 overflow-hidden bg-gradient-to-t from-background to-accent to-[250%]">
 							<SuperImage
+								width={1280}
+								height={720}
+								alt="Background"
 								className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
 								src="/background2.png"
 							/>

@@ -275,6 +275,9 @@ function ProfileButton({ user }: { user: User }) {
 					<div className="flex h-full items-center gap-2 text-xs text-white">
 						<div className="relative aspect-square h-full">
 							<SuperImage
+								width={32}
+								height={32}
+								alt="Avatar"
 								src={user.avatar}
 								className="h-full w-full rounded-full object-cover"
 							/>
