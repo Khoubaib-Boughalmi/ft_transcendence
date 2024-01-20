@@ -6,7 +6,13 @@ import { useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import PublicContext from "@/contexts/PublicContext";
 
-export default function SuperImage({ src, className, ...props }: any) {
+export default function SuperImage({ src, className, width, height, alt, ...props }: {
+	src: string;
+	width: number;
+	height: number;
+	alt: string;
+	[key: string]: any;
+}) {
 	const { loadedImages, setLoadedImages } = useContext(PublicContext) as any;
 	const imgRef = useRef<HTMLImageElement>(null);
 
@@ -23,10 +29,13 @@ export default function SuperImage({ src, className, ...props }: any) {
 
 	return (
 		<>
-			<img
+			<Image
 				ref={imgRef}
 				src={src}
-				key={src}	
+				key={src}
+				alt={alt}
+				width={width}
+				height={height}	
 				className={twMerge(
 					className,
 					!className?.includes("absolute") && `relative`,
