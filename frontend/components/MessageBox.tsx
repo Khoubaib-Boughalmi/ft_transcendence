@@ -34,9 +34,10 @@ export default function MessageBox({
                 if (message?.length < 1) return;
 				console.log("emitted")
                 socket.emit("message", {
-                    chatId: user.id,
+                    targetId: user.id,
                     message
                 })
+				onClose();
             }}>
 				<MessageInput />
 			</form>
