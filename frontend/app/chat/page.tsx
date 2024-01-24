@@ -407,7 +407,7 @@ function MessageListEntry({
 					>
 						<div
 							className={twMerge(
-								"relative h-0 w-12 flex-shrink-0",
+								"relative h-0 w-12 flex-shrink-0 aspect-square",
 								message.noAvatar && "opacity-0",
 							)}
 						>
@@ -417,7 +417,7 @@ function MessageListEntry({
 									height={48}
 									alt={message.user.username}
 									src={message.user.avatar}
-									className="absolute inset-0 rounded-full"
+									className="absolute inset-0 rounded-full object-cover aspect-square"
 								/>
 							)}
 						</div>
