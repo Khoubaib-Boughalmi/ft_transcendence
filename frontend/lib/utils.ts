@@ -132,9 +132,9 @@ export async function InteractionFunctionality(type: InteractionType, user: User
 	);
 }
 
-export function useIsOnline(user: User) {
-	const { data } = useSWR(`/user/profile/isonline/${user.id}`, fetcher, {
-		refreshInterval: 1000,
+export function useIsOnline(userId: string) {
+	const { data } = useSWR(`/user/profile/isonline/${userId}`, fetcher, {
+		refreshInterval: 10000,
 	}) as any;
 
 	return data ? data.isOnline : false;

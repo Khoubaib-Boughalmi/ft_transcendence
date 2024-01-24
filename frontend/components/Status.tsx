@@ -4,17 +4,17 @@ import useSWR from "swr";
 import { twMerge } from "tailwind-merge";
 
 export default function Status({
-	user,
+	userId,
 	size,
 	className,
 	isOnline,
 }: {
-	user: User;
+	userId: string;
 	size?: "xs" | "sm" | "md" | "lg";
 	className?: string;
 	isOnline?: boolean;
 }) {
-	isOnline = isOnline ?? useIsOnline(user);
+	isOnline = isOnline ?? useIsOnline(userId);
 	const status = isOnline == true ? "Online" : "Offline";
 
 	return (

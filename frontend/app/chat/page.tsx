@@ -69,6 +69,8 @@ import DeleteButton from "@/components/DeleteButton";
 import socket from "@/lib/socket";
 import NoData from "@/components/NoData";
 import toast from "react-hot-toast";
+import Status from "@/components/Status";
+import MessageInput from "@/components/MessageInput";
 
 const ChatContext = createContext({});
 
@@ -107,6 +109,8 @@ type ChatContextType = {
 	expanded: boolean;
 	listTab: "servers" | "friends";
 	members: User[];
+	selectedServerBans: User[];
+	selectedServerInvites: User[];
 	messageParents: any;
 	messages: Message[];
 	selectedServer: Server | undefined;
@@ -121,6 +125,7 @@ type ChatContextType = {
 	setShowMembers: (showMembers: boolean) => void;
 	showMembers: boolean;
 	serverMutate: () => Promise<void>;
+	prevSelectedServerId: any;
 };
 
 function useChatContext() {
@@ -369,13 +374,11 @@ function MessageListEntry({
 	return (
 		<>
 			{message.user.id == "server" ? (
-				<div className="w-full p-2 pb-0 mt-2 text-foreground-500 flex items-center gap-2">
-					<div className="p-2 px-4 text-xs bg-card-100 rounded-full text-white">
+				<div className="mt-2 flex w-full items-center gap-2 p-2 pb-0 text-foreground-500">
+					<div className="rounded-full bg-card-100 p-2 px-4 text-xs text-white">
 						SERVER
 					</div>
-					<div>
-						{message.content}
-					</div>
+					<div>{message.content}</div>
 				</div>
 			) : (
 				displayed && (
@@ -689,7 +692,7 @@ function ChatInput() {
 			>
 				<div className="relative">
 					{showCommands && (
-						<div className="animate-overlayfast absolute bottom-0 flex  w-full flex-col rounded-3xl bg-card-200 pb-12">
+						<div className="absolute bottom-0 flex w-full  animate-overlayfast flex-col rounded-3xl bg-card-200 pb-12">
 							<div className="p-2">
 								<div className="flex flex-col overflow-hidden rounded-3xl bg-card-300">
 									{commandsToShow.length == 0 && (
@@ -738,27 +741,11 @@ function ChatInput() {
 							</div>
 						</div>
 					)}
-					<Input
+					<MessageInput
 						value={message}
 						onChange={(e) => {
 							setMessage(e.target.value);
 						}}
-						id="message"
-						autoComplete="off"
-						name="message"
-						placeholder="Send a message"
-						classNames={{
-							container: "pr-0",
-						}}
-						endContent={
-							<Button
-								startContent={<SendHorizontal />}
-								type="submit"
-								variant="transparent"
-								className="h-full rounded-none !border-0 px-4 !outline-none !ring-0"
-								iconOnly
-							></Button>
-						}
 					/>
 				</div>
 			</form>
@@ -806,7 +793,7 @@ function MemberControls({
 }
 
 function InviteBox() {
-	const { members, selectedServer, serversMutate } = useChatContext();
+	const { members, selectedServer, serverMutate } = useChatContext();
 	const [loading, setLoading] = useState(false);
 	const formRef = useRef<HTMLFormElement>(null);
 
@@ -824,7 +811,7 @@ function InviteBox() {
 			`Successfully invited ${username}`,
 			`Failed to invite ${username}`,
 			async () => {
-				await serversMutate();
+				await serverMutate();
 				formRef.current?.reset();
 			},
 		);
@@ -858,7 +845,7 @@ function InviteBox() {
 }
 
 function RevokeInviteButton({ user }: { user: User }) {
-	const { members, selectedServer, serversMutate } = useChatContext();
+	const { members, selectedServer, serverMutate } = useChatContext();
 	const [loading, setLoading] = useState(false);
 
 	const handleRevokeInvite = (user: User) => {
@@ -871,7 +858,7 @@ function RevokeInviteButton({ user }: { user: User }) {
 			setLoading,
 			`Successfully revoked invite to ${user.username}`,
 			`Failed to revoke invite to ${user.username}`,
-			serversMutate,
+			serverMutate,
 		);
 	};
 
@@ -910,7 +897,7 @@ function RevokeBanButton({ user }: { user: User }) {
 }
 
 function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
-	const { members, selectedServer, serversMutate } = useChatContext();
+	const { members, selectedServer, serverMutate, selectedServerInvites, selectedServerBans } = useChatContext();
 	const [passwordEnabled, setPasswordEnabled] = useState(
 		selectedServer?.enable_password,
 	);
@@ -937,7 +924,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 			`Successfully updated the channel`,
 			`Failed to update the channel`,
 			async () => {
-				await serversMutate();
+				await serverMutate();
 				formRef.current?.reset();
 			},
 		);
@@ -955,7 +942,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 				!value ? "disabled" : "enabled"
 			} password protection`,
 			`Failed to ${!value ? "disable" : "enable"} password protection`,
-			serversMutate,
+			serverMutate,
 		);
 		setPasswordEnabled(value);
 	};
@@ -970,7 +957,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 			undefined,
 			`Successfully ${!value ? "disabled" : "enabled"} invite only mode`,
 			`Failed to ${!value ? "disable" : "enable"} invite only mode`,
-			serversMutate,
+			serverMutate,
 		);
 		setInviteOnlyEnabled(value);
 	};
@@ -1053,7 +1040,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 												id: selectedServer?.id,
 											}}
 											callback={async () => {
-												await serversMutate();
+												await serverMutate();
 											}}
 										>
 											Upload Icon
@@ -1063,7 +1050,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 												id: selectedServer?.id,
 											}}
 											callback={async () => {
-												await serversMutate();
+												await serverMutate();
 											}}
 											endpoint="/chat/channel/delete-icon"
 											type="icon"
@@ -1133,7 +1120,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 									)}
 								>
 									<MemberControls
-										list={selectedServer?.invites || []}
+										list={selectedServerInvites}
 										controls={RevokeInviteButton}
 									/>
 									<InviteBox />
@@ -1147,7 +1134,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 									Banned users
 								</div>
 								<MemberControls
-									list={members}
+									list={selectedServerBans}
 									controls={RevokeBanButton}
 								/>
 							</div>
@@ -1202,9 +1189,12 @@ function DiscoverListEntry({ server }: { server: Server }) {
 								Join
 							</Button>
 						) : (
-							<Button onClick={() => {
-								setSelectedServerId(server.id);
-							}} startContent={<Check size={18} />}>
+							<Button
+								onClick={() => {
+									setSelectedServerId(server.id);
+								}}
+								startContent={<Check size={18} />}
+							>
 								Open
 							</Button>
 						)}
@@ -1275,8 +1265,8 @@ function DiscoverPage() {
 							width={256}
 							height={256}
 							alt="background"
-							src="/background2.png"
-							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge	"
+							src="/background4.png"
+							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge blur-xl	"
 						/>
 					</div>
 					<div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2">
@@ -1348,6 +1338,7 @@ function ChatSection() {
 		selectedServer,
 		selectedServerId,
 		serversMutate,
+		prevSelectedServerId,
 	} = useContext(ChatContext) as ChatContextType;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -1360,9 +1351,13 @@ function ChatSection() {
 			const currentHeight = messageBox.scrollHeight;
 			const visibleHeight = messageBox.clientHeight;
 			const difference = currentHeight - currentScroll;
-			if (currentHeight - currentScroll < visibleHeight * 2)
+			if (
+				currentHeight - currentScroll < visibleHeight * 2 ||
+				prevSelectedServerId.current != selectedServerId
+			)
 				messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
+		prevSelectedServerId.current = selectedServerId;
 	}, [messages, selectedServerId, messageBoxRef]);
 
 	useEffect(() => {
@@ -1580,6 +1575,7 @@ export default function Page() {
 	const selectedServer =
 		servers?.find((server: Server) => server.id == selectedServerId) ||
 		null;
+	const prevSelectedServerId = useRef(selectedServerId);
 
 	const [akashicRecords, setAkashicRecords] = useState<{
 		[key: string]: Message[];
@@ -1609,22 +1605,27 @@ export default function Page() {
 		},
 	}) as any;
 	const {
-		data: selectedServerMembers,
-		isLoading: selectedServerMembersLoading,
-		mutate: selectedServerMembersMutate,
+		data: selectedServerData,
+		isLoading: selectedServerDataLoading,
+		mutate: selectedServerDataMutate,
 	} = useSWR(`/chat/channel/members/${selectedServerId}`, fetcher) as any;
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
 	const loadingSectionVisible =
 		(selectedServerMessagesLoading && selectedServerMessages == null) ||
-		(selectedServerMembersLoading && selectedServerMembers == null)
+		(selectedServerDataLoading && selectedServerData == null);
 
 	const messages = selectedServerId
 		? akashicRecords[selectedServerId] || []
 		: [];
 
-	const members = selectedServerMembers || [];
+	const members = selectedServerData?.members || [];
+	const selectedServerInvites = selectedServerData?.invites || [];
+	const selectedServerBans = selectedServerData?.bans || [];
+
+	console.log({ selectedServerData });
+	
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user.id == messages[i + 1]?.user.id) {
@@ -1642,9 +1643,12 @@ export default function Page() {
 	}
 
 	const serverMutate = async () => {
-		await selectedServerMessagesMutate();
-		await selectedServerMembersMutate();
-	}
+		await Promise.all([
+			serversMutate(),
+			selectedServerMessagesMutate(),
+			selectedServerDataMutate(),
+		]);
+	};
 
 	useEffect(() => {
 		if (prevServers.current != null) {
@@ -1666,7 +1670,10 @@ export default function Page() {
 	useEffect(() => {
 		socket.on("message", async (message: Message) => {
 			const akashicRecordsServer = [...akashicRecords[message.chatId]];
-			if (message.user.id == "server" && message.chatId == selectedServerId)
+			if (
+				message.user.id == "server" &&
+				message.chatId == selectedServerId
+			)
 				await serverMutate();
 			if (akashicRecordsServer && message.user.id != session.id) {
 				akashicRecordsServer.push(message);
@@ -1679,8 +1686,7 @@ export default function Page() {
 					...akashicRecords,
 					[message.chatId]: sortedByTime,
 				});
-			}
-			else if (akashicRecordsServer && message.user.id == session.id) {
+			} else if (akashicRecordsServer && message.user.id == session.id) {
 				setAkashicRecords((prev) => {
 					const newAkashicRecords = {
 						...prev,
@@ -1692,7 +1698,7 @@ export default function Page() {
 						}),
 					};
 					return newAkashicRecords;
-				})
+				});
 			}
 		});
 
@@ -1734,6 +1740,9 @@ export default function Page() {
 					setShowMembers,
 					showMembers,
 					serverMutate,
+					prevSelectedServerId,
+					selectedServerInvites,
+					selectedServerBans,
 				}}
 			>
 				<ServerList />

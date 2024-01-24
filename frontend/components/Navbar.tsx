@@ -340,7 +340,7 @@ function ProfileButton({ user }: { user: User }) {
 							<Status
 								className="rounded-none px-4 text-white"
 								size="sm"
-								user={user}
+								userId={user.id}
 							/>
 						</DropdownItem>
 					)}

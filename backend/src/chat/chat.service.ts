@@ -424,6 +424,28 @@ export class ChatService {
 		return members;
 	}
 
+	async getChatInvites(chatId: string): Promise<UserProfileMicro[]> {
+		const chat = await this.prisma.chat.findUnique({
+			where: {
+				id: chatId,
+			},
+		});
+		if (!chat) return [];
+		const invites = await this.userService.getMicroProfiles(chat.invites);
+		return invites;
+	}
+
+	async getChatBans(chatId: string): Promise<UserProfileMicro[]> {
+		const chat = await this.prisma.chat.findUnique({
+			where: {
+				id: chatId,
+			},
+		});
+		if (!chat) return [];
+		const bans = await this.userService.getMicroProfiles(chat.bans);
+		return bans;
+	}
+
 	async joinChat(chat: Chat, userId: string, password?: string) {
 		await this.prisma.chat.update({
 			where: {

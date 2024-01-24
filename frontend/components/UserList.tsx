@@ -53,7 +53,7 @@ function UserListGridEntry({
 	user: User;
 	hoverDelay?: number;
 }) {
-	const isOnline = useIsOnline(user);
+	const isOnline = useIsOnline(user.id);
 
 	return (
 		<SuperTooltip
@@ -80,7 +80,7 @@ function UserListGridEntry({
 				<div className="w-full truncate text-center text-sm">
 					{user.username}
 				</div>
-				<Status isOnline={isOnline} user={user} />
+				<Status isOnline={isOnline} userId={user.id} />
 			</Link>
 		</SuperTooltip>
 	);
@@ -101,7 +101,7 @@ function UserListListEntry({
 	Controls?: any;
 	showBadge?: (user: User) => boolean;
 }) {
-	const isOnline = useIsOnline(user);
+	const isOnline = useIsOnline(user.id);
 
 	return (
 		<SuperTooltip
@@ -163,7 +163,7 @@ function UserListListEntry({
 								<Status
 									isOnline={isOnline}
 									size={size}
-									user={user}
+									userId={user.id}
 								/>
 							)}
 						</div>

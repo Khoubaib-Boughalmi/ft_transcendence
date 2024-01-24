@@ -30,12 +30,7 @@ import Chart from "@/components/Chart";
 import Card from "@/components/Card";
 import { User, Match, Achievement, StatusType } from "@/types/profile";
 import UserHover from "@/components/UserHover";
-import {
-	fetcher,
-	fetcherUnsafe,
-	getFlag,
-	getRank,
-} from "@/lib/utils";
+import { fetcher, fetcherUnsafe, getFlag, getRank } from "@/lib/utils";
 import { dummyUser, user1, user2 } from "@/mocks/profile";
 import ModalSet from "@/components/ModalSet";
 import PublicContext from "@/contexts/PublicContext";
@@ -52,6 +47,7 @@ import { SuperDropdown } from "@/components/SuperDropdown";
 import { InteractionType } from "@/types/profile";
 import { interactionDictionary } from "@/lib/utils";
 import { InteractionFunctionality } from "@/lib/utils";
+import MessageBox from "@/components/MessageBox";
 
 const ProfileContext = createContext({});
 
@@ -419,8 +415,7 @@ function ProfileFriends({ user }: { user: User }) {
 						}
 					>
 						<div className="p-2">
-
-						<UserList type="list" users={user.friends!} />
+							<UserList type="list" users={user.friends!} />
 						</div>
 					</ModalSet>
 				</div>
@@ -512,12 +507,21 @@ function InteractionButton({
 	const [buttonText, ..._] = interactionDictionary[type];
 
 	return (
-		<Button loading={loading} onClick={() => {
-			InteractionFunctionality(type, user, async () => {
-				await sessionMutate();
-				callback && callback();
-			}, setLoading);
-		}} {...props}>
+		<Button
+			loading={loading}
+			onClick={() => {
+				InteractionFunctionality(
+					type,
+					user,
+					async () => {
+						await sessionMutate();
+						callback && callback();
+					},
+					setLoading,
+				);
+			}}
+			{...props}
+		>
 			{buttonText}
 		</Button>
 	);
@@ -536,6 +540,12 @@ function ProfileTop({ user }: { user: User }) {
 		(request: User) => request.id == user.id,
 	);
 	const me = session.id == user.id;
+	const {
+		onOpen: onMessageOpen,
+		onClose: onMessageClose,
+		isOpen: isMessageOpen,
+		onOpenChange: onMessageOpenChange,
+	} = useDisclosure();
 
 	return (
 		<div className="relative flex w-full flex-col">
@@ -591,59 +601,80 @@ function ProfileTop({ user }: { user: User }) {
 								/>
 							)}
 							{!userBlocked && (
-								<ModalSet
-									onClose={onClose}
-									title={`Options for ${user.username}`}
-									isOpen={isOpen}
-									onOpenChange={onOpenChange}
-									size="xs"
-									trigger={
-										<Button
-											onClick={onOpenChange}
-											variant="transparent"
-											iconOnly
-											startContent={
-												<MoreHorizontal size={20} />
-											}
-										></Button>
-									}
-								>
-									<div className="flex flex-col gap-1 p-2">
-										<Button
-											startContent={
-												<MessageSquareIcon size={18} />
-											}
-											variant="transparent"
-											className="justify-start"
-										>
-											Message
-										</Button>
-										<Button
-											startContent={<Swords size={18} />}
-											variant="transparent"
-											className="justify-start"
-										>
-											Invite
-										</Button>
-										<Button
-											startContent={<Video size={18} />}
-											variant="transparent"
-											className="justify-start"
-										>
-											Spectate
-										</Button>
-										<Divider className="my-4" />
+								<>
+									<MessageBox
+										user={user}
+										isOpen={isMessageOpen}
+										onOpen={onMessageOpen}
+										onClose={onMessageClose}
+										onOpenChange={onMessageOpenChange}
+									/>
+									<ModalSet
+										onClose={onClose}
+										title={`Options for ${user.username}`}
+										isOpen={isOpen}
+										onOpenChange={onOpenChange}
+										size="xs"
+										trigger={
+											<Button
+												onClick={onOpenChange}
+												variant="transparent"
+												iconOnly
+												startContent={
+													<MoreHorizontal size={20} />
+												}
+											></Button>
+										}
+									>
+										<div className="flex flex-col gap-1 p-2">
+											<Button
+												startContent={
+													<MessageSquareIcon
+														size={18}
+													/>
+												}
+												variant="transparent"
+												className="justify-start"
+												onClick={() => {
+													onClose();
+													onMessageOpen();
+												}}
+											>
+												Message
+											</Button>
+											<Button
+												startContent={
+													<Swords size={18} />
+												}
+												variant="transparent"
+												className="justify-start"
+											>
+												Invite
+											</Button>
+											<Button
+												startContent={
+													<Video size={18} />
+												}
+												variant="transparent"
+												className="justify-start"
+											>
+												Spectate
+											</Button>
+											<Divider className="my-4" />
 
-										<InteractionButton
-											type="block"
-											user={user}
-											startContent={<UserX2 size={18} />}
-											className="justify-start"
-											variant="danger"
-											callback={onClose}
-										/>
-									</div>
-								</ModalSet>
+											<InteractionButton
+												type="block"
+												user={user}
+												startContent={
+													<UserX2 size={18} />
+												}
+												className="justify-start"
+												variant="danger"
+												callback={onClose}
+											/>
+										</div>
+									</ModalSet>
+								</>
 							)}
 						</>
 					)}
@@ -661,7 +692,7 @@ function ProfileTop({ user }: { user: User }) {
 					/>
 				</div>
 				<div className="relative flex w-full translate-y-[-25%] flex-col items-start gap-4 px-2 pl-4 text-white">
-					<Status user={user} />
+					<Status userId={user.id} />
 					<div className="relative h-32 w-full">
 						<div className="absolute inset-0">
 							<div className="flex w-full flex-col gap-2">

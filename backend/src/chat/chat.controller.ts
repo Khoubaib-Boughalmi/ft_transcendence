@@ -146,7 +146,16 @@ export class ChatController {
 	@Get('channel/members/:id')
 	@UseGuards(JwtGuard)
 	async channelMembers(@Req() req, @Param() params: ChannelUpdateDTO) {
-		return this.chatService.getChatMembers(params.id);
+		const all = await Promise.all([
+			this.chatService.getChatMembers(params.id),
+			this.chatService.getChatInvites(params.id),
+			this.chatService.getChatBans(params.id)
+		]);
+		return {
+			members: all[0],
+			invites: all[1],
+			bans: all[2],
+		}
 	}
 
 	@Post('channel/create')
