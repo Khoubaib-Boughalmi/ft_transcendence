@@ -17,11 +17,15 @@ import { ChatService } from './chat.service';
 import {
 	IsArray,
 	IsBoolean,
+	IsDecimal,
+	IsIn,
 	IsLowercase,
+	IsNumber,
 	IsOptional,
 	IsUUID,
 	Length,
 	ValidateNested,
+	isDecimal,
 	isString,
 } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
@@ -83,22 +87,16 @@ export class ChannelUpdateDTO {
 	@IsOptional()
 	description: string;
 
-	@IsBoolean()
-	@Transform(({ value }) => {
-		return [true, 'true', '1', 1].indexOf(value) > -1;
-	})
 	@IsOptional()
+	@Transform(({ value }) => value == 'true' ? true : false)
 	enable_password: boolean;
-
+	
 	@Length(6, 120)
 	@IsOptional()
 	password: string;
-
-	@IsBoolean()
-	@Transform(({ value }) => {
-		return [true, 'true', '1', 1].indexOf(value) > -1;
-	})
+	
 	@IsOptional()
+	@Transform(({ value }) => value == 'true' ? true : false)
 	enable_inviteonly: boolean;
 }
 
@@ -119,7 +117,6 @@ export class ChatController {
 	@Get('channel/search/:name?')
 	@UseGuards(JwtGuard)
 	async channelSearch(@Req() req, @Param() params) {
-		console.log("requested", params)
 		const search = params?.name || '';
 
 		const final = await this.chatService.chats({
@@ -131,9 +128,9 @@ export class ChatController {
 				],
 				passwordProtected: false,
 				inviteOnly: false,
+				isGroupChat: true,
 			},
 		});
-		console.log(final);
 		return final;
 	}
 
@@ -212,7 +209,7 @@ export class ChatController {
         if (body.password)
             body.password = bcrypt.hashSync(body.password, 10);
 
-		await this.chatService.updateChat({
+		const update = await this.chatService.updateChat({
 			where: { id: body.id },
 			data: {
 				chatName: body.name,
