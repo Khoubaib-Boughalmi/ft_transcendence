@@ -5,6 +5,7 @@ import { UserDTO } from './chat.controller';
 import { UserProfileMicro, UserService } from 'src/user/user.service';
 import { SocketService } from 'src/socket/socket.service';
 import { WsException } from '@nestjs/websockets';
+import { v4 as uuidv4 } from 'uuid';
 
 type ChatChannel = {
 	name: string;
@@ -18,6 +19,8 @@ type ChatChannel = {
 	enable_inviteonly: boolean;
 	invites?: UserProfileMicro[];
 	size?: number;
+	isDM: boolean;
+	membersIds: string[];
 };
 
 type ChatMessage = {
@@ -66,6 +69,23 @@ export class ChatService {
 		return chats;
 	}
 
+	async updateOneToOnes(chats: ChatChannel[], userId: string): Promise<ChatChannel[]> {
+		await Promise.all(
+			chats.map(async (chat) => {
+				if (!chat.isDM) return;
+				const otherUser = chat.membersIds.find((id) => id !== userId);
+				if (!otherUser) return;
+				const otherUserProfile = await this.userService.getProfileMicro({
+					id: otherUser,
+				});
+				if (!otherUserProfile) return;
+				chat.name = otherUserProfile.username;
+				chat.icon = otherUserProfile.avatar;
+			})
+		);
+		return chats;
+	}
+
 	async createChat(data: Prisma.ChatCreateInput): Promise<Chat> {
 		return this.prisma.chat.create({
 			data,
@@ -93,11 +113,16 @@ export class ChatService {
 		const chat = await this.findChatWithUsers(userId1, userId2);
 		// if chat exists, return it
 		if (chat) return chat;
+
+		const target = await this.userService.user({
+			id: userId2,
+		});
+		if (!target) return new WsException('Invalid target');
 		// if chat doesn't exist, create it
 		return this.createChat({
 			isGroupChat: false,
 			users: [userId1, userId2],
-			chatName: '',
+			chatName: uuidv4(),
 		});
 	}
 
@@ -129,11 +154,13 @@ export class ChatService {
 				icon: chat.chatIcon,
 				owner: chat.chatOwner,
 				members: chatMembers,
+				membersIds: chat.users,
 				admins: chat.chatAdmins,
 				enable_password: chat.passwordProtected,
 				enable_inviteonly: chat.inviteOnly,
 				invites: chatInvites,
 				size: chat.users.length,
+				isDM: !chat.isGroupChat,
 			});
 		}
 		return chats;
@@ -157,7 +184,10 @@ export class ChatService {
 			invites: false,
 			members: false,
 		});
-		return chats;
+
+		// Update the one to ones
+		const updatedChats = await this.updateOneToOnes(chats, userId);
+		return updatedChats;
 	}
 
 	async createChannel(userId: string, channelName: string) {

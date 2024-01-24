@@ -16,6 +16,7 @@ import { SocketService } from 'src/socket/socket.service';
 		origin: process.env.FRONTEND_URL,
 		credentials: true,
 	},
+	wsEngine: require('ws').Server,
 })
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
@@ -79,8 +80,24 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		const user = await this.userService.user({ id: client.data.id });
 		if (!user) return client.disconnect();
 
-		const chat = await this.chatService.chat({ id: payload.chatId });
-		if (!chat) return client.disconnect();
+		console.log(payload);
+
+		let chat: any;
+
+		if (payload.targetId) {
+			chat = await this.chatService.createOneToOneChat(
+				user.id,
+				payload.targetId,
+			);
+			if (!chat) return client.disconnect();
+			client.join(chat.id);
+			this.socketService.getUserSockets(payload.targetId)?.forEach((socket) => {
+				socket.join(chat.id);
+			});
+		} else {
+			chat = await this.chatService.chat({ id: payload.chatId });
+			if (!chat) return client.disconnect();
+		}
 
 		const message = await this.chatService.createMessage({
 			chat_id: chat.id,
@@ -88,7 +105,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			content: payload.message,
 		});
 
-		if (message)
-			this.server.to(chat.id).emit('message', message);
+		if (message) this.server.to(chat.id).emit('message', message);
 	}
 }
