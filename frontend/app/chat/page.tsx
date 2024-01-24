@@ -6,6 +6,7 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	Check,
+	Compass,
 	Globe,
 	Globe2,
 	LogOut,
@@ -194,14 +195,27 @@ function ServerListEntry({ server }: { server: Server }) {
 	);
 }
 
-function ServerCreateButton() {
-	const { expanded, serversMutate, setSelectedServerId, servers } =
-		useChatContext();
-	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+function ServerCreationModal({
+	isOpen,
+	onClose,
+	onOpenChange,
+	children,
+}: {
+	isOpen: boolean;
+	onClose: any;
+	onOpenChange: any;
+	children: ReactNode;
+}) {
+	const {
+		expanded,
+		serversMutate,
+		setSelectedServerId,
+		servers,
+		setExpanded,
+	} = useChatContext();
 	const { sessionMutate } = useContext(PublicContext) as any;
 	const [createLoading, setCreateLoading] = useState(false);
 	const [joinLoading, setJoinLoading] = useState(false);
-
 	const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
@@ -246,47 +260,8 @@ function ServerCreateButton() {
 			isOpen={isOpen}
 			onClose={onClose}
 			onOpenChange={onOpenChange}
-			trigger={
-				<Button
-					onClick={onOpen}
-					variant="transparent"
-					className={twMerge(
-						"left-20 flex h-20 w-full justify-start gap-0 rounded-none !bg-transparent p-0 !outline-0 !ring-0 hover:!from-transparent hover:!to-transparent",
-						expanded && "h-24 p-4",
-					)}
-				>
-					<div
-						className={twMerge(
-							"flex h-full w-full bg-card-100 transition-all hover:bg-white/10",
-							expanded && "rounded-[100px] px-2",
-						)}
-					>
-						<div className="relative aspect-square h-full flex-shrink-0">
-							<div className="relative flex h-full w-full items-center justify-center rounded-2xl">
-								<MessageSquarePlus
-									size={32}
-									strokeWidth={1.25}
-								/>
-							</div>
-						</div>
-						<div className="flex-1 overflow-hidden">
-							<div
-								className={twMerge(
-									"flex h-full flex-col items-start justify-center overflow-hidden",
-									expanded && "animate-lefttoright",
-									!expanded && "animate-righttoleft",
-								)}
-							>
-								<div className="max-w-full truncate text-sm">
-									Add a Channel
-								</div>
-								{/* <div className="text-xs text-foreground-500 truncate max-w-full"></div> */}
-							</div>
-						</div>
-					</div>
-				</Button>
-			}
-			title="Add a Channel"
+			trigger={children}
+			title="Advanced Options"
 		>
 			<div className="p-2">
 				<Card header={"Create a Channel"} className="bg-card-200">
@@ -368,6 +343,60 @@ function ServerCreateButton() {
 	);
 }
 
+function ServerCreateButton() {
+	const {
+		expanded,
+		serversMutate,
+		setSelectedServerId,
+		servers,
+		setExpanded,
+	} = useChatContext();
+
+	return (
+		<Button
+			style={{
+				viewTransitionName: "create",
+			}}
+			onClick={() => {
+				setSelectedServerId(null);
+				setExpanded(false);
+			}}
+			variant="transparent"
+			className={twMerge(
+				"left-20 flex h-20 w-full justify-start gap-0 rounded-none !bg-transparent p-0 !outline-0 !ring-0 hover:!from-transparent hover:!to-transparent",
+				expanded && "h-24 p-4",
+			)}
+		>
+			<div
+				className={twMerge(
+					"flex h-full w-full bg-card-100 transition-all hover:bg-white/10",
+					expanded && "rounded-[100px] px-2",
+				)}
+			>
+				<div className="relative aspect-square h-full flex-shrink-0">
+					<div className="relative flex h-full w-full items-center justify-center rounded-2xl">
+						<Compass size={32} strokeWidth={1.25} />
+					</div>
+				</div>
+				<div className="flex-1 overflow-hidden">
+					<div
+						className={twMerge(
+							"flex h-full flex-col items-start justify-center overflow-hidden",
+							expanded && "animate-lefttoright",
+							!expanded && "animate-righttoleft",
+						)}
+					>
+						<div className="max-w-full truncate text-sm">
+							Discover
+						</div>
+						{/* <div className="text-xs text-foreground-500 truncate max-w-full"></div> */}
+					</div>
+				</div>
+			</div>
+		</Button>
+	);
+}
+
 function MessageListEntry({
 	message,
 	index,
@@ -407,7 +436,7 @@ function MessageListEntry({
 					>
 						<div
 							className={twMerge(
-								"relative h-0 w-12 flex-shrink-0 aspect-square",
+								"relative aspect-square h-0 w-12 flex-shrink-0",
 								message.noAvatar && "opacity-0",
 							)}
 						>
@@ -417,7 +446,7 @@ function MessageListEntry({
 									height={48}
 									alt={message.user.username}
 									src={message.user.avatar}
-									className="absolute inset-0 rounded-full object-cover aspect-square"
+									className="absolute inset-0 aspect-square rounded-full object-cover"
 								/>
 							)}
 						</div>
@@ -483,6 +512,17 @@ function MessageListEntry({
 function ServerList() {
 	const { expanded, setExpanded, listTab, setListTab, servers } =
 		useChatContext();
+	const listRef = useRef<HTMLDivElement>(null);
+	const [realListTab, setRealListTab] = useState(listTab);
+	const prev = useRef(listTab);
+
+	useEffect(() => {
+		const doc = document as any;
+		if (doc.startViewTransition && prev.current != listTab)
+			doc.startViewTransition(() => setRealListTab(listTab));
+		else setRealListTab(listTab);
+		prev.current = listTab;
+	}, [listTab]);
 
 	console.log("rerernedered");
 
@@ -512,7 +552,7 @@ function ServerList() {
 					<div className="flex flex-1 bg-card-250">
 						{[
 							["servers", ServerIcon, "Channels"],
-							["friends", Users2, "Friends"],
+							["friends", Users2, "DMs"],
 						].map(([tab, Icon, text]: any) => (
 							<Button
 								key={tab}
@@ -533,11 +573,18 @@ function ServerList() {
 				</div>
 			</div>
 			<div className="relative flex-1">
-				<div className="absolute inset-0">
+				<div className="absolute inset-0" ref={listRef}>
 					<ScrollShadow size={64} className={"h-full w-full"}>
-						{servers?.map((server, i) => (
-							<ServerListEntry key={i} server={server} />
-						))}
+						{servers
+							?.filter((server) => {
+								if (realListTab == "servers")
+									return !server.isDM;
+								if (realListTab == "friends")
+									return server.isDM;
+							})
+							.map((server, i) => (
+								<ServerListEntry key={i} server={server} />
+							))}
 						<ServerCreateButton />
 						{/* <ServerListEntry /> */}
 					</ScrollShadow>
@@ -660,7 +707,7 @@ function ChatInput() {
 	const { session } = useContext(PublicContext) as any;
 	const [message, setMessage] = useState("");
 	const [showCommands, commandsToShow] = useMemo(() => {
-		const showCommands = message.startsWith("/");
+		const showCommands = message.startsWith("/") && !selectedServer?.isDM;
 		const commandsToShow = showCommands
 			? commands.filter((command) =>
 					command.name.startsWith(message.split(" ")[0]),
@@ -967,7 +1014,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 			"/chat/channel/update",
 			makeForm({
 				id: selectedServer?.id,
-				enable_password: value
+				enable_password: value,
 			}),
 			undefined,
 			`Successfully ${
@@ -980,11 +1027,9 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	};
 
 	const handleToggleInviteOnly = (value: boolean) => {
-		console.log(
-			{
-				value
-			}
-		)
+		console.log({
+			value,
+		});
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/update",
 			makeForm({
@@ -1267,6 +1312,7 @@ function DiscoverListEntry({ server }: { server: Server }) {
 }
 
 function DiscoverPage() {
+	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const { cache } = useSWRConfig();
 	const [query, setQuery] = useState("");
 	const [realQuery, setRealQuery] = useState("");
@@ -1299,11 +1345,11 @@ function DiscoverPage() {
 				<div className="relative h-full w-full overflow-hidden rounded-xl bg-card-200">
 					<div className="h-full w-full">
 						<SuperImage
-							width={256}
-							height={256}
+							width={1280}
+							height={720}
 							alt="background"
-							src="/background4.png"
-							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge blur-xl	"
+							src="/background3.png"
+							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge brightness-90"
 						/>
 					</div>
 					<div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2">
@@ -1325,6 +1371,22 @@ function DiscoverPage() {
 								<Search className="text-background-800" />
 							}
 						/>
+						<div className="flex flex-col items-center justify-center gap-8 pt-6">
+							<ServerCreationModal
+								isOpen={isOpen}
+								onClose={onClose}
+								onOpenChange={onOpenChange}
+							>
+								<Button
+									onClick={onOpen}
+									variant="ghost"
+									className="h-12 rounded-full"
+									startContent={<Plus />}
+								>
+									Advanced Options
+								</Button>
+							</ServerCreationModal>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1429,14 +1491,14 @@ function ChatSection() {
 				onClose={onClose}
 				onOpenChange={onOpenChange}
 			/>
+			{expanded && (
+				<div
+					onClick={() => setExpanded(false)}
+					className="absolute inset-0 z-10"
+				></div>
+			)}
 			{selectedServer ? (
 				<>
-					{expanded && (
-						<div
-							onClick={() => setExpanded(false)}
-							className="absolute inset-0 z-10"
-						></div>
-					)}
 					<div className="flex h-full w-full gap-0">
 						<div className="flex flex-1 flex-col">
 							<div className="flex h-24 w-full flex-shrink-0 p-4 pr-0">
@@ -1452,7 +1514,7 @@ function ChatSection() {
 											/>
 										</div>
 									</div>
-									<div className="flex flex-col justify-center items-start">
+									<div className="flex flex-col items-start justify-center">
 										<div className="text-sm">
 											{selectedServer.name}
 										</div>
@@ -1746,7 +1808,7 @@ export default function Page() {
 			const akashicRecordsServer = [...messages];
 			if (
 				(message.user.id == "server" &&
-				message.chatId == selectedServerId) || 
+					message.chatId == selectedServerId) ||
 				!akashicRecords[message.chatId]
 			)
 				await serverMutate();
@@ -1762,7 +1824,11 @@ export default function Page() {
 					...akashicRecords,
 					[message.chatId]: sortedByTime,
 				});
-			} else if (akashicRecordsServer && message.user.id == session.id && akashicRecords[message.chatId]) {
+			} else if (
+				akashicRecordsServer &&
+				message.user.id == session.id &&
+				akashicRecords[message.chatId]
+			) {
 				setAkashicRecords((prev) => {
 					const newAkashicRecords = {
 						...prev,
@@ -1775,7 +1841,7 @@ export default function Page() {
 					};
 					return newAkashicRecords;
 				});
-			}	
+			}
 		});
 
 		socket.on("exception", (error: any) => {
