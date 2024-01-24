@@ -86,6 +86,8 @@ type Server = {
 	admins: string[];
 	invites: User[];
 	size?: number;
+	isDM: boolean;
+	membersIds: string[];
 };
 
 type Message = {
@@ -133,6 +135,7 @@ function useChatContext() {
 }
 
 function ServerListEntry({ server }: { server: Server }) {
+	const { session } = useContext(PublicContext) as any;
 	const { expanded, selectedServerId, setSelectedServerId } =
 		useChatContext();
 
@@ -154,7 +157,10 @@ function ServerListEntry({ server }: { server: Server }) {
 						height={64}
 						alt={server.name}
 						src={server.icon}
-						className="absolute inset-0 aspect-square h-full w-full rounded-2xl object-cover"
+						className={twMerge(
+							"absolute inset-0 aspect-square h-full w-full rounded-2xl object-cover",
+							server.isDM && "rounded-full",
+						)}
 					/>
 				</div>
 			</div>
@@ -169,9 +175,19 @@ function ServerListEntry({ server }: { server: Server }) {
 					<div className="max-w-full truncate text-sm">
 						{server.name}
 					</div>
-					<div className="max-w-full truncate text-xs text-foreground-500">
-						{server.description}
-					</div>
+					{!server.isDM ? (
+						<div className="max-w-full truncate text-xs text-foreground-500">
+							{server.description}
+						</div>
+					) : (
+						<Status
+							userId={
+								server.membersIds.find(
+									(id) => id != session.id,
+								) || ""
+							}
+						/>
+					)}
 				</div>
 			</div>
 		</Button>
@@ -634,8 +650,13 @@ const commands: Command[] = [
 ];
 
 function ChatInput() {
-	const { messages, akashicRecords, setAkashicRecords, selectedServerId } =
-		useChatContext();
+	const {
+		messages,
+		akashicRecords,
+		setAkashicRecords,
+		selectedServerId,
+		selectedServer,
+	} = useChatContext();
 	const { session } = useContext(PublicContext) as any;
 	const [message, setMessage] = useState("");
 	const [showCommands, commandsToShow] = useMemo(() => {
@@ -684,6 +705,11 @@ function ChatInput() {
 						setMessage("");
 
 					socket.emit("message", {
+						targetId: selectedServer?.isDM
+							? selectedServer.membersIds.find(
+									(id) => id != session.id,
+								)
+							: undefined,
 						chatId: selectedServerId,
 						message,
 					});
@@ -897,7 +923,13 @@ function RevokeBanButton({ user }: { user: User }) {
 }
 
 function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
-	const { members, selectedServer, serverMutate, selectedServerInvites, selectedServerBans } = useChatContext();
+	const {
+		members,
+		selectedServer,
+		serverMutate,
+		selectedServerInvites,
+		selectedServerBans,
+	} = useChatContext();
 	const [passwordEnabled, setPasswordEnabled] = useState(
 		selectedServer?.enable_password,
 	);
@@ -935,7 +967,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 			"/chat/channel/update",
 			makeForm({
 				id: selectedServer?.id,
-				enable_password: value,
+				enable_password: value
 			}),
 			undefined,
 			`Successfully ${
@@ -948,6 +980,11 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	};
 
 	const handleToggleInviteOnly = (value: boolean) => {
+		console.log(
+			{
+				value
+			}
+		)
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/update",
 			makeForm({
@@ -1340,8 +1377,12 @@ function ChatSection() {
 		serversMutate,
 		prevSelectedServerId,
 	} = useContext(ChatContext) as ChatContextType;
+	const { session } = useContext(PublicContext) as any;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+	const hasPermissions =
+		selectedServer?.owner == session?.id ||
+		selectedServer?.admins.includes(session?.id);
 
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
@@ -1411,18 +1452,31 @@ function ChatSection() {
 											/>
 										</div>
 									</div>
-									<div className="flex flex-col justify-center">
+									<div className="flex flex-col justify-center items-start">
 										<div className="text-sm">
 											{selectedServer.name}
 										</div>
-										<div className="text-xs text-foreground-500">
-											{selectedServer.description}
-										</div>
+										{!selectedServer?.isDM ? (
+											<div className="text-xs text-foreground-500">
+												{selectedServer.description}
+											</div>
+										) : (
+											<Status
+												userId={
+													selectedServer.membersIds.find(
+														(id) =>
+															id != session.id,
+													) || ""
+												}
+											/>
+										)}
 									</div>
 									<div className="flex flex-1 items-center justify-end gap-2 px-4">
-										<Button variant="ghost" iconOnly>
-											<UserPlus2 />
-										</Button>
+										{!selectedServer?.isDM && (
+											<Button variant="ghost" iconOnly>
+												<UserPlus2 />
+											</Button>
+										)}
 										<Button
 											iconOnly={showMembers == false}
 											variant={
@@ -1436,44 +1490,56 @@ function ChatSection() {
 										>
 											<Users2 />
 										</Button>
-										<SuperDropdown>
-											<DropdownTrigger>
-												<div>
-													<Button
-														variant="transparent"
-														iconOnly
+										{!selectedServer?.isDM && (
+											<SuperDropdown>
+												<DropdownTrigger>
+													<div>
+														<Button
+															variant="transparent"
+															iconOnly
+														>
+															<MoreHorizontal />
+														</Button>
+													</div>
+												</DropdownTrigger>
+												<SuperDropdownMenu
+													onAction={(action) => {
+														if (
+															action == "settings"
+														) {
+															onOpen();
+														} else if (
+															action == "leave"
+														) {
+															handleLeave();
+														}
+													}}
+												>
+													<DropdownItem
+														key={"settings"}
+														startContent={
+															<Settings2 />
+														}
+														className={twMerge(
+															!hasPermissions &&
+																"hidden",
+														)}
 													>
-														<MoreHorizontal />
-													</Button>
-												</div>
-											</DropdownTrigger>
-											<SuperDropdownMenu
-												onAction={(action) => {
-													if (action == "settings") {
-														onOpen();
-													} else if (
-														action == "leave"
-													) {
-														handleLeave();
-													}
-												}}
-											>
-												<DropdownItem
-													key={"settings"}
-													startContent={<Settings2 />}
-												>
-													Settings
-												</DropdownItem>
-												<DropdownItem
-													startContent={<LogOut />}
-													data-exclude={true}
-													color="danger"
-													key={"leave"}
-												>
-													Leave
-												</DropdownItem>
-											</SuperDropdownMenu>
-										</SuperDropdown>
+														Settings
+													</DropdownItem>
+													<DropdownItem
+														startContent={
+															<LogOut />
+														}
+														data-exclude={true}
+														color="danger"
+														key={"leave"}
+													>
+														Leave
+													</DropdownItem>
+												</SuperDropdownMenu>
+											</SuperDropdown>
+										)}
 									</div>
 								</div>
 							</div>
@@ -1497,21 +1563,28 @@ function ChatSection() {
 										})}
 										<div className="w-full p-8 pb-0">
 											<p className="text-foreground-500">
-												This is the start of the
+												{selectedServer.isDM
+													? `
+												This is the start of your direct messages with ${selectedServer.name}, it's a lonely place...`
+													: `This is the start of the
 												channel's history, it's a lonely
-												place...
+												place...`}
 											</p>
 											<p className="text-xl">
-												Invite some friends to get the
-												conversation started!
+												{selectedServer.isDM
+													? `Be the first to say hello!`
+													: `Invite some friends to get the
+												conversation started!`}
 											</p>
-											<Button
-												onClick={onOpen}
-												className="mt-2"
-												startContent={<Pencil />}
-											>
-												Edit channel
-											</Button>
+											{!selectedServer.isDM && (
+												<Button
+													onClick={onOpen}
+													className="mt-2"
+													startContent={<Pencil />}
+												>
+													Edit channel
+												</Button>
+											)}
 											<Divider className="mt-4" />
 										</div>
 									</div>
@@ -1625,7 +1698,7 @@ export default function Page() {
 	const selectedServerBans = selectedServerData?.bans || [];
 
 	console.log({ selectedServerData });
-	
+
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user.id == messages[i + 1]?.user.id) {
@@ -1669,13 +1742,16 @@ export default function Page() {
 
 	useEffect(() => {
 		socket.on("message", async (message: Message) => {
-			const akashicRecordsServer = [...akashicRecords[message.chatId]];
+			const messages = akashicRecords[message.chatId] || [];
+			const akashicRecordsServer = [...messages];
 			if (
-				message.user.id == "server" &&
-				message.chatId == selectedServerId
+				(message.user.id == "server" &&
+				message.chatId == selectedServerId) || 
+				!akashicRecords[message.chatId]
 			)
 				await serverMutate();
 			if (akashicRecordsServer && message.user.id != session.id) {
+				message.loaded = true;
 				akashicRecordsServer.push(message);
 				const sortedByTime = akashicRecordsServer.sort(
 					(a, b) =>
@@ -1686,7 +1762,7 @@ export default function Page() {
 					...akashicRecords,
 					[message.chatId]: sortedByTime,
 				});
-			} else if (akashicRecordsServer && message.user.id == session.id) {
+			} else if (akashicRecordsServer && message.user.id == session.id && akashicRecords[message.chatId]) {
 				setAkashicRecords((prev) => {
 					const newAkashicRecords = {
 						...prev,
@@ -1699,7 +1775,7 @@ export default function Page() {
 					};
 					return newAkashicRecords;
 				});
-			}
+			}	
 		});
 
 		socket.on("exception", (error: any) => {
