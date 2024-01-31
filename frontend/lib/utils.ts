@@ -4,6 +4,8 @@ import { useContext } from "react";
 import toast from "react-hot-toast";
 import PublicContext from "@/contexts/PublicContext";
 import useSWR from "swr";
+import ChatContext from "@/contexts/ChatContext";
+import { ChatContextType } from "@/types/chat";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -140,3 +142,11 @@ export function useIsOnline(userId: string) {
 	return data ? data.isOnline : false;
 }
 
+export function randomString() {
+	return Math.random().toString(36).substring(7);
+}
+
+
+export function useChatContext() {
+	return useContext(ChatContext) as ChatContextType;
+}

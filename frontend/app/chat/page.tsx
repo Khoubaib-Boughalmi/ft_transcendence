@@ -56,6 +56,8 @@ import Divider from "@/components/Divider";
 import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
 import useSWR, { SWRConfig, useSWRConfig } from "swr";
 import {
+	useChatContext,
+	randomString,
 	fetcher,
 	makeForm,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
@@ -72,68 +74,9 @@ import NoData from "@/components/NoData";
 import toast from "react-hot-toast";
 import Status from "@/components/Status";
 import MessageInput from "@/components/MessageInput";
-
-const ChatContext = createContext({});
-
-type Server = {
-	name: string;
-	description: string;
-	icon: string;
-	id: string;
-	members: User[];
-	enable_password: boolean;
-	enable_inviteonly: boolean;
-	owner: string;
-	admins: string[];
-	invites: User[];
-	size?: number;
-	isDM: boolean;
-	membersIds: string[];
-};
-
-type Message = {
-	id: string;
-	user: User;
-	createdAt: Date;
-	updatedAt: Date;
-	content: string;
-	target: string;
-	noAvatar: boolean;
-	blocked?: boolean;
-	chatId: string;
-	parent?: boolean;
-	groupid: string;
-	loaded: boolean;
-};
-
-type ChatContextType = {
-	akashicRecords: { [key: string]: Message[] };
-	displayedMessages: any;
-	expanded: boolean;
-	listTab: "servers" | "friends";
-	members: User[];
-	selectedServerBans: User[];
-	selectedServerInvites: User[];
-	messageParents: any;
-	messages: Message[];
-	selectedServer: Server | undefined;
-	selectedServerId: string | null;
-	servers: Server[];
-	serversMutate: () => Promise<void>;
-	setAkashicRecords: (records: { [key: string]: Message[] }) => void;
-	setDisplayedMessages: (displayedMessages: any) => void;
-	setExpanded: (expanded: boolean) => void;
-	setListTab: (tab: "servers" | "friends") => void;
-	setSelectedServerId: (selectedServerId: string | null) => void;
-	setShowMembers: (showMembers: boolean) => void;
-	showMembers: boolean;
-	serverMutate: () => Promise<void>;
-	prevSelectedServerId: any;
-};
-
-function useChatContext() {
-	return useContext(ChatContext) as ChatContextType;
-}
+import { Server, Message, ChatContextType, Argument, Command } from "@/types/chat";
+import { commands } from "@/constants/chat";
+import ChatContext from "@/contexts/ChatContext";
 
 function ServerListEntry({ server }: { server: Server }) {
 	const { session } = useContext(PublicContext) as any;
@@ -627,74 +570,6 @@ function MemberList() {
 		</div>
 	);
 }
-
-type Argument = {
-	name: string;
-	description: string;
-};
-
-type Command = {
-	name: string;
-	description: string;
-	arguments: Argument[];
-};
-
-const commands: Command[] = [
-	{
-		name: "/kick",
-		description: "Removes a user from the channel.",
-		arguments: [
-			{
-				name: "username",
-				description: "The username of the user to kick.",
-			},
-		],
-	},
-	{
-		name: "/ban",
-		description: "Bans a user from the channel.",
-		arguments: [
-			{
-				name: "username",
-				description: "The username of the user to ban.",
-			},
-		],
-	},
-	{
-		name: "/unban",
-		description: "Unbans a user from the channel.",
-		arguments: [
-			{
-				name: "username",
-				description: "The username of the user to unban.",
-			},
-		],
-	},
-	{
-		name: "/mute",
-		description: "Mutes a user in the channel.",
-		arguments: [
-			{
-				name: "username",
-				description: "The username of the user to mute.",
-			},
-			{
-				name: "duration",
-				description: "The duration of the mute in seconds.",
-			},
-		],
-	},
-	{
-		name: "/unmute",
-		description: "Unmutes a user in the channel.",
-		arguments: [
-			{
-				name: "username",
-				description: "The username of the user to unmute.",
-			},
-		],
-	},
-];
 
 function ChatInput() {
 	const {
@@ -1438,7 +1313,7 @@ function ChatSection() {
 		selectedServerId,
 		serversMutate,
 		prevSelectedServerId,
-	} = useContext(ChatContext) as ChatContextType;
+	} = useChatContext();
 	const { session } = useContext(PublicContext) as any;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -1663,8 +1538,6 @@ function ChatSection() {
 		</SectionContainer>
 	);
 }
-
-const randomString = () => Math.random().toString(36).substring(7);
 
 function LoadingSection({ isLoading }: { isLoading?: boolean }) {
 	const [visible, setVisible] = useState(true);

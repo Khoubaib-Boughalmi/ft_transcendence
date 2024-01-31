@@ -4,7 +4,7 @@ export type Rank = {
 	color: "bronze" | "silver" | "gold" | "platinum" | "diamond";
 };
 export type StatusType = "Online" | "Offline" | "Busy";
-export type MatchType = "Classic" | "Power"
+export type MatchType = "Classic" | "Power"	
 export type MatchLeague = "Casual" | "Ranked" | "Tournament"
 export type Achievement = {
 	id: number;
@@ -27,7 +27,6 @@ export type Match = {
 	score1: number;
 	score2: number;
 };
-
 
 // 
 	export type UserProfile = {
