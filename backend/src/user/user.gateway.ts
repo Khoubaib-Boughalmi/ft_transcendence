@@ -75,38 +75,39 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
+	private MessageProcessingQueue: string[][] = [];
+	private MessageProcessingQueueIndex: number = 0;
+
+	queueMessage(payload: any) {
+		if (!this.MessageProcessingQueue[payload.chatId]) this.MessageProcessingQueue[payload.chatId] = [];
+		payload.id = this.MessageProcessingQueueIndex++;
+		this.MessageProcessingQueue[payload.chatId].push(payload.id);
+	}
+
+	waitForTurn(payload: any) {
+		while (this.MessageProcessingQueue[payload.chatId][0] != payload.id) {
+			setTimeout(() => {}, 100);
+		}
+	}
+
+	turnEnded(payload: any) {
+		this.MessageProcessingQueue[payload.chatId].shift();
+	}
+
 	@SubscribeMessage('message')
 	async handleMessage(client: Socket, payload: any) {
+
+		this.queueMessage(payload);
+		this.waitForTurn(payload);
+
 		const user = await this.userService.user({ id: client.data.id });
 		if (!user) return client.disconnect();
 
-		console.log(payload);
-
-		let chat: any;
-
-		if (payload.targetId) {
-			chat = await this.chatService.createDM(
-				user.id,
-				payload.targetId,
-			);
-			if (!chat) return client.disconnect();
-			client.join(chat.id);
-			this.socketService.getUserSockets(payload.targetId)?.forEach((socket) => {
-				socket.join(chat.id);
-			});
-		} else {
-			chat = await this.chatService.chat({ id: payload.chatId });
-			if (!chat) return client.disconnect();
-		}
-
-		const message = await this.chatService.createMessage({
-			chat_id: chat.id,
-			user_id: user.id,
-			content: payload.message,
-		});
+		const message = await this.chatService.processMessage(user, payload);
 
 		console.log('Finished Processing ' + payload.message);
 
-		if (message) this.server.to(chat.id).emit('message', message);
+		if (message) this.server.to(message.chatId).emit('message', message);
+		this.turnEnded(payload);
 	}
 }

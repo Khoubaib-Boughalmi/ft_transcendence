@@ -115,7 +115,7 @@ export class ChatService {
 		return chat;
 	}
 
-	async createDM(userId1: string, userId2: string) {
+	async createDM(userId1: string, userId2: string) : Promise<Chat> {
 		//find if chat already exists
 		const chat = await this.findChatWithUsers(userId1, userId2);
 		// if chat exists, return it
@@ -124,7 +124,7 @@ export class ChatService {
 		const target = await this.userService.user({
 			id: userId2,
 		});
-		if (!target) return new WsException('Invalid target');
+		if (!target) throw new WsException('Invalid target');
 		// if chat doesn't exist, create it
 		return this.createChat({
 			isGroupChat: false,
@@ -228,6 +228,33 @@ export class ChatService {
 			user,
 			chat,
 		};
+	}
+
+	async processMessage(user: User, payload: any) : Promise<ChatMessage | null> {
+		let chat: Chat = this.chatsCache[payload.chatId];
+
+		// If a target is specified, handle DMs
+		if (payload.targetId) {
+			chat = await this.createDM(user.id, payload.targetId);
+			if (!chat) throw new WsException('Invalid chat');
+
+			// Join the user to the chat
+			this.socketService.getUserSockets(user.id)?.forEach((socket) => {
+				socket.join(chat.id);
+			});
+
+			// Join the target to the chat
+			this.socketService.getUserSockets(payload.targetId)?.forEach((socket) => {
+				socket.join(chat.id);
+			});
+		}
+
+		const message = await this.createMessage({
+			chat_id: chat.id,
+			user_id: user.id,
+			content: payload.message,
+		});
+		return message;
 	}
 
 	async processCommand(data: Prisma.MessageCreateInput) {
