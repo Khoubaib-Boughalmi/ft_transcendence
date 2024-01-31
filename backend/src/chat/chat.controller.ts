@@ -325,7 +325,7 @@ export class ChatController {
 				error: 'userId is required',
 			};
 		}
-		return this.chatService.createOneToOneChat(req.user.id, userId);
+		return this.chatService.createDM(req.user.id, userId);
 	}
 
 	@Post('/sendMessage')

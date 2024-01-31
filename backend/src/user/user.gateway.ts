@@ -85,7 +85,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		let chat: any;
 
 		if (payload.targetId) {
-			chat = await this.chatService.createOneToOneChat(
+			chat = await this.chatService.createDM(
 				user.id,
 				payload.targetId,
 			);
@@ -104,6 +104,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			user_id: user.id,
 			content: payload.message,
 		});
+
+		console.log('Finished Processing ' + payload.message);
 
 		if (message) this.server.to(chat.id).emit('message', message);
 	}
