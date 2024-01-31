@@ -48,6 +48,7 @@ import { InteractionType } from "@/types/profile";
 import { interactionDictionary } from "@/lib/utils";
 import { InteractionFunctionality } from "@/lib/utils";
 import MessageBox from "@/components/MessageBox";
+import { notFound } from "next/navigation";
 
 const ProfileContext = createContext({});
 
@@ -922,20 +923,7 @@ export default function Home({ params }: any) {
 	const falseUser = { ...user1, ...user };
 
 	if (userError)
-		return (
-			<main className="flex flex-col items-center justify-center">
-				<div className="absolute inset-0 flex justify-center">
-					<img
-						src="/noose.png"
-						className="translate-x-[8%] translate-y-[-29%] blur-md"
-					/>
-				</div>
-				<div className="bg-gradient-to-t from-card-400 to-card-600 bg-clip-text pl-4 text-[10rem] font-black text-transparent">
-					?
-				</div>
-				<div className="-mt-14 font-bold">404</div>
-			</main>
-		);
+		notFound();
 
 	console.log(session, sessionLoading);
 
