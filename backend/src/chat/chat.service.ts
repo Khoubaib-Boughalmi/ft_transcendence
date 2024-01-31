@@ -7,7 +7,7 @@ import { SocketService } from 'src/socket/socket.service';
 import { WsException } from '@nestjs/websockets';
 import { v4 as uuidv4 } from 'uuid';
 
-type ChatChannel = {
+export type ChatChannel = {
 	name: string;
 	description: string;
 	icon: string;
@@ -23,7 +23,7 @@ type ChatChannel = {
 	membersIds: string[];
 };
 
-type ChatMessage = {
+export type ChatMessage = {
 	id: string;
 	chatId: string;
 	user: UserProfileMicro;
@@ -38,11 +38,21 @@ export class ChatService {
 		private prisma: PrismaService,
 		private userService: UserService,
 		private socketService: SocketService,
-	) {}
+	) {
+		// On server start, cache all the chat channels
+		this.prisma.chat.findMany().then((chats: Chat[]) => {
+			chats.forEach((chat) => {
+				this.chatsCache[chat.id] = chat;
+			})
+		});
+	}
+
+	private chatsCache: Record<string, Chat> = {};
 
 	async chat(
 		chatWhereUniqueInput: Prisma.ChatWhereUniqueInput,
 	): Promise<Chat | null> {
+		if (this.chatsCache[chatWhereUniqueInput.id]) return this.chatsCache[chatWhereUniqueInput.id];
 		return this.prisma.chat.findUnique({
 			where: chatWhereUniqueInput,
 		});
@@ -87,28 +97,25 @@ export class ChatService {
 	}
 
 	async createChat(data: Prisma.ChatCreateInput): Promise<Chat> {
-		return this.prisma.chat.create({
+		const chat: Chat = await this.prisma.chat.create({
 			data,
 		});
+		this.chatsCache[chat.id] = chat;
+		return chat;
 	}
 
 	async findChatWithUsers(
 		userId1: string,
 		userId2: string,
 	): Promise<Chat | null> {
-		// In ChatUsers find the chats which has the two users
-		const chat = await this.prisma.chat.findFirst({
-			where: {
-				users: {
-					hasEvery: [userId1, userId2],
-				},
-				isGroupChat: false,
-			},
-		});
+		const chat = Object.values(this.chatsCache).find(
+			(chat) =>
+				chat.users.includes(userId1) && chat.users.includes(userId2) && !chat.isGroupChat,
+		);
 		return chat;
 	}
 
-	async createOneToOneChat(userId1: string, userId2: string) {
+	async createDM(userId1: string, userId2: string) {
 		//find if chat already exists
 		const chat = await this.findChatWithUsers(userId1, userId2);
 		// if chat exists, return it
@@ -215,11 +222,7 @@ export class ChatService {
 				id: userId,
 			},
 		});
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chatId,
-			},
-		});
+		const chat = this.chatsCache[chatId];
 		return {
 			...message,
 			user,
@@ -339,11 +342,7 @@ export class ChatService {
 		if (!content.startsWith('/')) return null;
 		const args = content.split(' ');
 		const command = args.shift().slice(1);
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chat_id,
-			},
-		});
+		const chat = this.chatsCache[chat_id];
 		if (!chat) throw new WsException(errors.invalidChat);
 		if (
 			!(
@@ -378,11 +377,7 @@ export class ChatService {
 				updatedAt: message.updated_at,
 			};
 		} else {
-			const chat = await this.prisma.chat.findUnique({
-				where: {
-					id: data.chat_id,
-				},
-			});
+			const chat = this.chatsCache[data.chat_id];
 			if (!chat) throw new WsException('Invalid chat');
 			const mute = chat.mutes.find(
 				(mute) =>
@@ -444,40 +439,28 @@ export class ChatService {
 	}
 
 	async getChatMembers(chatId: string): Promise<UserProfileMicro[]> {
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chatId,
-			},
-		});
+		const chat = this.chatsCache[chatId];
 		if (!chat) return [];
 		const members = await this.userService.getMicroProfiles(chat.users);
 		return members;
 	}
 
 	async getChatInvites(chatId: string): Promise<UserProfileMicro[]> {
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chatId,
-			},
-		});
+		const chat = this.chatsCache[chatId];
 		if (!chat) return [];
 		const invites = await this.userService.getMicroProfiles(chat.invites);
 		return invites;
 	}
 
 	async getChatBans(chatId: string): Promise<UserProfileMicro[]> {
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chatId,
-			},
-		});
+		const chat = this.chatsCache[chatId];
 		if (!chat) return [];
 		const bans = await this.userService.getMicroProfiles(chat.bans);
 		return bans;
 	}
 
 	async joinChat(chat: Chat, userId: string, password?: string) {
-		await this.prisma.chat.update({
+		const chatUpdated: Chat = await this.prisma.chat.update({
 			where: {
 				id: chat.id,
 			},
@@ -487,10 +470,11 @@ export class ChatService {
 				},
 			},
 		});
+		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async removeAdminFromChat(chat: Chat, userId: string) {
-		await this.prisma.chat.update({
+		const chatUpdated: Chat = await this.prisma.chat.update({
 			where: {
 				id: chat.id,
 			},
@@ -500,10 +484,11 @@ export class ChatService {
 				},
 			},
 		});
+		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async removeOwnerFromChat(chat: Chat, userId: string) {
-		await this.prisma.chat.update({
+		const chatUpdated: Chat = await this.prisma.chat.update({
 			where: {
 				id: chat.id,
 			},
@@ -511,12 +496,13 @@ export class ChatService {
 				chatOwner: '',
 			},
 		});
+		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async deleteEmptyChat(chat: Chat) {
 		// Try to delete the chat if it's empty
 		try {
-			await this.prisma.chat.delete({
+			const chatUpdated: Chat = await this.prisma.chat.delete({
 				where: {
 					id: chat.id,
 					users: {
@@ -524,11 +510,12 @@ export class ChatService {
 					},
 				},
 			});
+			delete this.chatsCache[chat.id];
 		} catch (e) {}
 	}
 
 	async leaveChat(chat: Chat, userId: string) {
-		await this.prisma.chat.update({
+		const chatUpdated: Chat = await this.prisma.chat.update({
 			where: {
 				id: chat.id,
 			},
@@ -538,6 +525,7 @@ export class ChatService {
 				},
 			},
 		});
+		this.chatsCache[chat.id] = chatUpdated;
 
 		// If you were a chat admin, remove you from the chat admins
 		if (chat.chatAdmins.includes(userId))
@@ -556,27 +544,21 @@ export class ChatService {
 		data: Prisma.ChatUpdateInput;
 	}): Promise<Chat> {
 		const { where, data } = params;
-		return this.prisma.chat.update({
+		const chat: Chat = await this.prisma.chat.update({
 			data,
 			where,
 		});
+		this.chatsCache[chat.id] = chat;
+		return chat;
 	}
 
 	async isChatOwner(userId: string, chatId: string): Promise<boolean> {
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chatId,
-			},
-		});
+		const chat = this.chatsCache[chatId];
 		return chat?.chatOwner === userId || false;
 	}
 
 	async isChatAdmin(userId: string, chatId: string): Promise<boolean> {
-		const chat = await this.prisma.chat.findUnique({
-			where: {
-				id: chatId,
-			},
-		});
+		const chat = this.chatsCache[chatId];
 		return chat?.chatAdmins?.includes(userId) || false;
 	}
 
@@ -588,7 +570,7 @@ export class ChatService {
 	}
 
 	async inviteToChat(chat: Chat, user: User) {
-		await this.prisma.chat.update({
+		const chatUpdated: Chat = await this.prisma.chat.update({
 			where: {
 				id: chat.id,
 			},
@@ -598,10 +580,11 @@ export class ChatService {
 				},
 			},
 		});
+		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async revokeInvite(chat: Chat, user: User) {
-		await this.prisma.chat.update({
+		const chatUpdated: Chat = await this.prisma.chat.update({
 			where: {
 				id: chat.id,
 			},
@@ -611,6 +594,7 @@ export class ChatService {
 				},
 			},
 		});
+		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async joinChannelOnSocket(chatId: string, userId: string) {
