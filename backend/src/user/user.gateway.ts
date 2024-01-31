@@ -84,9 +84,9 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.MessageProcessingQueue[payload.chatId].push(payload.id);
 	}
 
-	waitForTurn(payload: any) {
+	async waitForTurn(payload: any) {
 		while (this.MessageProcessingQueue[payload.chatId][0] != payload.id) {
-			setTimeout(() => {}, 100);
+			await new Promise((resolve) => setTimeout(resolve, 100));
 		}
 	}
 
@@ -96,9 +96,9 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('message')
 	async handleMessage(client: Socket, payload: any) {
-
+		console.log('Started Processing ' + payload.message);
 		this.queueMessage(payload);
-		this.waitForTurn(payload);
+		await this.waitForTurn(payload);
 
 		const user = await this.userService.user({ id: client.data.id });
 		if (!user) return client.disconnect();
