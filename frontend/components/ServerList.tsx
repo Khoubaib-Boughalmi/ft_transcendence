@@ -48,8 +48,6 @@ export default function ServerList() {
 		prev.current = listTab;
 	}, [listTab]);
 
-	console.log("rerernedered");
-
 	return (
 		<div className="flex h-full w-full flex-col overflow-hidden rounded-l-3xl bg-card-300 @md:w-[19rem]">
 			<div

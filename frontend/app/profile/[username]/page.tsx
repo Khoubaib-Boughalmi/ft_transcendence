@@ -925,8 +925,6 @@ export default function Home({ params }: any) {
 	if (userError)
 		notFound();
 
-	console.log(session, sessionLoading);
-
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full select-none flex-col justify-center gap-4">
 			<ProfileContext.Provider

@@ -271,9 +271,6 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	};
 
 	const handleToggleInviteOnly = (value: boolean) => {
-		console.log({
-			value,
-		});
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/update",
 			makeForm({
@@ -551,6 +548,8 @@ function ChatInput() {
 									id: newId,
 									updatedAt: new Date(),
 									loaded: false,
+									queueId: newId,
+									error: false,
 								},
 								...messages,
 							],
@@ -568,6 +567,7 @@ function ChatInput() {
 								)
 							: undefined,
 						chatId: selectedServerId,
+						queueId: newId,
 						message,
 					});
 				}}
@@ -668,8 +668,6 @@ function MessageListEntry({
 
 	if (message.blocked && !message.parent && displayed != true) return null;
 
-	console.log(message.user.id);
-
 	return (
 		<>
 			{message.user.id == "server" ? (
@@ -685,7 +683,7 @@ function MessageListEntry({
 						className={twMerge(
 							"flex gap-4 px-4",
 							!message.noAvatar && "mt-4",
-							!message.loaded && "opacity-50",
+							(!message.loaded && !message.error)&& "opacity-50",
 						)}
 					>
 						<div
@@ -722,7 +720,7 @@ function MessageListEntry({
 									</div>
 								</div>
 							)}
-							<div className="text-foreground-800">
+							<div className={twMerge("text-foreground-800", message.error && "text-red-600")}>
 								{message.content}
 							</div>
 						</div>
@@ -786,7 +784,6 @@ export default function App({ params }: any) {
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
 		if (messageBox) {
-			console.log("attmepting to scroll");
 			const currentScroll = messageBox.scrollTop;
 			const currentHeight = messageBox.scrollHeight;
 			const visibleHeight = messageBox.clientHeight;
@@ -820,7 +817,10 @@ export default function App({ params }: any) {
 		);
 	};
 
-	setSelectedServerId(params.id);
+	useEffect(() => {
+		setSelectedServerId(params.id);
+	}, []);
+
 
 	if (!selectedServer) return null;
 

@@ -1,4 +1,3 @@
-
 "use client";
 import { Button } from "@/components/Button";
 import SuperImage from "@/components/SuperImage";
@@ -75,7 +74,13 @@ import NoData from "@/components/NoData";
 import toast from "react-hot-toast";
 import Status from "@/components/Status";
 import MessageInput from "@/components/MessageInput";
-import { Server, Message, ChatContextType, Argument, Command } from "@/types/chat";
+import {
+	Server,
+	Message,
+	ChatContextType,
+	Argument,
+	Command,
+} from "@/types/chat";
 import { commands } from "@/constants/chat";
 import ChatContext from "@/contexts/ChatContext";
 import ServerList from "@/components/ServerList";
@@ -83,7 +88,7 @@ import LoadingSection from "@/components/LoadingSection";
 import SectionContainer from "@/components/SectionContainer";
 import { redirect, useRouter } from "next/navigation";
 
-function ChatSection({children}: {children: ReactNode}) {
+function ChatSection({ children }: { children: ReactNode }) {
 	const { selectedServer, expanded, setExpanded } = useChatContext();
 
 	return (
@@ -94,13 +99,24 @@ function ChatSection({children}: {children: ReactNode}) {
 					className="absolute inset-0 z-10"
 				></div>
 			)}
-            {children}
+			{children}
 		</SectionContainer>
 	);
 }
 
-export default function Page({ children }: { children: ReactNode }) {
+function useSelectedSeverId(router: any) {}
+
+export default function Page({
+	children,
+	params,
+}: {
+	children: ReactNode;
+	params: any;
+}) {
 	const router = useRouter();
+
+	console.log("PARAMS: ", params);
+
 	const { session } = useContext(PublicContext) as any;
 	const { data: servers, mutate: serversMutate } = useSWR(
 		"/chat/channel/list",
@@ -165,8 +181,6 @@ export default function Page({ children }: { children: ReactNode }) {
 	const selectedServerInvites = selectedServerData?.invites || [];
 	const selectedServerBans = selectedServerData?.bans || [];
 
-	console.log({ selectedServerData });
-
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user.id == messages[i + 1]?.user.id) {
@@ -202,7 +216,9 @@ export default function Page({ children }: { children: ReactNode }) {
 
 			if (serversInServersButNotInPrevServers?.length > 0) {
 				setSelectedServerId(serversInServersButNotInPrevServers[0].id);
-				router.push(`/chat/channel/${serversInServersButNotInPrevServers[0].id}`);
+				router.push(
+					`/chat/channel/${serversInServersButNotInPrevServers[0].id}`,
+				);
 			}
 		}
 
@@ -236,12 +252,12 @@ export default function Page({ children }: { children: ReactNode }) {
 				message.user.id == session.id &&
 				akashicRecords[message.chatId]
 			) {
-				console.log("updating message " + message.id + ": " + message.content); 
 				setAkashicRecords((prev) => {
 					const serverMessages = prev[message.chatId];
 					if (serverMessages) {
-						const thisMessage = serverMessages.findLast(
-							(m: Message) => m.content == message.content && !m.loaded,
+						const thisMessage = serverMessages.find(
+							(m: Message) =>
+								m.queueId == message.queueId && !m.loaded,
 						);
 						if (thisMessage) {
 							thisMessage.loaded = true;
@@ -251,26 +267,38 @@ export default function Page({ children }: { children: ReactNode }) {
 							[message.chatId]: serverMessages,
 						};
 					}
-					return {...prev};
-				})
-
-				// setAkashicRecords((prev) => {
-				// 	const newAkashicRecords = {
-				// 		...prev,
-				// 		[message.chatId]: prev[message.chatId].map((m) => {
-				// 			if (m.content == message.content && !m.loaded) {
-				// 				m.loaded = true;
-				// 			}
-				// 			return m;
-				// 		}),
-				// 	};
-				// 	return newAkashicRecords;
-				// });
+					return { ...prev };
+				});
 			}
 		});
 
 		socket.on("exception", (error: any) => {
-			toast.error(error.message);
+			const { chatId, queueId, message } = error;
+			if (queueId) {
+				setAkashicRecords((prev) => {
+					const serverMessages = prev[chatId];
+					if (serverMessages) {
+						const thisMessage = serverMessages.find(
+							(m: Message) => m.queueId == queueId,
+						);
+						if (thisMessage) {
+							console.log("messagee found", thisMessage);
+							thisMessage.error = true;
+						} else {
+							console.log(
+								"messagee not found",
+								queueId,
+							);
+						}
+						return {
+							...prev,
+							[chatId]: serverMessages,
+						};
+					}
+					return { ...prev };
+				});
+			}
+			toast.error(message);
 		});
 
 		return () => {
@@ -278,8 +306,6 @@ export default function Page({ children }: { children: ReactNode }) {
 			socket.off("exception");
 		};
 	}, [akashicRecords]);
-
-	console.log("rerendered");
 
 	return (
 		<div
@@ -317,7 +343,9 @@ export default function Page({ children }: { children: ReactNode }) {
 					key={selectedServerId + "loading"}
 					isLoading={loadingSectionVisible}
 				/>
-				{!loadingSectionVisible && <ChatSection>{children}</ChatSection>}
+				{!loadingSectionVisible && (
+					<ChatSection>{children}</ChatSection>
+				)}
 			</ChatContext.Provider>
 		</div>
 	);

@@ -29,6 +29,8 @@ export type Message = {
 	parent?: boolean;
 	groupid: string;
 	loaded: boolean;
+	queueId: string;
+	error: boolean;
 };
 
 export type ChatContextType = {

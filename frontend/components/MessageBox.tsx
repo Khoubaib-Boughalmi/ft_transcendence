@@ -2,6 +2,7 @@ import { User } from "@/types/profile";
 import ModalSet from "./ModalSet";
 import MessageInput from "./MessageInput";
 import socket from "@/lib/socket";
+import { randomString } from "@/lib/utils";
 
 export default function MessageBox({
 	user,
@@ -32,9 +33,9 @@ export default function MessageBox({
                 const message = (formData.get("message") as string).trim();
                 if (!message) return;
                 if (message?.length < 1) return;
-				console.log("emitted")
                 socket.emit("message", {
                     targetId: user.id,
+					queueId: randomString(),
                     message
                 })
 				onClose();

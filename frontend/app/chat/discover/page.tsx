@@ -256,7 +256,6 @@ export default function DiscoverPage() {
 	const { cache } = useSWRConfig();
 	const [query, setQuery] = useState("");
 	const [realQuery, setRealQuery] = useState("");
-	console.log({ query, realQuery });
 	const { data: servers, isLoading } = useSWR(
 		`/chat/channel/search/${realQuery}`,
 		fetcher,
@@ -271,8 +270,6 @@ export default function DiscoverPage() {
 			cache.delete(`/chat/channel/search/${realQuery}`);
 		};
 	}, [query]);
-
-	console.log(servers);
 
 	return (
 		<div className="no-scrollbar flex min-h-full w-full flex-col overflow-y-scroll">
