@@ -10,6 +10,19 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from './user.service';
 import { ChatService } from 'src/chat/chat.service';
 import { SocketService } from 'src/socket/socket.service';
+import { IsOptional } from 'class-validator';
+
+export class MessageDTO {
+	@IsOptional()
+	chatId: string;
+
+	@IsOptional()
+	targetId: string;
+
+	queueId: string;
+
+	message: string;
+}
 
 @WebSocketGateway({
 	cors: {
@@ -76,16 +89,14 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	private MessageProcessingQueue: string[][] = [];
-	private MessageProcessingQueueIndex: number = 0;
 
 	queueMessage(payload: any) {
 		if (!this.MessageProcessingQueue[payload.chatId]) this.MessageProcessingQueue[payload.chatId] = [];
-		payload.id = this.MessageProcessingQueueIndex++;
-		this.MessageProcessingQueue[payload.chatId].push(payload.id);
+		this.MessageProcessingQueue[payload.chatId].push(payload.queueId);
 	}
 
 	async waitForTurn(payload: any) {
-		while (this.MessageProcessingQueue[payload.chatId][0] != payload.id) {
+		while (this.MessageProcessingQueue[payload.chatId][0] != payload.queueId) {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 		}
 	}
@@ -95,7 +106,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	@SubscribeMessage('message')
-	async handleMessage(client: Socket, payload: any) {
+	async handleMessage(client: Socket, payload: MessageDTO) {
 		console.log('Started Processing ' + payload.message);
 		this.queueMessage(payload);
 		await this.waitForTurn(payload);
