@@ -43,7 +43,7 @@ export class ChatService {
 		this.prisma.chat.findMany().then((chats: Chat[]) => {
 			chats.forEach((chat) => {
 				this.chatsCache[chat.id] = chat;
-			})
+			});
 		});
 	}
 
@@ -52,7 +52,8 @@ export class ChatService {
 	async chat(
 		chatWhereUniqueInput: Prisma.ChatWhereUniqueInput,
 	): Promise<Chat | null> {
-		if (this.chatsCache[chatWhereUniqueInput.id]) return this.chatsCache[chatWhereUniqueInput.id];
+		if (this.chatsCache[chatWhereUniqueInput.id])
+			return this.chatsCache[chatWhereUniqueInput.id];
 		return this.prisma.chat.findUnique({
 			where: chatWhereUniqueInput,
 		});
@@ -79,19 +80,24 @@ export class ChatService {
 		return chats;
 	}
 
-	async updateOneToOnes(chats: ChatChannel[], userId: string): Promise<ChatChannel[]> {
+	async updateOneToOnes(
+		chats: ChatChannel[],
+		userId: string,
+	): Promise<ChatChannel[]> {
 		await Promise.all(
 			chats.map(async (chat) => {
 				if (!chat.isDM) return;
 				const otherUser = chat.membersIds.find((id) => id !== userId);
 				if (!otherUser) return;
-				const otherUserProfile = await this.userService.getProfileMicro({
-					id: otherUser,
-				});
+				const otherUserProfile = await this.userService.getProfileMicro(
+					{
+						id: otherUser,
+					},
+				);
 				if (!otherUserProfile) return;
 				chat.name = otherUserProfile.username;
 				chat.icon = otherUserProfile.avatar;
-			})
+			}),
 		);
 		return chats;
 	}
@@ -110,12 +116,14 @@ export class ChatService {
 	): Promise<Chat | null> {
 		const chat = Object.values(this.chatsCache).find(
 			(chat) =>
-				chat.users.includes(userId1) && chat.users.includes(userId2) && !chat.isGroupChat,
+				chat.users.includes(userId1) &&
+				chat.users.includes(userId2) &&
+				!chat.isGroupChat,
 		);
 		return chat;
 	}
 
-	async createDM(userId1: string, userId2: string) : Promise<Chat> {
+	async createDM(userId1: string, userId2: string): Promise<Chat> {
 		//find if chat already exists
 		const chat = await this.findChatWithUsers(userId1, userId2);
 		// if chat exists, return it
@@ -230,7 +238,10 @@ export class ChatService {
 		};
 	}
 
-	async processMessage(user: User, payload: any) : Promise<ChatMessage | null> {
+	async processMessage(
+		user: User,
+		payload: any,
+	): Promise<ChatMessage | null> {
 		let chat: Chat = this.chatsCache[payload.chatId];
 
 		// If a target is specified, handle DMs
@@ -244,9 +255,11 @@ export class ChatService {
 			});
 
 			// Join the target to the chat
-			this.socketService.getUserSockets(payload.targetId)?.forEach((socket) => {
-				socket.join(chat.id);
-			});
+			this.socketService
+				.getUserSockets(payload.targetId)
+				?.forEach((socket) => {
+					socket.join(chat.id);
+				});
 		}
 
 		const message = await this.createMessage({
@@ -275,7 +288,11 @@ export class ChatService {
 				if (!target) throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
-				this.socketService.getUserSockets(target.id)?.forEach((socket) => socket.emit('mutate', `/chat/channel/list`));
+				this.socketService
+					.getUserSockets(target.id)
+					?.forEach((socket) =>
+						socket.emit('mutate', `/chat/channel/list`),
+					);
 				return `${target.username} has been kicked from the channel.`;
 			},
 			ban: async (args: string[], chat: Chat) => {
@@ -286,7 +303,7 @@ export class ChatService {
 				if (!target) throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
-				await this.prisma.chat.update({
+				await this.updateChat({
 					where: {
 						id: chat.id,
 					},
@@ -296,7 +313,11 @@ export class ChatService {
 						},
 					},
 				});
-				this.socketService.getUserSockets(target.id)?.forEach((socket) => socket.emit('mutate', `/chat/channel/list`));
+				this.socketService
+					.getUserSockets(target.id)
+					?.forEach((socket) =>
+						socket.emit('mutate', `/chat/channel/list`),
+					);
 				return `${target.username} has been banned from the channel.`;
 			},
 			unban: async (args: string[], chat: Chat) => {
@@ -305,7 +326,7 @@ export class ChatService {
 					username: args[0],
 				});
 				if (!target) throw new WsException(errors.invalidTarget);
-				await this.prisma.chat.update({
+				await this.updateChat({
 					where: {
 						id: chat.id,
 					},
@@ -329,10 +350,12 @@ export class ChatService {
 					throw new WsException(errors.invalidDuration);
 				const endTimestamp = Date.now() + duration * 1000;
 				const newMutes = chat.mutes.filter(
-					(mute) => mute.split(':')[0] !== target.id && Number(mute.split(':')[1]) > Date.now()
+					(mute) =>
+						mute.split(':')[0] !== target.id &&
+						Number(mute.split(':')[1]) > Date.now(),
 				);
 				newMutes.push(`${target.id}:${endTimestamp}`);
-				await this.prisma.chat.update({
+				await this.updateChat({
 					where: {
 						id: chat.id,
 					},
@@ -350,7 +373,7 @@ export class ChatService {
 					username: args[0],
 				});
 				if (!target) throw new WsException(errors.invalidTarget);
-				await this.prisma.chat.update({
+				await this.updateChat({
 					where: {
 						id: chat.id,
 					},
@@ -411,7 +434,12 @@ export class ChatService {
 					mute.split(':')[0] === data.user_id &&
 					Number(mute.split(':')[1]) > Date.now(),
 			);
-			if (mute) throw new WsException(`You are muted for ${Math.ceil((Number(mute.split(':')[1]) - Date.now()) / 1000)} more seconds.`);
+			if (mute)
+				throw new WsException(
+					`You are muted for ${Math.ceil(
+						(Number(mute.split(':')[1]) - Date.now()) / 1000,
+					)} more seconds.`,
+				);
 
 			const message = await this.prisma.message.create({ data });
 			const userProfile = await this.userService.getProfileMicro({
@@ -487,35 +515,25 @@ export class ChatService {
 	}
 
 	async joinChat(chat: Chat, userId: string, password?: string) {
-		const chatUpdated: Chat = await this.prisma.chat.update({
-			where: {
-				id: chat.id,
-			},
-			data: {
-				users: {
-					push: userId,
-				},
-			},
+		await this.updateChat({
+			where: { id: chat.id },
+			data: { users: { push: userId } },
 		});
-		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async removeAdminFromChat(chat: Chat, userId: string) {
-		const chatUpdated: Chat = await this.prisma.chat.update({
-			where: {
-				id: chat.id,
-			},
+		await this.updateChat({
+			where: { id: chat.id },
 			data: {
 				chatAdmins: {
 					set: chat.chatAdmins.filter((id) => id !== userId),
 				},
 			},
 		});
-		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async removeOwnerFromChat(chat: Chat, userId: string) {
-		const chatUpdated: Chat = await this.prisma.chat.update({
+		await this.updateChat({
 			where: {
 				id: chat.id,
 			},
@@ -523,7 +541,6 @@ export class ChatService {
 				chatOwner: '',
 			},
 		});
-		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async deleteEmptyChat(chat: Chat) {
@@ -542,7 +559,7 @@ export class ChatService {
 	}
 
 	async leaveChat(chat: Chat, userId: string) {
-		const chatUpdated: Chat = await this.prisma.chat.update({
+		await this.updateChat({
 			where: {
 				id: chat.id,
 			},
@@ -552,7 +569,6 @@ export class ChatService {
 				},
 			},
 		});
-		this.chatsCache[chat.id] = chatUpdated;
 
 		// If you were a chat admin, remove you from the chat admins
 		if (chat.chatAdmins.includes(userId))
@@ -597,7 +613,7 @@ export class ChatService {
 	}
 
 	async inviteToChat(chat: Chat, user: User) {
-		const chatUpdated: Chat = await this.prisma.chat.update({
+		await this.updateChat({
 			where: {
 				id: chat.id,
 			},
@@ -607,11 +623,10 @@ export class ChatService {
 				},
 			},
 		});
-		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async revokeInvite(chat: Chat, user: User) {
-		const chatUpdated: Chat = await this.prisma.chat.update({
+		await this.updateChat({
 			where: {
 				id: chat.id,
 			},
@@ -621,7 +636,6 @@ export class ChatService {
 				},
 			},
 		});
-		this.chatsCache[chat.id] = chatUpdated;
 	}
 
 	async joinChannelOnSocket(chatId: string, userId: string) {
