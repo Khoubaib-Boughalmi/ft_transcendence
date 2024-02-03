@@ -65,7 +65,7 @@ function ServerCreationModal({
 		if (name == "") return;
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/join`,
-			makeForm({ name, password }),
+			makeForm({ name, password: [password, undefined][+!password]}),
 			setJoinLoading,
 			`Successfully joined the channel`,
 			`Failed to join the channel`,
