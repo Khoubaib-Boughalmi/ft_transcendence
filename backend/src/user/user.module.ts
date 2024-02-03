@@ -7,8 +7,8 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { UserGateway } from './user.gateway';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { ChatService } from 'src/chat/chat.service';
 import { SocketModule } from 'src/socket/socket.module';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	providers: [
@@ -17,12 +17,12 @@ import { SocketModule } from 'src/socket/socket.module';
 		AppService,
 		UserGateway,
 		AuthService,
-		ChatService,
 	],
 	controllers: [UserController],
 	exports: [UserService],
 	imports: [
 		SocketModule,
+		ChatModule,
 		NestjsFormDataModule,
 		JwtModule.registerAsync({
 			useFactory: () => ({

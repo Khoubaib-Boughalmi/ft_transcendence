@@ -11,5 +11,6 @@ import { SocketModule } from 'src/socket/socket.module';
   controllers: [ChatController],
   providers: [ChatService, PrismaService, UserService, AppService],
   imports: [NestjsFormDataModule, SocketModule],
+	exports: [ChatService],
 })
 export class ChatModule {}
