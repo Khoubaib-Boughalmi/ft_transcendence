@@ -91,12 +91,15 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	private MessageProcessingQueue: string[][] = [];
 
 	queueMessage(payload: any) {
-		if (!this.MessageProcessingQueue[payload.chatId]) this.MessageProcessingQueue[payload.chatId] = [];
+		if (!this.MessageProcessingQueue[payload.chatId])
+			this.MessageProcessingQueue[payload.chatId] = [];
 		this.MessageProcessingQueue[payload.chatId].push(payload.queueId);
 	}
 
 	async waitForTurn(payload: any) {
-		while (this.MessageProcessingQueue[payload.chatId][0] != payload.queueId) {
+		while (
+			this.MessageProcessingQueue[payload.chatId][0] != payload.queueId
+		) {
 			await new Promise((resolve) => setTimeout(resolve, 100));
 		}
 	}
@@ -118,7 +121,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		console.log('Finished Processing ' + payload.message);
 
-		if (message) this.server.to(message.chatId).emit('message', message);
+		if (message)
+			this.server
+				.to(message.chatId)
+				.emit('message', { ...message, queueId: payload.queueId });
 		this.turnEnded(payload);
 	}
 }
