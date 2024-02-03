@@ -4,6 +4,7 @@ import {
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer,
+	WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
@@ -110,21 +111,25 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('message')
 	async handleMessage(client: Socket, payload: MessageDTO) {
-		console.log('Started Processing ' + payload.message);
 		this.queueMessage(payload);
 		await this.waitForTurn(payload);
 
 		const user = await this.userService.user({ id: client.data.id });
 		if (!user) return client.disconnect();
 
-		const message = await this.chatService.processMessage(user, payload);
-
-		console.log('Finished Processing ' + payload.message);
-
-		if (message)
-			this.server
-				.to(message.chatId)
-				.emit('message', { ...message, queueId: payload.queueId });
-		this.turnEnded(payload);
+		try {
+			const message = await this.chatService.processMessage(
+				user,
+				payload,
+			);
+			if (message)
+				this.server
+					.to(message.chatId)
+					.emit('message', { ...message, queueId: payload.queueId });
+		} catch (e) {
+			throw e;
+		} finally {
+			this.turnEnded(payload);
+		}
 	}
 }

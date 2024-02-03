@@ -266,7 +266,7 @@ export class ChatService {
 			chat_id: chat.id,
 			user_id: user.id,
 			content: payload.message,
-		});
+		}, payload);
 		return message;
 	}
 
@@ -407,7 +407,7 @@ export class ChatService {
 		return await commands[command](args, chat);
 	}
 
-	async createMessage(data: Prisma.MessageCreateInput): Promise<ChatMessage> {
+	async createMessage(data: Prisma.MessageCreateInput, payload: any): Promise<ChatMessage> {
 		const serverMessage = await this.processCommand(data);
 		if (serverMessage !== null) {
 			const newData = {
@@ -436,9 +436,9 @@ export class ChatService {
 			);
 			if (mute)
 				throw new WsException(
-					`You are muted for ${Math.ceil(
+					{message: `You are muted for ${Math.ceil(
 						(Number(mute.split(':')[1]) - Date.now()) / 1000,
-					)} more seconds.`,
+					)} more seconds.`, chatId: data.chat_id, queueId: payload.queueId},
 				);
 
 			const message = await this.prisma.message.create({ data });
