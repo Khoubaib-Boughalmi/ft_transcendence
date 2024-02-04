@@ -231,10 +231,15 @@ export class UserController {
     @Get('search/:username')
     async userSearch(@Req() req, @Param() params: UserSearchDTO) {
 		const users = await this.userService.users({
-            take: 10,
+            take: 5,
             where: { 
                 username: { contains: params.username, mode: "insensitive" },
             },
+        });
+
+        // Sort the users by the first occurence of the search query
+        users.sort((a, b) => {
+            return a.username.indexOf(params.username) - b.username.indexOf(params.username);
         });
 
         const usersProfiles = await Promise.all(
