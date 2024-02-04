@@ -228,7 +228,7 @@ export class UserController {
     }
 
 	@UseGuards(JwtGuard)
-    @Get('search/:username?')
+    @Get('search/:username')
     async userSearch(@Req() req, @Param() params: UserSearchDTO) {
 		const users = await this.userService.users({
             take: 10,
