@@ -16,6 +16,13 @@ export class ProfileDTO {
     @IsOptional()
     username: string;
 }
+
+export class UserSearchDTO {
+    @IsLowercase()
+    @Length(1, 36)
+    username: string;
+}
+
 export class AddFriendDTO {
     @IsUUID()
     id: string;
@@ -219,4 +226,23 @@ export class UserController {
             throw new HttpException('Not blocked', 400);
         await this.userService.deleteBlocked(user.id, friend.id);
     }
+
+	@UseGuards(JwtGuard)
+    @Get('search/:username?')
+    async userSearch(@Req() req, @Param() params: UserSearchDTO) {
+		const users = await this.userService.users({
+            take: 10,
+            where: { 
+                username: { contains: params.username, mode: "insensitive" },
+            },
+        });
+
+        const usersProfiles = await Promise.all(
+			users.map(async (user) => {
+				return await this.userService.getProfileMicro({ id: user.id });
+			}),
+		);
+
+		return usersProfiles;
+	}
 }

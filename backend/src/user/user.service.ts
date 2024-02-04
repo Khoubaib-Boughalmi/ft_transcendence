@@ -53,6 +53,19 @@ export class UserService {
 		});
 	}
 
+	async users(
+		params: {
+			take?: number;
+			where?: Prisma.UserWhereInput;
+		} = {},
+	): Promise<User[]> {
+		const { take, where } = params;
+		return this.prisma.user.findMany({
+			take,
+			where,
+		});
+	}
+
 	async createUser(data: Prisma.UserCreateInput): Promise<User> {
 		return this.prisma.user.create({
 			data,
