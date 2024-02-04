@@ -326,16 +326,7 @@ export class ChatService {
 					username: args[0],
 				});
 				if (!target) throw new WsException(errors.invalidTarget);
-				await this.updateChat({
-					where: {
-						id: chat.id,
-					},
-					data: {
-						bans: {
-							set: chat.bans.filter((id) => id !== target.id),
-						},
-					},
-				});
+				await this.revokeBan(chat, target);
 				return `${target.username} has been unbanned from the channel.`;
 			},
 			mute: async (args: string[], chat: Chat) => {
@@ -633,6 +624,19 @@ export class ChatService {
 			data: {
 				invites: {
 					set: chat.invites.filter((id) => id !== user.id),
+				},
+			},
+		});
+	}
+
+	async revokeBan(chat: Chat, user: User) {
+		await this.updateChat({
+			where: {
+				id: chat.id,
+			},
+			data: {
+				bans: {
+					set: chat.bans.filter((id) => id !== user.id),
 				},
 			},
 		});
