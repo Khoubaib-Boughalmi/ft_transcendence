@@ -35,6 +35,11 @@ const config: Config = {
 					"50%": { opacity: "0" },
 					"100%": { transform: "translateX(-100%)", opacity: "0" },
 				},
+				slow_fadein: {
+					"0%": { opacity: "0" },
+					"75": { opacity: "0" },
+					"100%": { opacity: "1" },
+				}
 			},
 			animation: {
 				popup: "popup 0.1s ease-in-out",
@@ -42,6 +47,8 @@ const config: Config = {
 				overlayfast: "overlay 0.125s ease-in-out",
 				lefttoright: "lefttoright 0.25s ease-in-out",
 				righttoleft: "righttoleft 0.25s ease-in-out",
+				slow_fadein: "slow_fadein 0.5s",
+			
 			},
 			colors:
 			{
