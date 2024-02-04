@@ -83,14 +83,13 @@ import { useRouter } from "next/navigation";
 export default function ServerListEntry({ server }: { server: Server }) {
 	const router = useRouter();
 	const { session } = useContext(PublicContext) as any;
-	const { expanded, selectedServerId, setSelectedServerId } =
+	const { expanded, selectedServerId, navigateToServer } =
 		useChatContext();
 
 	return (
 		<Button
 			onClick={() => {
-				setSelectedServerId(server.id);
-				router.push(`/chat/channel/${server.id}`);
+				navigateToServer(server.id);
 			}}
 			variant="transparent"
 			className={twMerge(

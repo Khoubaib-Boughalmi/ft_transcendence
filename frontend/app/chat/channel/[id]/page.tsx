@@ -110,7 +110,7 @@ function MemberControls({
 }
 
 function InviteBox() {
-	const { members, selectedServer, serverMutate } = useChatContext();
+	const { selectedServerMembers, selectedServer, serverMutate } = useChatContext();
 	const [loading, setLoading] = useState(false);
 	const formRef = useRef<HTMLFormElement>(null);
 
@@ -162,7 +162,7 @@ function InviteBox() {
 }
 
 function RevokeInviteButton({ user }: { user: User }) {
-	const { members, selectedServer, serverMutate } = useChatContext();
+	const { selectedServerMembers, selectedServer, serverMutate } = useChatContext();
 	const [loading, setLoading] = useState(false);
 
 	const handleRevokeInvite = (user: User) => {
@@ -195,8 +195,14 @@ function RevokeInviteButton({ user }: { user: User }) {
 }
 
 function RevokeBanButton({ user }: { user: User }) {
+	const { selectedServerId } = useChatContext();
+
 	const handleRevokeBan = (user: User) => {
-		console.log(user);
+		socket.emit("message", {
+			chatId: selectedServerId,
+			queueId: randomString(),
+			message: `/unban ${user.username}`,
+		});
 	};
 
 	return (
@@ -215,7 +221,7 @@ function RevokeBanButton({ user }: { user: User }) {
 
 function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	const {
-		members,
+		selectedServerMembers,
 		selectedServer,
 		serverMutate,
 		selectedServerInvites,
@@ -470,7 +476,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 }
 
 function MemberList() {
-	const { expanded, showMembers, members, selectedServer } = useChatContext();
+	const { expanded, showMembers, selectedServerMembers, selectedServer } = useChatContext();
 
 	return (
 		<div
@@ -493,7 +499,7 @@ function MemberList() {
 							"rounded-none px-4 bg-card-400 py-2 bg-transparent",
 						entry: twMerge("", expanded && "hover:scale-100"),
 					}}
-					users={members}
+					users={selectedServerMembers}
 					showBadge={(user) => {
 						return selectedServer?.owner == user.id;
 					}}
@@ -505,7 +511,7 @@ function MemberList() {
 
 function ChatInput() {
 	const {
-		messages,
+		selectedServerMessages,
 		akashicRecords,
 		setAkashicRecords,
 		selectedServerId,
@@ -551,7 +557,7 @@ function ChatInput() {
 									queueId: newId,
 									error: false,
 								},
-								...messages,
+								...selectedServerMessages,
 							],
 						});
 					if (
@@ -767,12 +773,11 @@ export default function App({ params }: any) {
 		setExpanded,
 		showMembers,
 		setShowMembers,
-		messages,
+		selectedServerMessages,
 		selectedServer,
 		selectedServerId,
 		serversMutate,
 		prevSelectedServerId,
-		setSelectedServerId,
 	} = useChatContext();
 	const { session } = useContext(PublicContext) as any;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
@@ -795,7 +800,7 @@ export default function App({ params }: any) {
 				messageBox.scrollTop = messageBox.scrollHeight + 1;
 		}
 		prevSelectedServerId.current = selectedServerId;
-	}, [messages, selectedServerId, messageBoxRef]);
+	}, [selectedServerMessages, selectedServerId, messageBoxRef]);
 
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
@@ -816,11 +821,6 @@ export default function App({ params }: any) {
 			serversMutate,
 		);
 	};
-
-	useEffect(() => {
-		setSelectedServerId(params.id);
-	}, []);
-
 
 	if (!selectedServer) return null;
 
@@ -922,7 +922,7 @@ export default function App({ params }: any) {
 							</div>
 						</div>
 					</div>
-					<div className="relative flex-1">
+					<div className="relative flex-1 animate-slow_fadein">
 						<div
 							ref={messageBoxRef}
 							className="no-scrollbar chatbox absolute inset-0 overflow-y-scroll"
@@ -931,7 +931,7 @@ export default function App({ params }: any) {
 								suppressHydrationWarning
 								className="flex min-h-full flex-col-reverse gap-0 p-2"
 							>
-								{messages.map((message, i) => {
+								{selectedServerMessages.map((message, i) => {
 									return (
 										<MessageListEntry
 											key={i}
@@ -964,7 +964,7 @@ export default function App({ params }: any) {
 											Edit channel
 										</Button>
 									)}
-									<Divider className="mt-4" />
+									<Divider className="mt-4 bg-card-500 mix-blend-normal" />
 								</div>
 							</div>
 						</div>

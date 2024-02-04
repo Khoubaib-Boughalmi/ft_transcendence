@@ -11,7 +11,6 @@ export default function ServerCreateButton() {
 	const {
 		expanded,
 		serversMutate,
-		setSelectedServerId,
 		servers,
 		setExpanded,
 	} = useChatContext();
@@ -23,7 +22,6 @@ export default function ServerCreateButton() {
 			}}
 			onClick={() => {
 				router.push("/chat/discover");
-				setSelectedServerId(null);
 				setExpanded(false);
 			}}
 			variant="transparent"

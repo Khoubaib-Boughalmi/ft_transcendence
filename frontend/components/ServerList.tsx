@@ -95,7 +95,7 @@ export default function ServerList() {
 				</div>
 			</div>
 			<div className="relative flex-1">
-				<div className="absolute inset-0" ref={listRef}>
+				<div className="absolute inset-0 overflow-clip" ref={listRef}>
 					<ScrollShadow size={64} className={"h-full w-full"}>
 						{servers
 							?.filter((server) => {

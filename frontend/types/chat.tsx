@@ -38,11 +38,10 @@ export type ChatContextType = {
 	displayedMessages: any;
 	expanded: boolean;
 	listTab: "servers" | "friends";
-	members: User[];
+	selectedServerMembers: User[];
 	selectedServerBans: User[];
 	selectedServerInvites: User[];
 	messageParents: any;
-	messages: Message[];
 	selectedServer: Server | undefined;
 	selectedServerId: string | null;
 	servers: Server[];
@@ -51,11 +50,14 @@ export type ChatContextType = {
 	setDisplayedMessages: (displayedMessages: any) => void;
 	setExpanded: (expanded: boolean) => void;
 	setListTab: (tab: "servers" | "friends") => void;
-	setSelectedServerId: (selectedServerId: string | null) => void;
 	setShowMembers: (showMembers: boolean) => void;
 	showMembers: boolean;
 	serverMutate: () => Promise<void>;
 	prevSelectedServerId: any;
+	selectedServerMessages: Message[];
+	setTimesNavigated: (timesNavigated: number) => void;
+	timesNavigated: number;
+	navigateToServer: (serverId: string) => void;
 };
 
 export type Argument = {

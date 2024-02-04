@@ -6,13 +6,19 @@ import SectionContainer from "./SectionContainer";
 import { Spinner } from "@nextui-org/react";
 
 export default function LoadingSection({ isLoading }: { isLoading?: boolean }) {
-	const [visible, setVisible] = useState(true);
+	const [visible, setVisible] = useState(isLoading);
 
 	useEffect(() => {
+		let timeout: NodeJS.Timeout;
 		if (isLoading == false)
-			setTimeout(() => {
+			timeout = setTimeout(() => {
 				setVisible(false);
 			}, 500);
+		else
+			setVisible(true);
+		return () => {
+			clearTimeout(timeout);
+		}
 	}, [isLoading]);
 
 	return (
@@ -21,6 +27,7 @@ export default function LoadingSection({ isLoading }: { isLoading?: boolean }) {
 				className={twMerge(
 					"absolute inset-0 z-20 opacity-100 transition-opacity duration-500",
 					!isLoading && "opacity-0",
+					isLoading && "transition-none"
 				)}
 			>
 				<SectionContainer>

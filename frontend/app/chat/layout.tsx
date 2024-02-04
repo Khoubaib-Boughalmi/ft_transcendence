@@ -61,6 +61,7 @@ import {
 	fetcher,
 	makeForm,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	fetcherUnsafe,
 } from "@/lib/utils";
 import ModalSet from "@/components/ModalSet";
 import Card from "@/components/Card";
@@ -86,7 +87,7 @@ import ChatContext from "@/contexts/ChatContext";
 import ServerList from "@/components/ServerList";
 import LoadingSection from "@/components/LoadingSection";
 import SectionContainer from "@/components/SectionContainer";
-import { redirect, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 
 function ChatSection({ children }: { children: ReactNode }) {
 	const { selectedServer, expanded, setExpanded } = useChatContext();
@@ -104,82 +105,89 @@ function ChatSection({ children }: { children: ReactNode }) {
 	);
 }
 
-function useSelectedSeverId(router: any) {}
+function useSelectedServer(servers: Server[]) {
+	const pathName = usePathname();
+	const isChat = pathName.includes("/channel");
+	const selectedServerId = isChat ? pathName.split("/").pop()! : null;
+	const selectedServer = servers?.find(
+		(server: Server) => server.id == selectedServerId,
+	);
+	const prevSelectedServerId = useRef(selectedServerId);
+	return { selectedServerId, selectedServer, prevSelectedServerId };
+}
 
-export default function Page({
-	children,
-	params,
-}: {
-	children: ReactNode;
-	params: any;
-}) {
-	const router = useRouter();
-
-	console.log("PARAMS: ", params);
-
-	const { session } = useContext(PublicContext) as any;
+function useServerList() {
 	const { data: servers, mutate: serversMutate } = useSWR(
 		"/chat/channel/list",
 		fetcher,
 	) as any;
 	const prevServers = useRef(null) as any;
-	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
-	const [showMembers, setShowMembers] = useState(true);
-	const [expanded, setExpanded] = useState(false);
-	const [selectedServerId, setSelectedServerId] = useState<string | null>(
-		servers?.[0]?.id || null,
-	);
-	const selectedServer =
-		servers?.find((server: Server) => server.id == selectedServerId) ||
-		null;
-	const prevSelectedServerId = useRef(selectedServerId);
+	return { servers, serversMutate, prevServers };
+}
 
-	const [akashicRecords, setAkashicRecords] = useState<{
-		[key: string]: Message[];
-	}>({});
+function useSelectedServerMessages(selectedServerId: string | null, setAkashicRecords: any) {
+	const { session } = useContext(PublicContext) as any;
+
 	const {
 		data: selectedServerMessages,
 		isLoading: selectedServerMessagesLoading,
 		mutate: selectedServerMessagesMutate,
-	} = useSWR(`/chat/channel/messages/${selectedServerId}`, fetcher, {
-		onSuccess: (data) => {
-			if (selectedServerId)
-				setAkashicRecords({
-					...akashicRecords,
-					[selectedServerId]: ((data as any) || []).map(
-						(message: Message) => {
-							message.groupid = message.id;
-							message.blocked = session.blocked_users.some(
-								(user: User) => {
-									return user.id == message.user.id;
-								},
-							);
-							message.loaded = true;
-							return message;
-						},
-					),
-				});
-		},
-	}) as any;
+		isValidating: selectedServerMessagesValidating,
+	} = useSWR(
+		selectedServerId ? `/chat/channel/messages/${selectedServerId}` : null,
+		fetcherUnsafe,
+		{
+			onSuccess: (data) => {
+				if (selectedServerId)
+					setAkashicRecords((prev: any) => ({
+						...prev,
+						[selectedServerId]: ((data as any) || []).map(
+							(message: Message) => {
+								message.groupid = message.id;
+								message.blocked = session.blocked_users.some(
+									(user: User) => {
+										return user.id == message.user.id;
+									},
+								);
+								message.loaded = true;
+								return message;
+							},
+						),
+					}));
+			},
+		}
+	) as any;
+
+	return {
+		selectedServerMessages,
+		selectedServerMessagesLoading,
+		selectedServerMessagesMutate,
+		selectedServerMessagesValidating,
+	};
+}
+
+function useSelectedServerData(selectedServerId: string | null) {
 	const {
 		data: selectedServerData,
 		isLoading: selectedServerDataLoading,
 		mutate: selectedServerDataMutate,
-	} = useSWR(`/chat/channel/members/${selectedServerId}`, fetcher) as any;
+	} = useSWR(
+		selectedServerId ? `/chat/channel/members/${selectedServerId}` : null,
+		fetcherUnsafe
+	) as any;
 
-	const [displayedMessages, setDisplayedMessages] = useState({});
-	const messageParents = useRef({}) as any;
-	const loadingSectionVisible =
-		(selectedServerMessagesLoading && selectedServerMessages == null) ||
-		(selectedServerDataLoading && selectedServerData == null);
+	return {
+		selectedServerData,
+		selectedServerDataLoading,
+		selectedServerDataMutate,
+		selectedServerMembers: selectedServerData?.members || [],
+		selectedServerInvites: selectedServerData?.invites || [],
+		selectedServerBans: selectedServerData?.bans || [],
+	};
+}
 
-	const messages = selectedServerId
-		? akashicRecords[selectedServerId] || []
-		: [];
-
-	const members = selectedServerData?.members || [];
-	const selectedServerInvites = selectedServerData?.invites || [];
-	const selectedServerBans = selectedServerData?.bans || [];
+function useSelectedServerMessagesFixer(selectedServerMessages: Message[], messageParents: any) {
+	const messages = [...(selectedServerMessages || [])];
 
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
@@ -197,6 +205,58 @@ export default function Page({
 		}
 	}
 
+	return messages;
+}
+
+
+export default function Page({
+	children,
+	params,
+}: {
+	children: ReactNode;
+	params: any;
+}) {
+	const router = useRouter();
+
+	const { session } = useContext(PublicContext) as any;
+	const { servers, serversMutate, prevServers } = useServerList();
+	const [timesNavigated, setTimesNavigated] = useState(0);
+
+	const [listTab, setListTab] = useState<"servers" | "friends">("servers");
+	const [showMembers, setShowMembers] = useState(true);
+	const [expanded, setExpanded] = useState(false);
+
+	const { selectedServerId, selectedServer, prevSelectedServerId } =
+		useSelectedServer(servers);
+
+	const [akashicRecords, setAkashicRecords] = useState<{
+		[key: string]: Message[];
+	}>({});
+
+	const {
+		selectedServerMessages,
+		selectedServerMessagesLoading,
+		selectedServerMessagesMutate,
+		selectedServerMessagesValidating,
+	} = useSelectedServerMessages(selectedServerId, setAkashicRecords);
+	
+	const {
+		selectedServerDataLoading,
+		selectedServerDataMutate,
+		selectedServerMembers,
+		selectedServerInvites,
+		selectedServerBans,
+	} = useSelectedServerData(selectedServerId);
+
+	const [displayedMessages, setDisplayedMessages] = useState({});
+	const messageParents = useRef({}) as any;
+	const loadingSectionVisible = (selectedServerMessagesLoading || selectedServerDataLoading);
+
+	const fixedSelectedServerMessages = useSelectedServerMessagesFixer(
+		selectedServerId ? akashicRecords[selectedServerId] : [],
+		messageParents,
+	);
+
 	const serverMutate = async () => {
 		await Promise.all([
 			serversMutate(),
@@ -204,6 +264,11 @@ export default function Page({
 			selectedServerDataMutate(),
 		]);
 	};
+
+	const navigateToServer = (serverId: string) => {
+		setTimesNavigated((prev) => prev + 1);
+		router.push(`/chat/channel/${serverId}`);
+	}
 
 	useEffect(() => {
 		if (prevServers.current != null) {
@@ -215,10 +280,7 @@ export default function Page({
 			);
 
 			if (serversInServersButNotInPrevServers?.length > 0) {
-				setSelectedServerId(serversInServersButNotInPrevServers[0].id);
-				router.push(
-					`/chat/channel/${serversInServersButNotInPrevServers[0].id}`,
-				);
+				navigateToServer(serversInServersButNotInPrevServers[0].id);
 			}
 		}
 
@@ -285,10 +347,7 @@ export default function Page({
 							console.log("messagee found", thisMessage);
 							thisMessage.error = true;
 						} else {
-							console.log(
-								"messagee not found",
-								queueId,
-							);
+							console.log("messagee not found", queueId);
 						}
 						return {
 							...prev,
@@ -307,6 +366,8 @@ export default function Page({
 		};
 	}, [akashicRecords]);
 
+	console.log({timesNavigated, selectedServerId});
+
 	return (
 		<div
 			suppressHydrationWarning
@@ -318,9 +379,9 @@ export default function Page({
 					displayedMessages,
 					expanded,
 					listTab,
-					members,
+					selectedServerMembers,
 					messageParents,
-					messages,
+					selectedServerMessages: fixedSelectedServerMessages,
 					selectedServer,
 					selectedServerId,
 					servers,
@@ -329,20 +390,22 @@ export default function Page({
 					setDisplayedMessages,
 					setExpanded,
 					setListTab,
-					setSelectedServerId,
 					setShowMembers,
 					showMembers,
 					serverMutate,
 					prevSelectedServerId,
 					selectedServerInvites,
 					selectedServerBans,
+					timesNavigated,
+					setTimesNavigated,
+					navigateToServer,
 				}}
 			>
 				<ServerList />
-				<LoadingSection
-					key={selectedServerId + "loading"}
+				{selectedServerId && <LoadingSection
 					isLoading={loadingSectionVisible}
-				/>
+					key={selectedServerId}
+				/>}
 				{!loadingSectionVisible && (
 					<ChatSection>{children}</ChatSection>
 				)}

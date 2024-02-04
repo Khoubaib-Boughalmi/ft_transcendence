@@ -31,7 +31,6 @@ function ServerCreationModal({
 	const {
 		expanded,
 		serversMutate,
-		setSelectedServerId,
 		servers,
 		setExpanded,
 	} = useChatContext();
@@ -168,7 +167,7 @@ function ServerCreationModal({
 function DiscoverListEntry({ server }: { server: Server }) {
 	const router = useRouter();
 	const { servers } = useChatContext();
-	const { serversMutate, setSelectedServerId } = useChatContext();
+	const { serversMutate, navigateToServer } = useChatContext();
 	const [loading, setLoading] = useState(false);
 
 	const handleJoin = () => {
@@ -211,8 +210,7 @@ function DiscoverListEntry({ server }: { server: Server }) {
 						) : (
 							<Button
 								onClick={() => {
-									setSelectedServerId(server.id);
-									router.push(`/chat/channel/${server.id}`);
+									navigateToServer(`/chat/channel/${server.id}`);
 								}}
 								startContent={<Check size={18} />}
 							>
