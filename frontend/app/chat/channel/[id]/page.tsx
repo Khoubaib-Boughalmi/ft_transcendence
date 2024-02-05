@@ -84,6 +84,9 @@ import {
 import { commands } from "@/constants/chat";
 import ChatContext from "@/contexts/ChatContext";
 import { redirect } from "next/navigation";
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from "remark-breaks";
 
 function MemberControls({
 	list,
@@ -727,7 +730,24 @@ function MessageListEntry({
 								</div>
 							)}
 							<div className={twMerge("text-foreground-800", message.error && "text-red-600")}>
-								{message.content}
+								<Markdown
+									children={message.content}
+									components={{
+										code(props) {
+											const { children, className, node, ...rest } = props
+											return (
+												<code {...rest} className={className}>
+													{children}
+												</code>
+											)
+										}
+									}}
+									urlTransform={(url, key, node) => {
+										node.properties.style = "color: rgb(47, 129, 247)";
+										return url
+									}}
+									remarkPlugins={[remarkGfm, remarkBreaks]}
+								/>
 							</div>
 						</div>
 					</div>
