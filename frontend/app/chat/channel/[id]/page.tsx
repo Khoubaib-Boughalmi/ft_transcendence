@@ -745,6 +745,7 @@ function MessageListEntry({
 									}}
 									urlTransform={(url, key, node) => {
 										node.properties.style = "color: rgb(47, 129, 247)";
+										node.properties.class += " hover:underline";
 										return url
 									}}
 									remarkPlugins={[remarkGfm, remarkBreaks]}
