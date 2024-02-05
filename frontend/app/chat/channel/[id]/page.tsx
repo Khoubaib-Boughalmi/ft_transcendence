@@ -87,6 +87,7 @@ import { redirect } from "next/navigation";
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from "remark-breaks";
+import rehypeVideo from 'rehype-video';
 
 function MemberControls({
 	list,
@@ -747,6 +748,7 @@ function MessageListEntry({
 										return url
 									}}
 									remarkPlugins={[remarkGfm, remarkBreaks]}
+									rehypePlugins={[rehypeVideo]}
 								/>
 							</div>
 						</div>
