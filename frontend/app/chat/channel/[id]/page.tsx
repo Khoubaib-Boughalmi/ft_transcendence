@@ -84,10 +84,7 @@ import {
 import { commands } from "@/constants/chat";
 import ChatContext from "@/contexts/ChatContext";
 import { redirect } from "next/navigation";
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import remarkBreaks from "remark-breaks";
-import rehypeVideo from 'rehype-video';
+import GayMarkdown from "@/components/GaYMarkdown";
 
 function MemberControls({
 	list,
@@ -731,51 +728,7 @@ function MessageListEntry({
 								</div>
 							)}
 							<div className={twMerge("text-foreground-800", message.error && "text-red-600")}>
-								<Markdown
-									children={message.content}
-									components={{
-										code(props) {
-											const { children, className, node, ...rest } = props
-											return (
-												<code {...rest} className={className}>
-													{children}
-												</code>
-											)
-										},
-										a: (props) => {
-											const url = props.href
-											let videoId: string | null = null
-
-											if (url?.startsWith("https://www.youtube.com/watch?v=")) {
-												videoId = new URL(url).searchParams.get("v")
-											} else if (url?.startsWith("https://youtu.be/")) {
-												videoId = url.split("https://youtu.be/")[1].split("?")[0]
-											} else if (url?.startsWith("https://www.youtube.com/embed/")) {
-												videoId = url.split("https://www.youtube.com/embed/")[1].split("?")[0]
-											}
-
-											if (videoId) {
-												return (
-													<iframe
-														width="1280"
-														height="720"
-														src={`https://www.youtube.com/embed/${videoId}`}
-														allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-														allowFullScreen={true}
-													/>
-												)
-											}
-											return (<a {...props} />)
-										}
-									}}
-									urlTransform={(url, key, node) => {
-										node.properties.style = "color: rgb(47, 129, 247)";
-										node.properties.class += " hover:underline";
-										return url
-									}}
-									remarkPlugins={[remarkGfm, remarkBreaks]}
-									rehypePlugins={[rehypeVideo]}
-								/>
+								<GayMarkdown message={message} />
 							</div>
 						</div>
 					</div>
@@ -982,7 +935,7 @@ export default function App({ params }: any) {
 								{selectedServerMessages.map((message, i) => {
 									return (
 										<MessageListEntry
-											key={i}
+											key={message.id}
 											index={i}
 											message={message}
 										/>
