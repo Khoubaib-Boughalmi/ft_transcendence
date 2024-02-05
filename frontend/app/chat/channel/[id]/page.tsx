@@ -741,6 +741,31 @@ function MessageListEntry({
 													{children}
 												</code>
 											)
+										},
+										a: (props) => {
+											const url = props.href
+											let videoId: string | null = null
+
+											if (url?.startsWith("https://www.youtube.com/watch?v=")) {
+												videoId = new URL(url).searchParams.get("v")
+											} else if (url?.startsWith("https://youtu.be/")) {
+												videoId = url.split("https://youtu.be/")[1].split("?")[0]
+											} else if (url?.startsWith("https://www.youtube.com/embed/")) {
+												videoId = url.split("https://www.youtube.com/embed/")[1].split("?")[0]
+											}
+
+											if (videoId) {
+												return (
+													<iframe
+														width="1280"
+														height="720"
+														src={`https://www.youtube.com/embed/${videoId}`}
+														allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+														allowFullScreen={true}
+													/>
+												)
+											}
+											return (<a {...props} />)
 										}
 									}}
 									urlTransform={(url, key, node) => {
