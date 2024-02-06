@@ -58,6 +58,7 @@ export type ChatContextType = {
 	setTimesNavigated: (timesNavigated: number) => void;
 	timesNavigated: number;
 	navigateToServer: (serverId: string) => void;
+	prevSelectedServerMessages: React.MutableRefObject<Message[]>;
 };
 
 export type Argument = {
