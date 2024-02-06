@@ -32,6 +32,7 @@ import {
 	DropdownSection,
 	DropdownTrigger,
 	Skeleton,
+	Spinner,
 	Tooltip,
 	useDisclosure,
 } from "@nextui-org/react";
@@ -44,6 +45,7 @@ import axios from "@/lib/axios";
 import { twMerge } from "tailwind-merge";
 import { Lock, User as UserIcon } from "lucide-react";
 import {
+	fetcher,
 	getFlag,
 	getRank,
 	makeForm,
@@ -54,6 +56,7 @@ import { user1 } from "@/mocks/profile";
 import socket from "@/lib/socket";
 import ModalSet from "./ModalSet";
 import { useTheme } from "next-themes";
+import useSWR from "swr";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 const themes = [
@@ -404,14 +407,116 @@ function NotificationsButton() {
 }
 
 function SearchBar() {
+	const { session } = useContext(PublicContext) as any;
+	const [active, setActive] = useState(false);
+	const [entered, setEntered] = useState(false);
+	const [query, setQuery] = useState("");
+	const [realQuery, setRealQuery] = useState("");
+	const [lastQuery, setLastQuery] = useState("");
+	const { data, isLoading, isValidating, mutate } = useSWR(
+		realQuery?.length > 0 ? `/user/search/${realQuery}` : null,
+		fetcher,
+	) as any;
+
+	const showLoading =
+		isLoading || (isValidating && (!data || data.length == 0));
+
+	const result = data?.slice(0, 5) || [];
+
+	useEffect(() => {
+		let timeout: NodeJS.Timeout;
+
+		const transition = (fnc: any) => {
+			// const doc = document as any;
+			// if (doc.startViewTransition) doc.startViewTransition(fnc);
+			// else
+			fnc();
+		};
+
+		if (query.length == 0) {
+			transition(() => {
+				setRealQuery("");
+				mutate([]);
+			});
+		} else
+			timeout = setTimeout(() => {
+				transition(() => {
+					setRealQuery(query);
+				});
+			}, realQuery.length == 0 ? 0 : 500);
+		return () => clearTimeout(timeout);
+	}, [query]);
+
 	return (
-		<Input
-			classNames={{
-				container: "h-full",
-			}}
-			startContent={<Search className="text-background-800" />}
-			placeholder="Search"
-		/>
+		<>
+		{active && <div className="absolute inset-0 h-screen bg-black/50 animate-overlay">
+
+		</div>}
+		<div className="relative h-full flex-1">
+			<Input
+				onFocus={() => setActive(true)}
+				onBlur={() => setActive(false)}
+				value={query}
+				onChange={(e) => setQuery(e.target.value)}
+				classNames={{
+					container: "h-full",
+				}}
+				startContent={<Search className="text-background-800" />}
+				placeholder="Search for users"
+				/>
+			<div
+				data-focused={active}
+				className={twMerge(
+					`absolute -bottom-2 hidden w-full translate-y-full animate-overlayfast rounded-3xl bg-card-300 p-2
+					transition-all active:block data-[focused=true]:block`,
+					)}
+					>
+				{showLoading ? (
+					<div className="flex h-32 w-full items-center justify-center">
+						<Spinner />
+					</div>
+				) : query.length > 0 ? (
+					<UserList
+					type="list"
+					classNames={{
+						entryContainer: "bg-transparent hover:bg-card-400 rounded-3xl py-2 pr-2",
+						entry: "truncate hover:scale-[99%]",
+						list: "gap-2",
+					}}
+					Controls={({ user }: { user: User }) => {
+						const areFriends = session.friends.some(
+							(f: any) => f.id == user.id,
+						);
+
+						return (
+							<div>
+								{areFriends ? (
+									<div className="flex items-center gap-2 text-xs px-6 justify-center h-full bg-card-200 rounded-2xl select-none">
+										<Users2 size={16} />
+										Friends
+									</div>
+								) : (
+									<>
+									</>
+								)}
+							</div>
+						)
+
+
+
+					}}
+					users={result}
+					/>
+					) : (
+						<div className="h-32 flex justify-center items-center">
+						<div className="text-sm">
+							Search for users by username
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+				</>
 	);
 }
 
