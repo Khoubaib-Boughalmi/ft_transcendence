@@ -5,9 +5,10 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeVideo from "rehype-video";
 import SuperImage from "./SuperImage";
-import { Tweet } from 'react-tweet'
-import Youtube from 'react-youtube'
+import { Tweet } from "react-tweet";
+import Youtube from "react-youtube";
 import { ClipboardCheck, Copy } from "lucide-react";
+import toast from "react-hot-toast";
 
 const NoExceptURL = (url: string) => {
 	try {
@@ -15,15 +16,32 @@ const NoExceptURL = (url: string) => {
 	} catch {
 		return null;
 	}
-}
+};
+
+const getVideoId = (url: URL): string | null => {
+	if (url.hostname === "www.youtube.com" && url.searchParams.has("v")) {
+		return url.searchParams.get("v");
+	}
+	if (
+		url.hostname === "www.youtube.com" &&
+		url.pathname.startsWith("/embed/")
+	) {
+		return url.pathname.split("/").pop() || null;
+	}
+	if (url.hostname === "youtu.be" && url.pathname.length > 1) {
+		return url.pathname.split("/").pop() || null;
+	}
+	return null;
+};
 
 function GayMarkdown({ message }: { message: Message }) {
 	const [copySuccess, setCopySuccess] = useState(false);
 
 	const copyImageUrl = (imageUrl: string) => {
-	  navigator.clipboard.writeText(imageUrl)
-		.then(() => setCopySuccess(true))
-		.catch((err) => console.error('Failed to copy: ', err));
+		navigator.clipboard
+			.writeText(imageUrl)
+			.then(() => setCopySuccess(true))
+			.catch((err) => toast.error("Failed to copy image URL"));
 	};
 
 	useEffect(() => {
@@ -40,7 +58,7 @@ function GayMarkdown({ message }: { message: Message }) {
 			key={message.id}
 			children={message.content}
 			disallowedElements={["p"]}
-    		unwrapDisallowed
+			unwrapDisallowed
 			remarkPlugins={[remarkGfm, remarkBreaks]}
 			rehypePlugins={[rehypeVideo]}
 			components={{
@@ -55,27 +73,12 @@ function GayMarkdown({ message }: { message: Message }) {
 				a: (props) => {
 					const { href: url, ...otherprops } = props;
 					const urlObj = NoExceptURL(url!);
-					
+
 					// if the url is not valid then render a normal text link
-					if (!urlObj)
-						return <a {...otherprops} />;
+					if (!urlObj) return <a {...otherprops} />;
 
 					// if it's a youtube link then render the video using an iframe embed
-					let videoId: string | null = null;
-					if (url?.startsWith("https://www.youtube.com/watch?v=")) {
-						videoId = urlObj.searchParams.get("v");
-					} else if (url?.startsWith("https://youtu.be/")) {
-						videoId = url
-							.split("https://youtu.be/")[1]
-							.split("?")[0];
-					} else if (
-						url?.startsWith("https://www.youtube.com/embed/")
-					) {
-						videoId = url
-							.split("https://www.youtube.com/embed/")[1]
-							.split("?")[0];
-					}
-
+					const videoId: string | null = getVideoId(urlObj);
 					if (videoId) {
 						return (
 							//<iframe
@@ -91,19 +94,29 @@ function GayMarkdown({ message }: { message: Message }) {
 					}
 
 					// if it's an image link then render the image
-					if (url?.match(/\.(jpeg|jpg|gif|png)$/) || url?.includes("pregonanto.s3")) {
+					if (
+						url?.match(/\.(jpeg|jpg|gif|png)$/) ||
+						url?.includes("pregonanto.s3")
+					) {
 						return (
 							<div className="relative">
 								<SuperImage
-								alt="Embedded Image"
-								width={256}
-								height={256}
-								src={url}
-								className="h-full w-full object-cover"
-							/>
-							<button onClick={() => copyImageUrl(url)} className="absolute top-0 right-0 p-1 m-1 bg-gray-800 bg-opacity-50 text-white rounded-md">
-								{copySuccess ? <ClipboardCheck /> : <Copy />}
-							</button>
+									alt="Embedded Image"
+									width={256}
+									height={256}
+									src={url}
+									className="h-full w-full object-cover"
+								/>
+								<button
+									onClick={() => copyImageUrl(url)}
+									className="absolute right-0 top-0 m-1 rounded-md bg-gray-800 bg-opacity-50 p-1 text-white"
+								>
+									{copySuccess ? (
+										<ClipboardCheck />
+									) : (
+										<Copy />
+									)}
+								</button>
 							</div>
 						);
 					}
@@ -111,11 +124,16 @@ function GayMarkdown({ message }: { message: Message }) {
 					// if it's a twitter link then render the tweet
 					if (url?.startsWith("https://twitter.com")) {
 						const tweetId = url.split("/status/")[1];
-						return <Tweet id={tweetId} />
+						return <Tweet id={tweetId} />;
 					}
 
 					// for other links render a normal hyperlink
-					return <a className="text-blue-500 hover:underline" {...props} />;
+					return (
+						<a
+							className="text-blue-500 hover:underline"
+							{...props}
+						/>
+					);
 				},
 			}}
 		/>
