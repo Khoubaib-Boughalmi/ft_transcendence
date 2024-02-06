@@ -84,7 +84,7 @@ import {
 import { commands } from "@/constants/chat";
 import ChatContext from "@/contexts/ChatContext";
 import { redirect } from "next/navigation";
-import GayMarkdown from "@/components/GaYMarkdown";
+import GayMarkdown from "@/components/GayMarkdown";
 
 function MemberControls({
 	list,
