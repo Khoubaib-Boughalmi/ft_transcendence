@@ -105,7 +105,7 @@ export default function ServerList() {
 									return server.isDM;
 							})
 							.map((server, i) => (
-								<ServerListEntry key={i} server={server} />
+								<ServerListEntry key={server.id} server={server} />
 							))}
 						<ServerCreateButton />
 						{/* <ServerListEntry /> */}
