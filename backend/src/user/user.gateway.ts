@@ -11,7 +11,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from './user.service';
 import { ChatService } from 'src/chat/chat.service';
 import { SocketService } from 'src/socket/socket.service';
-import { IsOptional } from 'class-validator';
+import { IsOptional, Length } from 'class-validator';
 
 export class MessageDTO {
 	@IsOptional()
@@ -22,6 +22,7 @@ export class MessageDTO {
 
 	queueId: string;
 
+	@Length(1, 1024)
 	message: string;
 }
 
