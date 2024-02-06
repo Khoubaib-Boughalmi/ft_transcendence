@@ -17,9 +17,9 @@ export default function ServerCreateButton() {
 
 	return (
 		<Button
-			style={{
+			style={expanded ? {
 				viewTransitionName: "create",
-			}}
+			} : {}}
 			onClick={() => {
 				router.push("/chat/discover");
 				setExpanded(false);
