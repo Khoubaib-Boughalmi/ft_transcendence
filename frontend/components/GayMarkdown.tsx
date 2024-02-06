@@ -4,6 +4,15 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeVideo from "rehype-video";
+import SuperImage from "./SuperImage";
+
+const NoExceptURL = (url: string) => {
+	try {
+		return new URL(url);
+	} catch {
+		return null;
+	}
+}
 
 function GayMarkdown({ message }: { message: Message }) {
 	return (
@@ -20,11 +29,17 @@ function GayMarkdown({ message }: { message: Message }) {
 					);
 				},
 				a: (props) => {
-					const url = props.href;
-					let videoId: string | null = null;
+					const { href: url, ...otherprops } = props;
+					const urlObj = NoExceptURL(url!);
+					
+					// if the url is not valid then render a normal text link
+					if (!urlObj)
+						return <a {...otherprops} />;
 
+					// if it's a youtube link then render the video using an iframe embed
+					let videoId: string | null = null;
 					if (url?.startsWith("https://www.youtube.com/watch?v=")) {
-						videoId = new URL(url).searchParams.get("v");
+						videoId = urlObj.searchParams.get("v");
 					} else if (url?.startsWith("https://youtu.be/")) {
 						videoId = url
 							.split("https://youtu.be/")[1]
@@ -49,14 +64,23 @@ function GayMarkdown({ message }: { message: Message }) {
 							/>
 						);
 					}
-					return <a {...props} />;
+
+					// if it's an image link then render the image
+					if (url?.match(/\.(jpeg|jpg|gif|png)$/) || url?.includes("pregonanto.s3")) {
+						return (
+							<SuperImage
+								alt="Embedded Image"
+								width={256}
+								height={256}
+								src={url}
+								className="h-full w-full object-cover"
+							/>
+						);
+					}
+					
+					// for other links render a normal hyperlink
+					return <a className="text-blue-500 hover:underline" {...props} />;
 				},
-			}}
-			urlTransform={(url, key, node) => {
-				node.properties.style =
-					"color: rgb(47, 129, 247); padding-top: 25px; padding-bottom: 25px;";
-				node.properties.class += " hover:underline";
-				return url;
 			}}
 			remarkPlugins={[remarkGfm, remarkBreaks]}
 			rehypePlugins={[rehypeVideo]}
