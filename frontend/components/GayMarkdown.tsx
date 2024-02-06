@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { Message } from "@/types/chat";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -7,6 +7,7 @@ import rehypeVideo from "rehype-video";
 import SuperImage from "./SuperImage";
 import { Tweet } from 'react-tweet'
 import Youtube from 'react-youtube'
+import { ClipboardCheck, Copy } from "lucide-react";
 
 const NoExceptURL = (url: string) => {
 	try {
@@ -17,6 +18,23 @@ const NoExceptURL = (url: string) => {
 }
 
 function GayMarkdown({ message }: { message: Message }) {
+	const [copySuccess, setCopySuccess] = useState(false);
+
+	const copyImageUrl = (imageUrl: string) => {
+	  navigator.clipboard.writeText(imageUrl)
+		.then(() => setCopySuccess(true))
+		.catch((err) => console.error('Failed to copy: ', err));
+	};
+
+	useEffect(() => {
+		if (copySuccess) {
+			const id = setTimeout(() => {
+				setCopySuccess(false);
+			}, 1000);
+			return () => clearTimeout(id);
+		}
+	}, [copySuccess]);
+
 	return (
 		<Markdown
 			key={message.id}
@@ -75,13 +93,18 @@ function GayMarkdown({ message }: { message: Message }) {
 					// if it's an image link then render the image
 					if (url?.match(/\.(jpeg|jpg|gif|png)$/) || url?.includes("pregonanto.s3")) {
 						return (
-							<SuperImage
+							<div className="relative">
+								<SuperImage
 								alt="Embedded Image"
 								width={256}
 								height={256}
 								src={url}
 								className="h-full w-full object-cover"
 							/>
+							<button onClick={() => copyImageUrl(url)} className="absolute top-0 right-0 p-1 m-1 bg-gray-800 bg-opacity-50 text-white rounded-md">
+								{copySuccess ? <ClipboardCheck /> : <Copy />}
+							</button>
+							</div>
 						);
 					}
 
