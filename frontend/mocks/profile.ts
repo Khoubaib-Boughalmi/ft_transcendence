@@ -67,12 +67,12 @@ const friends: any[] = Array.from({ length: 10 })
 	}));
 
 // user1.history = history;
-user1.achievements = achievements;
-user1.friends = friends;
+// user1.achievements = achievements;
+// user1.friends = friends;
 
-user2.history = history;
-user2.achievements = achievements;
-user2.friends = friends;
+// user2.history = history;
+// user2.achievements = achievements;
+// user2.friends = friends;
 
 
 
