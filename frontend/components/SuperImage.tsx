@@ -32,7 +32,6 @@ export default function SuperImage({ src, className, width, height, alt, ...prop
 			<Image
 				ref={imgRef}
 				src={src}
-				key={src}
 				alt={alt}
 				width={width}
 				height={height}	
