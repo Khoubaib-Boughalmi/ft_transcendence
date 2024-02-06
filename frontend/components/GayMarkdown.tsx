@@ -1,10 +1,12 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { Message } from "@/types/chat";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeVideo from "rehype-video";
 import SuperImage from "./SuperImage";
+import { Tweet } from 'react-tweet'
+import Youtube from 'react-youtube'
 
 const NoExceptURL = (url: string) => {
 	try {
@@ -19,6 +21,10 @@ function GayMarkdown({ message }: { message: Message }) {
 		<Markdown
 			key={message.id}
 			children={message.content}
+			disallowedElements={["p"]}
+    		unwrapDisallowed
+			remarkPlugins={[remarkGfm, remarkBreaks]}
+			rehypePlugins={[rehypeVideo]}
 			components={{
 				code(props) {
 					const { children, className, node, ...rest } = props;
@@ -54,14 +60,15 @@ function GayMarkdown({ message }: { message: Message }) {
 
 					if (videoId) {
 						return (
-							<iframe
-								key={videoId}
-								width="1280"
-								height="720"
-								src={`https://www.youtube.com/embed/${videoId}`}
-								allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-								allowFullScreen={true}
-							/>
+							//<iframe
+							//	key={videoId}
+							//	width="1280"
+							//	height="720"
+							//	src={`https://www.youtube.com/embed/${videoId}`}
+							//	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+							//	allowFullScreen={true}
+							///>
+							<Youtube videoId={videoId} />
 						);
 					}
 
@@ -77,13 +84,17 @@ function GayMarkdown({ message }: { message: Message }) {
 							/>
 						);
 					}
-					
+
+					// if it's a twitter link then render the tweet
+					if (url?.startsWith("https://twitter.com")) {
+						const tweetId = url.split("/status/")[1];
+						return <Tweet id={tweetId} />
+					}
+
 					// for other links render a normal hyperlink
 					return <a className="text-blue-500 hover:underline" {...props} />;
 				},
 			}}
-			remarkPlugins={[remarkGfm, remarkBreaks]}
-			rehypePlugins={[rehypeVideo]}
 		/>
 	);
 }
