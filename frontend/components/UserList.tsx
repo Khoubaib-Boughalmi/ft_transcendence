@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Tooltip } from "@nextui-org/react";
 import UserHover from "./UserHover";
 import NoData from "./NoData";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIsOnline } from "@/lib/utils";
 
 type ClassNames = {
@@ -126,7 +126,7 @@ function UserListListEntry({
 						size == "xs" && "gap-2",
 						classNames?.entry,
 					)}
-				>
+				>		
 					{(showBadge && showBadge(user)) && (
 						<div className="absolute left-0 top-0 z-10">
 							<img
@@ -195,11 +195,11 @@ export default function UserList({
 	if (type == "list")
 		return (
 			<div className={twMerge(`flex flex-col gap-2`, classNames?.list)}>
-				{users.length == 0 && <NoData />}
-				{users.map((user, i) => (
+				{users?.length == 0 && <NoData />}
+				{users?.map((user, i) => (
 					<UserListListEntry
 						hoverDelay={hoverDelay}
-						key={i}
+						key={user.id}
 						Controls={Controls}
 						classNames={classNames}
 						size={size}
@@ -217,11 +217,11 @@ export default function UserList({
 				users.length == 0 && "grid-cols-1",
 			)}
 		>
-			{users.length == 0 && <NoData />}
-			{users.map((user, i) => (
+			{users?.length == 0 && <NoData />}
+			{users?.map((user, i) => (
 				<UserListGridEntry
 					hoverDelay={hoverDelay}
-					key={i}
+					key={user.id}
 					user={user}
 				/>
 			))}
