@@ -34,7 +34,7 @@ function ServerCreationModal({
 		servers,
 		setExpanded,
 	} = useChatContext();
-	const { sessionMutate } = useContext(PublicContext) as any;
+	const { sessionMutate, setExpecting } = useContext(PublicContext) as any;
 	const [createLoading, setCreateLoading] = useState(false);
 	const [joinLoading, setJoinLoading] = useState(false);
 	const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
@@ -49,6 +49,7 @@ function ServerCreationModal({
 			`Successfully created the channel`,
 			`Failed to create the channel`,
 			async () => {
+				setExpecting(true);
 				await serversMutate();
 				onClose();
 				(e.target as HTMLFormElement).reset();
@@ -69,6 +70,7 @@ function ServerCreationModal({
 			`Successfully joined the channel`,
 			`Failed to join the channel`,
 			async () => {
+				setExpecting(true);
 				await serversMutate();
 				onClose();
 				(e.target as HTMLFormElement).reset();
@@ -338,7 +340,7 @@ export default function DiscoverPage() {
 				"
 				>
 					{servers?.map((server: Server, i: number) => (
-						<DiscoverListEntry key={i} server={server} />
+						<DiscoverListEntry key={server.id} server={server} />
 					))}
 				</div>
 			</div>
