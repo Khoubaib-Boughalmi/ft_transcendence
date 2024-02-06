@@ -32,6 +32,7 @@ export default function Providers({ accessToken, children }: any) {
 	const [loadedImages, setLoadedImages] = useState<string[]>([]);
 	const payload = jwt?.decode(accessToken?.value) as any;
 	const twoFactorAuthenticated = payload?.two_factor_passed === true;
+	const [expecting, setExpecting] = useState(false);
 
 	useEffect(() => {
 		socket.connect();
@@ -57,6 +58,8 @@ export default function Providers({ accessToken, children }: any) {
 				verifiedLoading,
 				verified,
 				twoFactorAuthenticated,
+				expecting,
+				setExpecting,
 				fullMutate: () =>
 					Promise.all([sessionMutate(), verifiedMutate()]),
 				session: {
