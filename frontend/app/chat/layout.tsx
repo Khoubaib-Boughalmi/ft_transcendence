@@ -58,7 +58,6 @@ import useSWR, { SWRConfig, useSWRConfig } from "swr";
 import {
 	useChatContext,
 	randomString,
-	fetcher,
 	makeForm,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	fetcherUnsafe,
@@ -88,6 +87,7 @@ import ServerList from "@/components/ServerList";
 import LoadingSection from "@/components/LoadingSection";
 import SectionContainer from "@/components/SectionContainer";
 import { redirect, usePathname, useRouter } from "next/navigation";
+import { useServerList } from "@/lib/utils";
 
 function ChatSection({ children }: { children: ReactNode }) {
 	const { selectedServer, expanded, setExpanded } = useChatContext();
@@ -116,16 +116,10 @@ function useSelectedServer(servers: Server[]) {
 	return { selectedServerId, selectedServer, prevSelectedServerId };
 }
 
-function useServerList() {
-	const { data: servers, mutate: serversMutate } = useSWR(
-		"/chat/channel/list",
-		fetcher,
-	) as any;
-	const prevServers = useRef(null) as any;
-	return { servers, serversMutate, prevServers };
-}
-
-function useSelectedServerMessages(selectedServerId: string | null, setAkashicRecords: any) {
+function useSelectedServerMessages(
+	selectedServerId: string | null,
+	setAkashicRecords: any,
+) {
 	const { session } = useContext(PublicContext) as any;
 
 	const {
@@ -155,7 +149,7 @@ function useSelectedServerMessages(selectedServerId: string | null, setAkashicRe
 						),
 					}));
 			},
-		}
+		},
 	) as any;
 
 	return {
@@ -173,7 +167,7 @@ function useSelectedServerData(selectedServerId: string | null) {
 		mutate: selectedServerDataMutate,
 	} = useSWR(
 		selectedServerId ? `/chat/channel/members/${selectedServerId}` : null,
-		fetcherUnsafe
+		fetcherUnsafe,
 	) as any;
 
 	return {
@@ -186,7 +180,10 @@ function useSelectedServerData(selectedServerId: string | null) {
 	};
 }
 
-function useSelectedServerMessagesFixer(selectedServerMessages: Message[], messageParents: any) {
+function useSelectedServerMessagesFixer(
+	selectedServerMessages: Message[],
+	messageParents: any,
+) {
 	const messages = [...(selectedServerMessages || [])];
 
 	messageParents.current = {};
@@ -208,7 +205,6 @@ function useSelectedServerMessagesFixer(selectedServerMessages: Message[], messa
 	return messages;
 }
 
-
 export default function Page({
 	children,
 	params,
@@ -218,7 +214,9 @@ export default function Page({
 }) {
 	const router = useRouter();
 
-	const { session } = useContext(PublicContext) as any;
+	const { session, expecting, setExpecting } = useContext(
+		PublicContext,
+	) as any;
 	const { servers, serversMutate, prevServers } = useServerList();
 	const [timesNavigated, setTimesNavigated] = useState(0);
 
@@ -239,7 +237,7 @@ export default function Page({
 		selectedServerMessagesMutate,
 		selectedServerMessagesValidating,
 	} = useSelectedServerMessages(selectedServerId, setAkashicRecords);
-	
+
 	const {
 		selectedServerDataLoading,
 		selectedServerDataMutate,
@@ -250,12 +248,21 @@ export default function Page({
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
 	const messageParents = useRef({}) as any;
-	const loadingSectionVisible = (selectedServerMessagesLoading || selectedServerDataLoading);
-
+	const loadingSectionVisible =
+		selectedServerMessagesLoading || selectedServerDataLoading || !akashicRecords;
+		
 	const fixedSelectedServerMessages = useSelectedServerMessagesFixer(
-		selectedServerId ? akashicRecords[selectedServerId] : [],
+		selectedServerId ? (akashicRecords[selectedServerId] || selectedServerMessages) : [],
 		messageParents,
 	);
+
+	const prevSelectedServerMessages = useRef(selectedServerMessages);
+
+	useEffect(() => {
+		if (fixedSelectedServerMessages) {
+			prevSelectedServerMessages.current = fixedSelectedServerMessages;
+		}
+	}, [akashicRecords]);
 
 	const serverMutate = async () => {
 		await Promise.all([
@@ -268,7 +275,7 @@ export default function Page({
 	const navigateToServer = (serverId: string) => {
 		setTimesNavigated((prev) => prev + 1);
 		router.push(`/chat/channel/${serverId}`);
-	}
+	};
 
 	useEffect(() => {
 		if (prevServers.current != null) {
@@ -279,7 +286,8 @@ export default function Page({
 					),
 			);
 
-			if (serversInServersButNotInPrevServers?.length > 0) {
+			if (serversInServersButNotInPrevServers?.length > 0 && expecting) {
+				setExpecting(false);
 				navigateToServer(serversInServersButNotInPrevServers[0].id);
 			}
 		}
@@ -289,18 +297,24 @@ export default function Page({
 
 	useEffect(() => {
 		socket.on("message", async (message: Message) => {
-			const messages = akashicRecords[message.chatId] || [];
-			const akashicRecordsServer = [...messages];
+			const channel = akashicRecords[message.chatId];
 			if (
 				(message.user.id == "server" &&
 					message.chatId == selectedServerId) ||
-				!akashicRecords[message.chatId]
-			)
+				!channel
+			) {
 				await serverMutate();
-			if (akashicRecordsServer && message.user.id != session.id) {
+				return;
+			}
+			const messages = [...(akashicRecords[message.chatId] || [])];
+			const messageFound = messages.find(
+				(m: Message) => m.queueId == message.queueId,
+			);
+
+			if (message.user.id != session.id || !messageFound) {
 				message.loaded = true;
-				akashicRecordsServer.push(message);
-				const sortedByTime = akashicRecordsServer.sort(
+				messages.push(message);
+				const sortedByTime = messages.sort(
 					(a, b) =>
 						new Date(b.createdAt).getTime() -
 						new Date(a.createdAt).getTime(),
@@ -309,20 +323,12 @@ export default function Page({
 					...akashicRecords,
 					[message.chatId]: sortedByTime,
 				});
-			} else if (
-				akashicRecordsServer &&
-				message.user.id == session.id &&
-				akashicRecords[message.chatId]
-			) {
+			} else if (message.user.id == session.id) {
 				setAkashicRecords((prev) => {
 					const serverMessages = prev[message.chatId];
 					if (serverMessages) {
-						const thisMessage = serverMessages.find(
-							(m: Message) =>
-								m.queueId == message.queueId && !m.loaded,
-						);
-						if (thisMessage) {
-							thisMessage.loaded = true;
+						if (messageFound) {
+							messageFound.loaded = true;
 						}
 						return {
 							...prev,
@@ -343,12 +349,8 @@ export default function Page({
 						const thisMessage = serverMessages.find(
 							(m: Message) => m.queueId == queueId,
 						);
-						if (thisMessage) {
-							console.log("messagee found", thisMessage);
+						if (thisMessage)
 							thisMessage.error = true;
-						} else {
-							console.log("messagee not found", queueId);
-						}
 						return {
 							...prev,
 							[chatId]: serverMessages,
@@ -366,7 +368,12 @@ export default function Page({
 		};
 	}, [akashicRecords]);
 
-	console.log({timesNavigated, selectedServerId});
+	useEffect(() => {
+		if (expanded == false && selectedServer) {
+			const type = selectedServer.isDM ? "friends" : "servers";
+			if (listTab != type) setListTab(type);
+		}
+	}, [expanded, selectedServer]);
 
 	return (
 		<div
@@ -399,13 +406,16 @@ export default function Page({
 					timesNavigated,
 					setTimesNavigated,
 					navigateToServer,
+					prevSelectedServerMessages,
 				}}
 			>
 				<ServerList />
-				{selectedServerId && <LoadingSection
-					isLoading={loadingSectionVisible}
-					key={selectedServerId}
-				/>}
+				{selectedServerId && (
+					<LoadingSection
+						isLoading={loadingSectionVisible}
+						key={selectedServerId + "loading"}
+					/>
+				)}
 				{!loadingSectionVisible && (
 					<ChatSection>{children}</ChatSection>
 				)}
