@@ -14,6 +14,7 @@ import {
 	Menu,
 	MessageSquarePlus,
 	MoreHorizontal,
+	Mouse,
 	Pencil,
 	Plus,
 	Search,
@@ -111,7 +112,8 @@ function MemberControls({
 }
 
 function InviteBox() {
-	const { selectedServerMembers, selectedServer, serverMutate } = useChatContext();
+	const { selectedServerMembers, selectedServer, serverMutate } =
+		useChatContext();
 	const [loading, setLoading] = useState(false);
 	const formRef = useRef<HTMLFormElement>(null);
 
@@ -163,7 +165,8 @@ function InviteBox() {
 }
 
 function RevokeInviteButton({ user }: { user: User }) {
-	const { selectedServerMembers, selectedServer, serverMutate } = useChatContext();
+	const { selectedServerMembers, selectedServer, serverMutate } =
+		useChatContext();
 	const [loading, setLoading] = useState(false);
 
 	const handleRevokeInvite = (user: User) => {
@@ -196,14 +199,21 @@ function RevokeInviteButton({ user }: { user: User }) {
 }
 
 function RevokeBanButton({ user }: { user: User }) {
-	const { selectedServerId } = useChatContext();
+	const { selectedServerId, serverMutate } = useChatContext();
+	const [loading, setLoading] = useState(false);
 
 	const handleRevokeBan = (user: User) => {
-		socket.emit("message", {
-			chatId: selectedServerId,
-			queueId: randomString(),
-			message: `/unban ${user.username}`,
-		});
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/revoke_ban",
+			makeForm({
+				chatId: selectedServerId,
+				userId: user.id,
+			}),
+			setLoading,
+			`Successfully unbanned ${user.username}`,
+			`Failed to unban ${user.username}`,
+			serverMutate,
+		);
 	};
 
 	return (
@@ -213,6 +223,7 @@ function RevokeBanButton({ user }: { user: User }) {
 				className="pl-3"
 				startContent={<X />}
 				variant="danger"
+				loading={loading}
 			>
 				Revoke Ban
 			</Button>
@@ -477,7 +488,8 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 }
 
 function MemberList() {
-	const { expanded, showMembers, selectedServerMembers, selectedServer } = useChatContext();
+	const { expanded, showMembers, selectedServerMembers, selectedServer } =
+		useChatContext();
 
 	return (
 		<div
@@ -690,7 +702,7 @@ function MessageListEntry({
 						className={twMerge(
 							"flex gap-4 px-4",
 							!message.noAvatar && "mt-4",
-							(!message.loaded && !message.error)&& "opacity-50",
+							!message.loaded && !message.error && "opacity-50",
 						)}
 					>
 						<div
@@ -727,7 +739,12 @@ function MessageListEntry({
 									</div>
 								</div>
 							)}
-							<div className={twMerge("text-foreground-800", message.error && "text-red-600")}>
+							<div
+								className={twMerge(
+									"text-foreground-800",
+									message.error && "text-red-600",
+								)}
+							>
 								<GayMarkdown message={message} />
 							</div>
 						</div>
@@ -779,36 +796,57 @@ export default function App({ params }: any) {
 		selectedServerId,
 		serversMutate,
 		prevSelectedServerId,
+		prevSelectedServerMessages,
 	} = useChatContext();
 	const { session } = useContext(PublicContext) as any;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+	const [scrollLocked, setScrollLocked] = useState(false);
+	const initial = useRef(true);
 	const hasPermissions =
 		selectedServer?.owner == session?.id ||
 		selectedServer?.admins.includes(session?.id);
 
 	useEffect(() => {
 		const messageBox = messageBoxRef.current;
+		const currentScroll = messageBox?.scrollTop || 0;
+		const currentHeight = messageBox?.scrollHeight || 0;
+		const visibleHeight = messageBox?.clientHeight || 0;
+		const difference = currentHeight - currentScroll;
+
 		if (messageBox) {
-			const currentScroll = messageBox.scrollTop;
-			const currentHeight = messageBox.scrollHeight;
-			const visibleHeight = messageBox.clientHeight;
-			const difference = currentHeight - currentScroll;
 			if (
-				currentHeight - currentScroll < visibleHeight * 2 ||
-				prevSelectedServerId.current != selectedServerId
+				prevSelectedServerId.current != selectedServerId ||
+				(prevSelectedServerMessages.current?.length !=
+					selectedServerMessages.length &&
+					!scrollLocked) ||
+				initial.current
 			)
 				messageBox.scrollTop = messageBox.scrollHeight + 1;
+			initial.current = false;
 		}
 		prevSelectedServerId.current = selectedServerId;
-	}, [selectedServerMessages, selectedServerId, messageBoxRef]);
 
-	useEffect(() => {
-		const messageBox = messageBoxRef.current;
-		if (messageBox) {
-			messageBox.scrollTop = messageBox.scrollHeight + 1;
-		}
-	}, [messageBoxRef]);
+		const handleScroll = () => {
+			if (messageBox) {
+				const currentScroll = messageBox.scrollTop;
+				const currentHeight = messageBox.scrollHeight;
+				const visibleHeight = messageBox.clientHeight;
+				const difference = currentHeight - currentScroll;
+
+				if (difference > visibleHeight + 100) {
+					setScrollLocked(true);
+				} else {
+					setScrollLocked(false);
+				}
+			}
+		};
+
+		messageBoxRef.current?.addEventListener("wheel", handleScroll);
+		return () => {
+			messageBoxRef.current?.removeEventListener("wheel", handleScroll);
+		};
+	}, [selectedServerMessages, selectedServerId, messageBoxRef]);
 
 	const handleLeave = () => {
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
@@ -968,6 +1006,33 @@ export default function App({ params }: any) {
 									<Divider className="mt-4 bg-card-500 mix-blend-normal" />
 								</div>
 							</div>
+						</div>
+					</div>
+					<div className="relative h-0 w-full bg-black">
+						<div
+							className={twMerge(
+								"absolute bottom-0 right-0 opacity-0 transition-all",
+								scrollLocked && "opacity-100",
+							)}
+						>
+							<Button
+								startContent={<Mouse size={16} />}
+								variant="ghost"
+								disabled={!scrollLocked}
+								className={twMerge(
+									"animate-pulse disabled:cursor-default",
+								)}
+								onClick={() => {
+									const messageBox = messageBoxRef.current;
+									if (messageBox) {
+										messageBox.scrollTop =
+											messageBox.scrollHeight;
+										setScrollLocked(false);
+									}
+								}}
+							>
+								Locked
+							</Button>
 						</div>
 					</div>
 					<ChatInput />
