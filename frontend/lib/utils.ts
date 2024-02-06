@@ -1,6 +1,6 @@
 import { Rank, User, Match, Achievement, StatusType, InteractionType } from "@/types/profile";
 import axios from "@/lib/axios";
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import toast from "react-hot-toast";
 import PublicContext from "@/contexts/PublicContext";
 import useSWR from "swr";
@@ -149,4 +149,12 @@ export function randomString() {
 
 export function useChatContext() {
 	return useContext(ChatContext) as ChatContextType;
+}
+export function useServerList() {
+	const { data: servers, mutate: serversMutate, isLoading: serversLoading } = useSWR(
+		"/chat/channel/list",
+		fetcher
+	) as any;
+	const prevServers = useRef(null) as any;
+	return { servers, serversMutate, prevServers, serversLoading };
 }
