@@ -3,7 +3,6 @@ import { Message } from "@/types/chat";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import rehypeVideo from "rehype-video";
 import SuperImage from "./SuperImage";
 import { Tweet } from "react-tweet";
 import Youtube from "react-youtube";
@@ -60,7 +59,6 @@ function GayMarkdown({ message }: { message: Message }) {
 			disallowedElements={["p"]}
 			unwrapDisallowed
 			remarkPlugins={[remarkGfm, remarkBreaks]}
-			rehypePlugins={[rehypeVideo]}
 			components={{
 				code(props) {
 					const { children, className, node, ...rest } = props;
@@ -93,13 +91,26 @@ function GayMarkdown({ message }: { message: Message }) {
 						);
 					}
 
+					// if it's a link to an mp4 or mov file then render the video
+					if (url?.match(/\.(mp4|mov)$/)) {
+						return (
+							<video
+								width={640}
+								height={360}
+								controls
+								src={url}
+								className="mt-2"
+							/>
+						);
+					}
+
 					// if it's an image link then render the image
 					if (
 						url?.match(/\.(jpeg|jpg|gif|png)$/) ||
 						url?.includes("pregonanto.s3")
 					) {
 						return (
-							<div className="relative">
+							<div className="relative mt-2">
 								<SuperImage
 									alt="Embedded Image"
 									width={256}
