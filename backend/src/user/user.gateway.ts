@@ -26,13 +26,7 @@ export class MessageDTO {
 	message: string;
 }
 
-@WebSocketGateway({
-	cors: {
-		origin: process.env.FRONTEND_URL,
-		credentials: true,
-	},
-	wsEngine: require('ws').Server,
-})
+@WebSocketGateway()
 export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private authService: AuthService,
