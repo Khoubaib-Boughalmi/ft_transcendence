@@ -110,7 +110,7 @@ function GayMarkdown({ message }: { message: Message }) {
 						url?.includes("pregonanto.s3")
 					) {
 						return (
-							<div className="relative mt-2">
+							<div className="relative mt-2 max-w-[38.2%]">
 								<SuperImage
 									alt="Embedded Image"
 									width={256}

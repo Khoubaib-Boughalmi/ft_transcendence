@@ -82,10 +82,11 @@ import {
 	Argument,
 	Command,
 } from "@/types/chat";
-import { commands } from "@/constants/chat";
+import { commands, maxMessageLength } from "@/constants/chat";
 import ChatContext from "@/contexts/ChatContext";
 import { redirect } from "next/navigation";
 import GayMarkdown from "@/components/GayMarkdown";
+import MessageLengthIndicator from "@/components/MessageLengthIndicator";
 
 function MemberControls({
 	list,
@@ -644,10 +645,17 @@ function ChatInput() {
 						</div>
 					)}
 					<MessageInput
+						maxLength={maxMessageLength}
 						value={message}
 						onChange={(e) => {
 							setMessage(e.target.value);
 						}}
+						startContent={
+							<MessageLengthIndicator
+								message={message}
+								maxMessageLength={maxMessageLength}
+							/>
+						}
 					/>
 				</div>
 			</form>
@@ -662,7 +670,9 @@ function ChatInput() {
 					const bs = generateBullshitExpression(
 						["cryptoBS", ""][Math.floor(Math.random() * 2)],
 					);
-					input.value += " " + bs;
+					setMessage((prev) =>
+						(prev + " " + bs).slice(0, maxMessageLength),
+					);
 					input.focus();
 				}}
 			></Button>
@@ -690,7 +700,7 @@ function MessageListEntry({
 	return (
 		<>
 			{message.user.id == "server" ? (
-				<div className="mt-2 flex w-full items-center gap-2 p-2 pb-0 text-foreground-500">
+				<div className="mt-2 flex w-full items-center gap-2 text-foreground-500">
 					<div className="rounded-full bg-card-100 p-2 px-4 text-xs text-white">
 						SERVER
 					</div>
@@ -700,7 +710,7 @@ function MessageListEntry({
 				displayed && (
 					<div
 						className={twMerge(
-							"flex gap-4 px-4",
+							"flex gap-4",
 							!message.noAvatar && "mt-4",
 							!message.loaded && !message.error && "opacity-50",
 						)}
@@ -721,7 +731,11 @@ function MessageListEntry({
 								/>
 							)}
 						</div>
-						<div className={twMerge("flex flex-col")}>
+						<div
+							className={twMerge(
+								"flex flex-1 flex-col overflow-hidden",
+							)}
+						>
 							{!message.noAvatar && (
 								<div
 									className={twMerge(
@@ -741,7 +755,7 @@ function MessageListEntry({
 							)}
 							<div
 								className={twMerge(
-									"text-foreground-800",
+									"break-words text-foreground-800",
 									message.error && "text-red-600",
 								)}
 							>
@@ -752,7 +766,7 @@ function MessageListEntry({
 				)
 			)}
 			{message.blocked && message.parent && (
-				<div className="mt-4 flex w-full justify-center gap-4 px-4 font-semibold">
+				<div className="mt-4 flex w-full justify-center gap-4 font-semibold">
 					<Button
 						variant="ghost"
 						className="w-full select-none text-card-900 !outline-none !ring-0"
@@ -886,16 +900,24 @@ export default function App({ params }: any) {
 									/>
 								</div>
 							</div>
-							<div className="flex flex-col items-start justify-center">
-								<div className="text-sm">
+							<div className="flex flex-1 flex-col items-start justify-center overflow-hidden">
+								<div className="-mb-1 text-sm">
 									{selectedServer.name}
 								</div>
 								{!selectedServer?.isDM ? (
-									<div className="text-xs text-foreground-500">
-										{selectedServer.description}
-									</div>
+									<Tooltip
+										// className="max-w-[50vw] text-center"
+										content={<div className="max-w-[50vw]">
+											{selectedServer.description}
+										</div>}
+									>
+										<div className="line-clamp-2 text-xs text-foreground-500">
+											{selectedServer.description}
+										</div>
+									</Tooltip>
 								) : (
 									<Status
+										className="mt-1"
 										userId={
 											selectedServer.membersIds.find(
 												(id) => id != session.id,
@@ -904,7 +926,7 @@ export default function App({ params }: any) {
 									/>
 								)}
 							</div>
-							<div className="flex flex-1 items-center justify-end gap-2 px-4">
+							<div className="flex shrink-0 items-center justify-end gap-2 px-4">
 								{!selectedServer?.isDM && (
 									<Button variant="ghost" iconOnly>
 										<UserPlus2 />
@@ -968,7 +990,7 @@ export default function App({ params }: any) {
 						>
 							<div
 								suppressHydrationWarning
-								className="flex min-h-full flex-col-reverse gap-0 p-2"
+								className="flex min-h-full flex-col-reverse gap-0 p-2 px-8"
 							>
 								{selectedServerMessages.map((message, i) => {
 									return (

@@ -56,3 +56,5 @@ export const commands: Command[] = [
 		],
 	},
 ];
+
+export const maxMessageLength = 1024;

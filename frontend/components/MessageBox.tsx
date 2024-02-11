@@ -3,10 +3,12 @@ import ModalSet from "./ModalSet";
 import MessageInput from "./MessageInput";
 import socket from "@/lib/socket";
 import { randomString, useServerList } from "@/lib/utils";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import PublicContext from "@/contexts/PublicContext";
 import { useRouter } from "next/navigation";
 import { Server } from "@/types/chat";
+import MessageLengthIndicator from "./MessageLengthIndicator";
+import { maxMessageLength } from "@/constants/chat";
 
 export default function MessageBox({
 	user,
@@ -21,6 +23,7 @@ export default function MessageBox({
 	onOpenChange: any;
 	isOpen: any;
 }) {
+	const [message, setMessage] = useState("");
 	const { servers, serversLoading } = useServerList();
 	const { setExpecting } = useContext(PublicContext) as any;
 	const router = useRouter();
@@ -33,31 +36,45 @@ export default function MessageBox({
 			title={`Message ${user.username}`}
 			size="2xl"
 		>
-			<form className="p-4" onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target as HTMLFormElement);
-                const message = (formData.get("message") as string).trim();
-                if (!message) return;
-                if (message?.length < 1) return;
-				setExpecting(true);
-				// wait until the server list is loaded
-				while (serversLoading) {
-					await new Promise((resolve) => setTimeout(resolve, 100));
-				}
-                socket.emit("message", {
-                    targetId: user.id,
-					queueId: randomString(),
-                    message
-                })
+			<form
+				className="p-4"
+				onSubmit={async (e) => {
+					e.preventDefault();
+					const formData = new FormData(e.target as HTMLFormElement);
+					const message = (formData.get("message") as string).trim();
+					if (!message) return;
+					if (message?.length < 1) return;
+					setExpecting(true);
+					// wait until the server list is loaded
+					while (serversLoading) {
+						await new Promise((resolve) =>
+							setTimeout(resolve, 100),
+						);
+					}
+					socket.emit("message", {
+						targetId: user.id,
+						queueId: randomString(),
+						message,
+					});
 
-				// if a dm with the user exists, get its id
-				const dm = servers.find((s: Server) => s.isDM && s.membersIds.includes(user.id));
-				if (dm)
-					router.push(`/chat/channel/${dm.id}`);
-				else
-					router.push(`/chat/discover`);
-            }}>
-				<MessageInput />
+					// if a dm with the user exists, get its id
+					const dm = servers.find(
+						(s: Server) => s.isDM && s.membersIds.includes(user.id),
+					);
+					if (dm) router.push(`/chat/channel/${dm.id}`);
+					else router.push(`/chat/discover`);
+				}}
+			>
+				<MessageInput
+					startContent={
+						<MessageLengthIndicator
+							message={message}
+							maxMessageLength={maxMessageLength}
+						/>
+					}
+					value={message}
+					onChange={(e) => setMessage(e.target.value)}
+				/>
 			</form>
 		</ModalSet>
 	);
