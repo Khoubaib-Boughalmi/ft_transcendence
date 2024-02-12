@@ -134,8 +134,12 @@ function FriendsButton() {
 	};
 
 	return (
-		<SuperDropdown closeOnSelect={closeOnSelect}>
-			<DropdownTrigger>
+		<SuperDropdown
+			aria-label="Social"
+		closeOnSelect={closeOnSelect}>
+			<DropdownTrigger
+				aria-label="Trigger"
+			>
 				<div className="flex items-center justify-center">
 					<Badge
 						isInvisible={session.friend_requests.length == 0}
@@ -148,12 +152,15 @@ function FriendsButton() {
 				</div>
 			</DropdownTrigger>
 			<SuperDropdownMenu
+				aria-label="Social Menu"
 				disabledKeys={[]}
 				itemClasses={{
 					base: "data-[hover=true]:bg-transparent",
 				}}
 			>
-				<DropdownItem className="mb-2 p-0">
+				<DropdownItem
+					aria-label="Controls"
+					 className="mb-2 p-0">
 					<div className="flex w-full gap-2 rounded-xl">
 						{[
 							[Users2, "Friends"],
@@ -180,7 +187,9 @@ function FriendsButton() {
 						})}
 					</div>
 				</DropdownItem>
-				<DropdownItem className="w-56 p-0 opacity-100">
+				<DropdownItem
+					aria-label="List"
+				className="w-56 p-0 opacity-100">
 					{actualTab == "requests" ? (
 						<UserList
 							type="list"
@@ -273,8 +282,12 @@ function ProfileButton({ user }: { user: User }) {
 						))}
 				</div>
 			</ModalSet>
-			<SuperDropdown>
-				<DropdownTrigger>
+			<SuperDropdown
+				aria-label="Profile Dropdown"
+			>
+				<DropdownTrigger
+					aria-label="Avatar"
+				>
 					<div className="flex h-full items-center gap-2 text-xs text-white">
 						<div className="relative aspect-square h-full">
 							<SuperImage
@@ -288,6 +301,7 @@ function ProfileButton({ user }: { user: User }) {
 					</div>
 				</DropdownTrigger>
 				<SuperDropdownMenu
+					aria-label="Profile Menu"
 					onAction={(item) => {
 						if (item == "profile") {
 							router.push("/profile");
@@ -308,6 +322,7 @@ function ProfileButton({ user }: { user: User }) {
 				>
 					{twoFactorAuthenticated && (
 						<DropdownItem
+							aria-label="Status"
 							showDivider
 							key={"info"}
 							variant="solid"
@@ -348,6 +363,7 @@ function ProfileButton({ user }: { user: User }) {
 						</DropdownItem>
 					)}
 					<DropdownItem
+						aria-label="Profile"
 						variant="solid"
 						className={twMerge(!twoFactorAuthenticated && "hidden")}
 						key="profile"
@@ -356,29 +372,32 @@ function ProfileButton({ user }: { user: User }) {
 						Profile
 					</DropdownItem>
 					<DropdownItem
+						aria-label="Settings"
 						variant="solid"
 						className={twMerge(!twoFactorAuthenticated && "hidden")}
 						key="settings"
 						startContent={<Settings2 />}
-					>
+						>
 						Settings
 					</DropdownItem>
 					<DropdownItem
+						aria-label="Chat"
 						variant="solid"
 						className={twMerge(!twoFactorAuthenticated && "hidden")}
 						key="chat"
 						startContent={<MessageSquareIcon />}
-					>
+						>
 						Chat
 					</DropdownItem>
 					<DropdownItem
 						variant="solid"
 						key="theme"
 						startContent={<Paintbrush2 />}
-					>
+						>
 						Theme
 					</DropdownItem>
 					<DropdownItem
+						aria-label="Logout"
 						variant="solid"
 						data-exclude={false}
 						color="danger"
@@ -414,7 +433,7 @@ function SearchBar() {
 	const [realQuery, setRealQuery] = useState("");
 	const [lastQuery, setLastQuery] = useState("");
 	const { data, isLoading, isValidating, mutate } = useSWR(
-		realQuery?.length > 0 ? `/user/search/${realQuery}` : null,
+		realQuery?.trim().length > 0 ? `/user/search/${realQuery}` : null,
 		fetcher,
 	) as any;
 

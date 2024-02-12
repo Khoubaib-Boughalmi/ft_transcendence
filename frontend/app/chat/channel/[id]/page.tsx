@@ -533,6 +533,8 @@ function ChatInput() {
 	} = useChatContext();
 	const { session } = useContext(PublicContext) as any;
 	const [message, setMessage] = useState("");
+	const [showTooltip, setShowTooltip] = useState(false);
+	const tooltipTimeout = useRef<NodeJS.Timeout | null>(null);
 	const [showCommands, commandsToShow] = useMemo(() => {
 		const showCommands = message.startsWith("/") && !selectedServer?.isDM;
 		const commandsToShow = showCommands
@@ -542,6 +544,18 @@ function ChatInput() {
 			: [];
 		return [showCommands, commandsToShow];
 	}, [message]);
+
+	const tooltipLogic = () => {
+		if (message.length >= maxMessageLength)
+		{
+			if (tooltipTimeout.current)
+				clearTimeout(tooltipTimeout.current);
+			setShowTooltip(true);
+			tooltipTimeout.current = setTimeout(() => {
+				setShowTooltip(false)
+			}, 1000)
+		}
+	}
 
 	return (
 		<div className="flex h-20 items-center gap-4 p-4 pr-1">
@@ -645,6 +659,7 @@ function ChatInput() {
 						</div>
 					)}
 					<MessageInput
+						onKeyDown={tooltipLogic}
 						maxLength={maxMessageLength}
 						value={message}
 						onChange={(e) => {
@@ -652,6 +667,7 @@ function ChatInput() {
 						}}
 						startContent={
 							<MessageLengthIndicator
+								showTooltip={showTooltip}
 								message={message}
 								maxMessageLength={maxMessageLength}
 							/>
@@ -961,6 +977,7 @@ export default function App({ params }: any) {
 											}}
 										>
 											<DropdownItem
+												aria-label="Settings"
 												key={"settings"}
 												startContent={<Settings2 />}
 												className={twMerge(
@@ -970,6 +987,7 @@ export default function App({ params }: any) {
 												Settings
 											</DropdownItem>
 											<DropdownItem
+												aria-label="Leave"
 												startContent={<LogOut />}
 												data-exclude={true}
 												color="danger"
