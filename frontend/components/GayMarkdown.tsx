@@ -5,7 +5,6 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import SuperImage from "./SuperImage";
 import { Tweet } from "react-tweet";
-import Youtube from "react-youtube";
 import { ClipboardCheck, Copy } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -15,22 +14,6 @@ const NoExceptURL = (url: string) => {
 	} catch {
 		return null;
 	}
-};
-
-const getVideoId = (url: URL): string | null => {
-	if (url.hostname === "www.youtube.com" && url.searchParams.has("v")) {
-		return url.searchParams.get("v");
-	}
-	if (
-		url.hostname === "www.youtube.com" &&
-		url.pathname.startsWith("/embed/")
-	) {
-		return url.pathname.split("/").pop() || null;
-	}
-	if (url.hostname === "youtu.be" && url.pathname.length > 1) {
-		return url.pathname.split("/").pop() || null;
-	}
-	return null;
 };
 
 function GayMarkdown({ message }: { message: Message }) {
@@ -74,22 +57,6 @@ function GayMarkdown({ message }: { message: Message }) {
 
 					// if the url is not valid then render a normal text link
 					if (!urlObj) return <a {...otherprops} />;
-
-					// if it's a youtube link then render the video using an iframe embed
-					const videoId: string | null = getVideoId(urlObj);
-					if (videoId) {
-						return (
-							//<iframe
-							//	key={videoId}
-							//	width="1280"
-							//	height="720"
-							//	src={`https://www.youtube.com/embed/${videoId}`}
-							//	allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-							//	allowFullScreen={true}
-							///>
-							<Youtube videoId={videoId} />
-						);
-					}
 
 					// if it's a link to an mp4 or mov file then render the video
 					if (url?.match(/\.(mp4|mov)$/)) {
