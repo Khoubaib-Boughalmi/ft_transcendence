@@ -164,58 +164,6 @@
 	--accent-900: #fcd7eb;
 }
 
-[data-theme='pink'] {
-	--card-default: #ff69b4;
-	--card-100: #f25b9f;
-	--card-200: #e64d8a;
-	--card-250: #dd4075;
-	--card-275: #d43360;
-	--card-300: #8e0e39;
-	--card-400: #ae1938;
-	--card-500: #c0264c;
-	--card-600: #f8a6e6;
-	--card-700: #f696d9;
-	--card-800: #f487ce;
-	--card-900: #f277c3;
- 
-	--accent-default: #ff0066;
-	--accent-100: #c70048;
-	--accent-200: #9e0030;
-	--accent-300: #7d0018;
-	--accent-400: #5c0006;
-	--accent-500: #ff0066;
-	--accent-600: #ff4d99;
-	--accent-700: #ff8ab3;
-	--accent-800: #ffcad0;
-	--accent-900: #ffe2e6;
-}
-
-[data-theme='yellow'] {
-    --card-default: #f7d300;
-    --card-100: #774f00;
-    --card-200: #996600;
-    --card-250: #aa7700;
-    --card-275: #b38000;
-    --card-300: #cc9900;
-    --card-400: #eece00;
-    --card-500: #ffff00;
-    --card-600: #ffef26;
-    --card-700: #ffff99;
-    --card-800: #ffffc2;
-    --card-900: #ffffea;
-
-    --accent-default: #f4c634;
-    --accent-100: #664400;
-    --accent-200: #b37704;
-    --accent-300: #f0a508;
-    --accent-400: #ffc211;
-    --accent-500: #ffff99;
-    --accent-600: #ffffdd;
-    --accent-700: #ffffe6;
-    --accent-800: #fffff9;
-    --accent-900: #fffffc;
-}
-
 .bronze {
 	background: linear-gradient(
 		to bottom left,
