@@ -31,6 +31,10 @@ export type Message = {
 	loaded: boolean;
 	queueId: string;
 	error: boolean;
+	chatInfo?: {
+		name: string;
+		icon: string;
+	}
 };
 
 export type ChatContextType = {
