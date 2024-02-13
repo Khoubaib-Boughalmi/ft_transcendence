@@ -49,6 +49,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		await this.login(client, access_token);
 		if (!client.data || !client.data.id) return;
 		await this.join_channels(client);
+		console.log(`Socket joining all channels`, client.id);
 	}
 
 	handleDisconnect(client: Socket) {
@@ -117,10 +118,16 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				user,
 				payload,
 			);
-			if (message)
+			if (message) {
 				this.server
 					.to(message.chatId)
 					.emit('message', { ...message, queueId: payload.queueId });
+				this.server.to(message.chatId).emit('notifications', {
+					...message,
+					queueId: payload.queueId,
+					chatInfo: this.chatService.getChatNameAndIconForNotifications(message.chatId),
+				});
+			}
 		} catch (e) {
 			throw e;
 		} finally {
