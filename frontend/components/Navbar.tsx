@@ -18,7 +18,7 @@ import {
 	X,
 } from "lucide-react";
 import { Button } from "@/components/Button";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useMemo } from "react";
 import PublicContext from "@/contexts/PublicContext";
 import Status from "@/components/Status";
 import Input from "@/components/Input";
@@ -57,6 +57,7 @@ import socket from "@/lib/socket";
 import ModalSet from "./ModalSet";
 import { useTheme } from "next-themes";
 import useSWR from "swr";
+import { Message } from "@/types/chat";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 const themes = [
@@ -64,8 +65,6 @@ const themes = [
 	{ name: "Green" },
 	{ name: "Blue" },
 	{ name: "Purple" },
-	{ name: "Pink" },
-	{ name: "Yellow" },
 ];
 
 function Navigation() {
@@ -102,6 +101,159 @@ function LoginButton() {
 	);
 }
 
+function sortObject(obj: any, func: any) {
+	return Object.keys(obj)
+		.sort((a, b) => func(obj[a], obj[b]))
+		.reduce((acc, key) => {
+			acc[key] = obj[key];
+			return acc;
+		}, {} as any);
+}
+
+function timeAgo(time: number) {
+	const now = new Date().getTime();
+	const diff = now - time;
+	const seconds = diff / 1000;
+	const minutes = seconds / 60;
+	const hours = minutes / 60;
+	const days = hours / 24;
+	const weeks = days / 7;
+	const months = weeks / 4;
+	const years = months / 12;
+
+	if (seconds < 60) return "Just now";
+	else if (minutes < 60) return `${Math.floor(minutes)}m ago`;
+	else if (hours < 24) return `${Math.floor(hours)}h ago`;
+	else if (days < 7) return `${Math.floor(days)}d ago`;
+	else if (weeks < 4) return `${Math.floor(weeks)}w ago`;
+	else if (months < 12) return `${Math.floor(months)}mo ago`;
+	else return `${Math.floor(years)}y ago`;
+}
+
+function NotificationsButton() {
+	const { notifications, setNotifications } = useContext(
+		PublicContext,
+	) as any;
+
+	const groupedNotifications: {
+		[key: string]: Message[];
+	} = useMemo(() => {
+		const grouped = {} as any;
+		(notifications ?? []).forEach((n: Message) => {
+			if (grouped[n.chatId] == undefined) grouped[n.chatId] = [];
+			grouped[n.chatId].push(n);
+		});
+		return sortObject(grouped, (a: Message[], b: Message[]) => {
+			return a[a.length - 1].createdAt < b[b.length - 1].createdAt
+				? 1
+				: -1;
+		});
+	}, [notifications]);
+
+	return (
+		<SuperDropdown>
+			<DropdownTrigger>
+				<div className="flex items-center justify-center">
+					<Badge
+						isInvisible={notifications.length == 0}
+						content={notifications.length}
+						color="danger"
+						className="scale-90 text-xs"
+					>
+						<Bell size={20} />
+					</Badge>
+				</div>
+			</DropdownTrigger>
+			<SuperDropdownMenu>
+				<DropdownSection>
+					<DropdownItem
+						aria-label="Notifications"
+						className="opacity-100"
+						key={"info"}
+						isReadOnly
+					>
+						<div className="flex items-center justify-between">
+							<div>Notifications</div>
+							<div className="text-xs text-foreground-500">
+								{notifications.length}
+							</div>
+						</div>
+					</DropdownItem>
+				</DropdownSection>
+				<DropdownSection className="bg-card-275 rounded-lg mb-0 p-2">
+					{Object.values(groupedNotifications)?.map(
+						(messages: Message[], index: number) => {
+							const last = messages[messages.length - 1];
+							const isLast =
+								index ==
+								Object.values(groupedNotifications).length - 1;
+							return (
+								<DropdownItem
+								>
+									<div className="flex flex-col gap-2">
+										<div className="flex h-8 w-64 gap-2">
+											<div className="relative aspect-square h-full shrink-0">
+												<SuperImage
+													src={
+														last.chatInfo?.icon ??
+														last.user.avatar
+													}
+													width={32}
+													height={32}
+													alt={last.user.username}
+													className={twMerge(
+														"absolute inset-0 h-full w-full rounded-full object-cover",
+														last.chatInfo &&
+															"rounded-lg",
+													)}
+												/>
+											</div>
+											<div className="flex flex-1 flex-col overflow-hidden">
+												<div className="flex justify-between text-xs leading-3 text-foreground-500">
+													<div className="truncate">
+														{last.chatInfo?.name ??
+															last.user.username}
+													</div>
+													{messages.length > 1 && (
+														<div className="text-foreground-500">
+															+
+															{messages.length -
+																1}
+														</div>
+													)}
+												</div>
+												<p className="truncate">
+													{last.chatInfo && (
+														<span className="mr-1 text-xs text-foreground-600">
+															{last.user.username}
+															:
+														</span>
+													)}
+													<span className="text-foreground-700">
+														{last.content}
+													</span>
+												</p>
+											</div>
+										</div>
+										<div className="flex w-full justify-end rounded-lg bg-card-100 px-2 py-0.5 text-xs">
+											{timeAgo(
+												new Date(
+													last.createdAt,
+												).getTime(),
+											)}
+										</div>
+									</div>
+									{!isLast && <Divider className="mt-2" />}
+								</DropdownItem>
+							);
+						},
+					)}
+				</DropdownSection>
+			</SuperDropdownMenu>
+		</SuperDropdown>
+	);
+}
+
 function FriendsButton() {
 	type tabs = "requests" | "friends";
 	const { session, sessionMutate } = useContext(PublicContext) as any;
@@ -134,12 +286,8 @@ function FriendsButton() {
 	};
 
 	return (
-		<SuperDropdown
-			aria-label="Social"
-		closeOnSelect={closeOnSelect}>
-			<DropdownTrigger
-				aria-label="Trigger"
-			>
+		<SuperDropdown aria-label="Social" closeOnSelect={closeOnSelect}>
+			<DropdownTrigger aria-label="Trigger">
 				<div className="flex items-center justify-center">
 					<Badge
 						isInvisible={session.friend_requests.length == 0}
@@ -158,9 +306,7 @@ function FriendsButton() {
 					base: "data-[hover=true]:bg-transparent",
 				}}
 			>
-				<DropdownItem
-					aria-label="Controls"
-					 className="mb-2 p-0">
+				<DropdownItem aria-label="Controls" className="mb-2 p-0">
 					<div className="flex w-full gap-2 rounded-xl">
 						{[
 							[Users2, "Friends"],
@@ -189,7 +335,8 @@ function FriendsButton() {
 				</DropdownItem>
 				<DropdownItem
 					aria-label="List"
-				className="w-56 p-0 opacity-100">
+					className="w-56 p-0 opacity-100"
+				>
 					{actualTab == "requests" ? (
 						<UserList
 							type="list"
@@ -282,12 +429,8 @@ function ProfileButton({ user }: { user: User }) {
 						))}
 				</div>
 			</ModalSet>
-			<SuperDropdown
-				aria-label="Profile Dropdown"
-			>
-				<DropdownTrigger
-					aria-label="Avatar"
-				>
+			<SuperDropdown aria-label="Profile Dropdown">
+				<DropdownTrigger aria-label="Avatar">
 					<div className="flex h-full items-center gap-2 text-xs text-white">
 						<div className="relative aspect-square h-full">
 							<SuperImage
@@ -377,7 +520,7 @@ function ProfileButton({ user }: { user: User }) {
 						className={twMerge(!twoFactorAuthenticated && "hidden")}
 						key="settings"
 						startContent={<Settings2 />}
-						>
+					>
 						Settings
 					</DropdownItem>
 					<DropdownItem
@@ -386,14 +529,14 @@ function ProfileButton({ user }: { user: User }) {
 						className={twMerge(!twoFactorAuthenticated && "hidden")}
 						key="chat"
 						startContent={<MessageSquareIcon />}
-						>
+					>
 						Chat
 					</DropdownItem>
 					<DropdownItem
 						variant="solid"
 						key="theme"
 						startContent={<Paintbrush2 />}
-						>
+					>
 						Theme
 					</DropdownItem>
 					<DropdownItem
@@ -409,19 +552,6 @@ function ProfileButton({ user }: { user: User }) {
 				</SuperDropdownMenu>
 			</SuperDropdown>
 		</>
-	);
-}
-
-function NotificationsButton() {
-	return (
-		<Dropdown>
-			<DropdownTrigger>
-				<Bell size={20} />
-			</DropdownTrigger>
-			<DropdownMenu>
-				<DropdownItem>Item 1</DropdownItem>
-			</DropdownMenu>
-		</Dropdown>
 	);
 }
 
@@ -458,84 +588,84 @@ function SearchBar() {
 				mutate([]);
 			});
 		} else
-			timeout = setTimeout(() => {
-				transition(() => {
-					setRealQuery(query);
-				});
-			}, realQuery.length == 0 ? 0 : 500);
+			timeout = setTimeout(
+				() => {
+					transition(() => {
+						setRealQuery(query);
+					});
+				},
+				realQuery.length == 0 ? 0 : 500,
+			);
 		return () => clearTimeout(timeout);
 	}, [query]);
 
 	return (
 		<>
-		{active && <div className="absolute inset-0 h-screen bg-black/50 animate-overlay">
-
-		</div>}
-		<div className="relative h-full flex-1">
-			<Input
-				onFocus={() => setActive(true)}
-				onBlur={() => setActive(false)}
-				value={query}
-				onChange={(e) => setQuery(e.target.value)}
-				classNames={{
-					container: "h-full",
-				}}
-				startContent={<Search className="text-background-800" />}
-				placeholder="Search for users"
+			{active && (
+				<div className="absolute inset-0 h-screen animate-overlay bg-black/50"></div>
+			)}
+			<div className="relative h-full flex-1">
+				<Input
+					onFocus={() => setActive(true)}
+					onBlur={() => setActive(false)}
+					value={query}
+					onChange={(e) => setQuery(e.target.value)}
+					classNames={{
+						container: "h-full",
+					}}
+					startContent={<Search className="text-background-800" />}
+					placeholder="Search for users"
 				/>
-			<div
-				data-focused={active}
-				className={twMerge(
-					`absolute -bottom-2 hidden w-full translate-y-full animate-overlayfast rounded-3xl bg-card-300 p-2
+				<div
+					data-focused={active}
+					className={twMerge(
+						`absolute -bottom-2 hidden w-full translate-y-full animate-overlayfast rounded-3xl bg-card-300 p-2
 					transition-all active:block data-[focused=true]:block`,
 					)}
-					>
-				{showLoading ? (
-					<div className="flex h-32 w-full items-center justify-center">
-						<Spinner />
-					</div>
-				) : query.length > 0 ? (
-					<UserList
-					type="list"
-					classNames={{
-						entryContainer: "bg-transparent hover:bg-card-400 rounded-3xl py-2 pr-2",
-						entry: "truncate hover:scale-[99%]",
-						list: "gap-2",
-					}}
-					Controls={({ user }: { user: User }) => {
-						const areFriends = session.friends.some(
-							(f: any) => f.id == user.id,
-						);
-
-						return (
-							<div>
-								{areFriends ? (
-									<div className="flex items-center gap-2 text-xs px-6 justify-center h-full bg-card-200 rounded-2xl select-none">
-										<Users2 size={16} />
-										Friends
-									</div>
-								) : (
-									<>
-									</>
-								)}
-							</div>
-						)
-
-
-
-					}}
-					users={result}
-					/>
-					) : (
-						<div className="h-32 flex justify-center items-center">
-						<div className="text-sm">
-							Search for users by username
+				>
+					{showLoading ? (
+						<div className="flex h-32 w-full items-center justify-center">
+							<Spinner />
 						</div>
-					</div>
-				)}
+					) : query.length > 0 ? (
+						<UserList
+							type="list"
+							classNames={{
+								entryContainer:
+									"bg-transparent hover:bg-card-400 rounded-3xl py-2 pr-2",
+								entry: "truncate hover:scale-[99%]",
+								list: "gap-2",
+							}}
+							Controls={({ user }: { user: User }) => {
+								const areFriends = session.friends.some(
+									(f: any) => f.id == user.id,
+								);
+
+								return (
+									<div>
+										{areFriends ? (
+											<div className="flex h-full select-none items-center justify-center gap-2 rounded-2xl bg-card-200 px-6 text-xs">
+												<Users2 size={16} />
+												Friends
+											</div>
+										) : (
+											<></>
+										)}
+									</div>
+								);
+							}}
+							users={result}
+						/>
+					) : (
+						<div className="flex h-32 items-center justify-center">
+							<div className="text-sm">
+								Search for users by username
+							</div>
+						</div>
+					)}
+				</div>
 			</div>
-		</div>
-				</>
+		</>
 	);
 }
 
