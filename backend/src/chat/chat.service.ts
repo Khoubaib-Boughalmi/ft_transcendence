@@ -181,6 +181,13 @@ export class ChatService {
 		return chats;
 	}
 
+	getChatNameAndIconForNotifications(chatId: string) {
+		return (this.chatsCache[chatId] && this.chatsCache[chatId].isGroupChat) ? {
+			name: this.chatsCache[chatId].chatName,
+			icon: this.chatsCache[chatId].chatIcon,
+		} : null;
+	}
+
 	async getCurrentUserChats(userId: string) {
 		// Find all the chats where the user is a member
 		const userChats = await this.prisma.chat.findMany({
