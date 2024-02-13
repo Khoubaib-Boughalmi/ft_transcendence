@@ -212,7 +212,7 @@ function DiscoverListEntry({ server }: { server: Server }) {
 						) : (
 							<Button
 								onClick={() => {
-									navigateToServer(`/chat/channel/${server.id}`);
+									navigateToServer(server.id);
 								}}
 								startContent={<Check size={18} />}
 							>
