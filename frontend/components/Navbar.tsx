@@ -151,8 +151,12 @@ function NotificationsButton() {
 	}, [notifications]);
 
 	return (
-		<SuperDropdown>
-			<DropdownTrigger>
+		<SuperDropdown
+			aria-label="Notifications"
+		>
+			<DropdownTrigger
+				aria-label="Trigger"
+			>
 				<div className="flex items-center justify-center">
 					<Badge
 						isInvisible={notifications.length == 0}
@@ -164,8 +168,12 @@ function NotificationsButton() {
 					</Badge>
 				</div>
 			</DropdownTrigger>
-			<SuperDropdownMenu>
-				<DropdownSection>
+			<SuperDropdownMenu
+				aria-label="Notifications Menu"
+			>
+				<DropdownSection
+					aria-label="Notifications"
+				>
 					<DropdownItem
 						aria-label="Notifications"
 						className="opacity-100"
@@ -180,7 +188,9 @@ function NotificationsButton() {
 						</div>
 					</DropdownItem>
 				</DropdownSection>
-				<DropdownSection className="bg-card-275 rounded-lg mb-0 p-2">
+				<DropdownSection
+					aria-label="Notifications List"
+				 className="bg-card-275 rounded-lg mb-0 p-2">
 					{Object.values(groupedNotifications)?.map(
 						(messages: Message[], index: number) => {
 							const last = messages[messages.length - 1];
@@ -189,6 +199,8 @@ function NotificationsButton() {
 								Object.values(groupedNotifications).length - 1;
 							return (
 								<DropdownItem
+									key={last.chatId}
+									aria-label={last.chatInfo?.name ?? "User"}
 								>
 									<div className="flex flex-col gap-2">
 										<div className="flex h-8 w-64 gap-2">
