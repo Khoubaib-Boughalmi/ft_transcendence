@@ -353,13 +353,26 @@ function FriendsButton() {
 			</DropdownTrigger>
 			<SuperDropdownMenu
 				aria-label="Social Menu"
-				disabledKeys={[]}
+				disabledKeys={["info"]}
 				itemClasses={{
 					base: "data-[hover=true]:bg-transparent",
 				}}
 			>
+				<DropdownSection aria-label="Notifications">
+					<DropdownItem
+						aria-label="Notifications"
+						className="opacity-100"
+						key={"info"}
+						isReadOnly
+						startContent={<Users2 size={20} />}
+					>
+						<div className="flex items-center justify-between">
+							<div>Social</div>
+						</div>
+					</DropdownItem>
+				</DropdownSection>
 				<DropdownItem aria-label="Controls" className="mb-2 p-0">
-					<div className="flex w-full gap-2 rounded-xl">
+					<div className="flex w-full gap-2 rounded-3xl bg-card-200 overflow-hidden">
 						{[
 							[Users2, "Friends"],
 							[UserPlus2, "Requests"],
@@ -375,7 +388,7 @@ function FriendsButton() {
 											? undefined
 											: "transparent"
 									}
-									className="flex-1 flex-col gap-0 p-1 text-xs"
+									className="flex-1 flex-col gap-0 p-1 text-xs rounded-none"
 									{...saveTheWorld}
 								>
 									<Icon size={16} className="flex-shrink-0" />
