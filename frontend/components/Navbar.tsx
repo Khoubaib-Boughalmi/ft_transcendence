@@ -11,6 +11,7 @@ import {
 	Paintbrush2,
 	Search,
 	Settings2,
+	Trash,
 	User2,
 	UserCircle2,
 	UserPlus2,
@@ -50,6 +51,7 @@ import {
 	getRank,
 	makeForm,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	useChatContext,
 } from "@/lib/utils";
 import UserList from "./UserList";
 import { user1 } from "@/mocks/profile";
@@ -58,6 +60,7 @@ import ModalSet from "./ModalSet";
 import { useTheme } from "next-themes";
 import useSWR from "swr";
 import { Message } from "@/types/chat";
+import NoData from "./NoData";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 const themes = [
@@ -135,6 +138,10 @@ function NotificationsButton() {
 		PublicContext,
 	) as any;
 
+	const router = useRouter();
+
+	const { navigateToServer } = useChatContext();
+
 	const groupedNotifications: {
 		[key: string]: Message[];
 	} = useMemo(() => {
@@ -151,16 +158,16 @@ function NotificationsButton() {
 	}, [notifications]);
 
 	return (
-		<SuperDropdown
-			aria-label="Notifications"
-		>
-			<DropdownTrigger
-				aria-label="Trigger"
-			>
+		<SuperDropdown aria-label="Notifications" className="w-80">
+			<DropdownTrigger aria-label="Trigger">
 				<div className="flex items-center justify-center">
 					<Badge
 						isInvisible={notifications.length == 0}
-						content={notifications.length}
+						content={
+							notifications.length > 99
+								? "99+"
+								: notifications.length
+						}
 						color="danger"
 						className="scale-90 text-xs"
 					>
@@ -170,95 +177,124 @@ function NotificationsButton() {
 			</DropdownTrigger>
 			<SuperDropdownMenu
 				aria-label="Notifications Menu"
+				onAction={(chatId: any) => {
+					router.push(`/chat/channel/${chatId}`);
+				}}
+				disabledKeys={["info", "nodata"]}
 			>
-				<DropdownSection
-					aria-label="Notifications"
-				>
+				<DropdownSection aria-label="Notifications">
 					<DropdownItem
 						aria-label="Notifications"
 						className="opacity-100"
 						key={"info"}
 						isReadOnly
+						startContent={<Bell size={20} />}
 					>
 						<div className="flex items-center justify-between">
 							<div>Notifications</div>
-							<div className="text-xs text-foreground-500">
-								{notifications.length}
-							</div>
+							{notifications.length > 0 && (
+								<div className="text-xs text-foreground-500">
+									{notifications.length}
+								</div>
+							)}
 						</div>
 					</DropdownItem>
 				</DropdownSection>
 				<DropdownSection
 					aria-label="Notifications List"
-				 className="bg-card-275 rounded-lg mb-0 p-2">
-					{Object.values(groupedNotifications)?.map(
-						(messages: Message[], index: number) => {
-							const last = messages[messages.length - 1];
-							const isLast =
-								index ==
-								Object.values(groupedNotifications).length - 1;
-							return (
-								<DropdownItem
-									key={last.chatId}
-									aria-label={last.chatInfo?.name ?? "User"}
-								>
-									<div className="flex flex-col gap-2">
-										<div className="flex h-8 w-64 gap-2">
-											<div className="relative aspect-square h-full shrink-0">
-												<SuperImage
-													src={
-														last.chatInfo?.icon ??
-														last.user.avatar
-													}
-													width={32}
-													height={32}
-													alt={last.user.username}
-													className={twMerge(
-														"absolute inset-0 h-full w-full rounded-full object-cover",
-														last.chatInfo &&
-															"rounded-lg",
-													)}
-												/>
-											</div>
-											<div className="flex flex-1 flex-col overflow-hidden">
-												<div className="flex justify-between text-xs leading-3 text-foreground-500">
-													<div className="truncate">
-														{last.chatInfo?.name ??
-															last.user.username}
-													</div>
-													{messages.length > 1 && (
-														<div className="text-foreground-500">
-															+
-															{messages.length -
-																1}
-														</div>
-													)}
+					className="mb-0 rounded-lg bg-card-275 p-2"
+				>
+					{Object.values(groupedNotifications)?.length == 0 ? (
+						<DropdownItem
+							key={"nodata"}
+							className="h-24 opacity-100"
+							isReadOnly
+						>
+							<NoData />
+						</DropdownItem>
+					) : (
+						Object.values(groupedNotifications)?.map(
+							(messages: Message[], index: number) => {
+								const last = messages[messages.length - 1];
+								const isLast =
+									index ==
+									Object.values(groupedNotifications).length -
+										1;
+								return (
+									<DropdownItem
+										key={last.chatId}
+										aria-label={
+											last.chatInfo?.name ?? "User"
+										}
+										className={twMerge(
+											"p-0",
+											!isLast && "mb-2",
+										)}
+									>
+										<div className="flex flex-col overflow-hidden rounded-lg">
+											<div className="flex h-12 w-full gap-2 p-2">
+												<div className="relative aspect-square h-full shrink-0">
+													<SuperImage
+														src={
+															last.chatInfo
+																?.icon ??
+															last.user.avatar
+														}
+														width={32}
+														height={32}
+														alt={last.user.username}
+														className={twMerge(
+															"absolute inset-0 h-full w-full rounded-full object-cover",
+															last.chatInfo &&
+																"rounded-lg",
+														)}
+													/>
 												</div>
-												<p className="truncate">
-													{last.chatInfo && (
-														<span className="mr-1 text-xs text-foreground-600">
-															{last.user.username}
-															:
+												<div className="flex flex-1 flex-col overflow-hidden">
+													<div className="flex justify-between text-xs leading-3 text-foreground-500">
+														<div className="truncate">
+															{last.chatInfo
+																?.name ??
+																last.user
+																	.username}
+														</div>
+														{messages.length >
+															1 && (
+															<div className="text-foreground-500">
+																+
+																{messages.length -
+																	1}
+															</div>
+														)}
+													</div>
+													<p className="truncate">
+														{last.chatInfo && (
+															<span className="mr-1 text-xs text-foreground-600">
+																{
+																	last.user
+																		.username
+																}
+																:
+															</span>
+														)}
+														<span className="text-foreground-700">
+															{last.content}
 														</span>
-													)}
-													<span className="text-foreground-700">
-														{last.content}
-													</span>
-												</p>
+													</p>
+												</div>
+											</div>
+											<div className="flex w-full justify-end bg-black/75 px-2 py-1 text-xs leading-4">
+												{timeAgo(
+													new Date(
+														last.createdAt,
+													).getTime(),
+												)}
 											</div>
 										</div>
-										<div className="flex w-full justify-end rounded-lg bg-card-100 px-2 py-0.5 text-xs">
-											{timeAgo(
-												new Date(
-													last.createdAt,
-												).getTime(),
-											)}
-										</div>
-									</div>
-									{!isLast && <Divider className="mt-2" />}
-								</DropdownItem>
-							);
-						},
+									</DropdownItem>
+								);
+							},
+						)
 					)}
 				</DropdownSection>
 			</SuperDropdownMenu>
@@ -303,7 +339,11 @@ function FriendsButton() {
 				<div className="flex items-center justify-center">
 					<Badge
 						isInvisible={session.friend_requests.length == 0}
-						content={session.friend_requests.length}
+						content={
+							session.friend_requests.length > 99
+								? "99+"
+								: session.friend_requests.length
+						}
 						color="danger"
 						className="scale-90 text-xs"
 					>

@@ -53,9 +53,7 @@ export default function UserHover({ user }: { user: User }) {
 				<div className="w-full flex-col">
 					<div
 						className="relative aspect-video w-full overflow-hidden rounded-t-xl
-				after:absolute after:inset-0 after:bg-gradient-to-t after:from-card-250 after:to-transparent after:content-['']
-			
-			"
+				after:absolute after:inset-0 after:bg-gradient-to-t after:from-card-250 after:to-transparent after:content-['']"
 					>
 						<SuperImage
 							width={480}

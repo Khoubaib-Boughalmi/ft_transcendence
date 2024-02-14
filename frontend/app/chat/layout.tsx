@@ -214,7 +214,7 @@ export default function Page({
 }) {
 	const router = useRouter();
 
-	const { session, expecting, setExpecting } = useContext(
+	const { session, expecting, setExpecting, setNotifications } = useContext(
 		PublicContext,
 	) as any;
 	const { servers, serversMutate, prevServers } = useServerList();
@@ -373,6 +373,8 @@ export default function Page({
 			const type = selectedServer.isDM ? "friends" : "servers";
 			if (listTab != type) setListTab(type);
 		}
+		if (selectedServer)
+			setNotifications((prev: any) => [...prev].filter((n: Message) => n.chatId != selectedServer.id));
 	}, [expanded, selectedServer]);
 
 	return (
