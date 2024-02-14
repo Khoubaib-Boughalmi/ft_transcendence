@@ -269,6 +269,10 @@ export class ChatService {
 				});
 		}
 
+		if (!chat) throw new WsException('Invalid chat');
+		if (chat.isGroupChat && !chat.users.includes(user.id))
+			throw new WsException('Invalid chat');
+
 		const message = await this.createMessage({
 			chat_id: chat.id,
 			user_id: user.id,
@@ -405,6 +409,17 @@ export class ChatService {
 		return await commands[command](args, chat);
 	}
 
+	getMuteTimeRemaining(chat: Chat, userId: string) {
+		const mute = chat.mutes.find(
+			(mute) =>
+				mute.split(':')[0] === userId &&
+				Number(mute.split(':')[1]) > Date.now(),
+		);
+		return mute
+			? Math.ceil((Number(mute.split(':')[1]) - Date.now()) / 1000)
+			: 0;
+	}
+
 	async createMessage(data: Prisma.MessageCreateInput, payload: any): Promise<ChatMessage> {
 		const serverMessage = await this.processCommand(data);
 		if (serverMessage !== null) {
@@ -427,17 +442,28 @@ export class ChatService {
 		} else {
 			const chat = this.chatsCache[data.chat_id];
 			if (!chat) throw new WsException('Invalid chat');
-			const mute = chat.mutes.find(
-				(mute) =>
-					mute.split(':')[0] === data.user_id &&
-					Number(mute.split(':')[1]) > Date.now(),
-			);
-			if (mute)
-				throw new WsException(
-					{message: `You are muted for ${Math.ceil(
-						(Number(mute.split(':')[1]) - Date.now()) / 1000,
-					)} more seconds.`, chatId: data.chat_id, queueId: payload.queueId},
-				);
+
+			// if the user is muted, throw an exception
+			const muteTime = this.getMuteTimeRemaining(chat, data.user_id);
+			if (muteTime > 0) {
+				throw new WsException({
+					message: `You are muted for ${muteTime} more seconds.`,
+					chatId: data.chat_id,
+					queueId: payload.queueId
+				});
+			}
+
+			// if it's a DM, check if the target is blocked
+			if (!chat.isGroupChat) {
+				const target_blocks = await this.userService.getBlockedUsers(payload.targetId);
+				if (target_blocks.find((target_profile) => target_profile.id === data.user_id)) {
+					throw new WsException({
+						message: `Your message could not be delivered.`,
+						chatId: data.chat_id,
+						queueId: payload.queueId
+					});
+				}
+			}
 
 			const message = await this.prisma.message.create({ data });
 			const userProfile = await this.userService.getProfileMicro({
