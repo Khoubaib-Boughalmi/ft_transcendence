@@ -1,0 +1,52 @@
+# TODO : - use latest version of postgres
+#        - finish wait-for-it script
+version: '3'
+services:
+  Database:
+    image: postgres:10.4
+    networks:
+      - database
+    ports:
+      - '5432:5432'
+    env_file:
+      - ./Database/.env
+    volumes:
+      - ./Database/:/docker-entrypoint-initDatabase.d
+    restart: always
+    container_name: Database
+    hostname: Database
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    networks:
+      - Pregonanto
+    ports:
+      - 8080:8080
+    restart: always
+    command: ['./wait-for-it.sh', 'backend:5500', '--', 'nginx', '-g', 'pid /tmp/nginx.pid; daemon off;']
+    container_name: frontend
+    hostname: frontend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    networks:
+      - Pregonanto
+      - database
+    ports:
+      - 5500:5500
+    depends_on:
+      - Database
+    restart: always
+    command: ['./wait-for-it.sh', 'Database:5432', '--', 'yarn', 'start']
+    container_name: backend
+    hostname: backend
+
+networks:
+  Pregonanto:
+    driver: bridge
+  database:
+    driver: bridge
