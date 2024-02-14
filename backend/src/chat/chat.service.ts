@@ -209,7 +209,19 @@ export class ChatService {
 
 		// Update the one to ones
 		const updatedChats = await this.updateOneToOnes(chats, userId);
-		return updatedChats;
+
+		// Remove Dm's by blocked users
+		const blockedUsers = await this.userService.getBlockedUsers(userId);
+		const filteredChats = updatedChats.filter((chat) => {
+			if (chat.isDM) {
+				const otherUser = chat.membersIds.find((id) => id !== userId);
+				if (blockedUsers.find((blockedUser) => blockedUser.id === otherUser)) {
+					return false;
+				}
+			}
+			return true;
+		});
+		return filteredChats;
 	}
 
 	async createChannel(userId: string, channelName: string) {
