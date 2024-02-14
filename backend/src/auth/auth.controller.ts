@@ -35,7 +35,13 @@ export class AuthController {
 			sameSite: 'none',
 			secure: true,
 		});
-		res.redirect(process.env.FRONTEND_URL);
+		// When the user logs in for the first time, we redirect them to the frontend settings page
+		if (user.isFirstLogin) {
+			res.redirect(`${process.env.FRONTEND_URL}/settings`);
+			await this.userService.updateUser({ where: { id: user.id }, data: { isFirstLogin: false } });
+		} else {
+			res.redirect(process.env.FRONTEND_URL);
+		}
 	}
 
 	@Get('2fa/generate')

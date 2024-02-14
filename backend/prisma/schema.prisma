@@ -29,12 +29,13 @@ model GameMatch {
 
 model User {
   // Identification
-  id         String   @id @default(uuid())
-  intra_id   Int      @unique
-  username   String   @unique
-  email      String   @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id           String   @id @default(uuid())
+  intra_id     Int      @unique
+  username     String   @unique
+  email        String   @unique
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  isFirstLogin Boolean  @default(true)
 
   // Profile info
   country      String
@@ -97,7 +98,6 @@ model Chat {
   chatPassword      String   @default("")
   bans              String[] @default([])
   mutes             String[] @default([])
-  
 }
 
 model Message {
