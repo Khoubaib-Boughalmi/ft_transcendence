@@ -12,6 +12,7 @@ import "./globals.css";
 const flags = localFont({
 	src: "../public/TwemojiCountryFlags.woff2",
 	variable: "--flag",
+	preload: false,
 });
 
 const poppins = Poppins({
@@ -44,6 +45,7 @@ export default function RootLayout({
 								alt="Background"
 								className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
 								src="/background2.png"
+								priority
 							/>
 							<div className="absolute bottom-0 h-full w-full bg-gradient-to-t from-black from-50% to-transparent"></div>
 						</div>

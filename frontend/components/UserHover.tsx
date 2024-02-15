@@ -30,7 +30,7 @@ export default function UserHover({ user }: { user: User }) {
 	const areFriends = session.friends.find((f: User) => f.id == user.id);
 	const isBlocked = session.blocked_users.find((f: User) => f.id == user.id);
 	const { data: fullData, isLoading } = useSWR(
-		`/user/profile/${user.id}`,
+		`/user/profile/${user.username}`,
 		fetcher,
 	);
 	const fakeUser = {
@@ -83,7 +83,7 @@ export default function UserHover({ user }: { user: User }) {
 								{user.username}
 							</span>
 							<span className="flex gap-1 text-[0.5rem]">
-								<span>{getFlag(user.country)}</span>
+								<span className="font-flag">{getFlag(user.country)}</span>
 								<span>{user.country}</span>
 							</span>
 						</div>

@@ -831,7 +831,9 @@ export default function App({ params }: any) {
 			}
 		};
 
-		messageBoxRef.current?.addEventListener("wheel", handleScroll);
+		messageBoxRef.current?.addEventListener("wheel", handleScroll, {
+			passive: true,
+		});
 		return () => {
 			messageBoxRef.current?.removeEventListener("wheel", handleScroll);
 		};
