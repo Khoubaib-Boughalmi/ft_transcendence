@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Strategy as IntraBaseStrategy, Profile } from 'passport-42';
-import { Strategy as JwtBaseStrategy, ExtractJwt } from 'passport-jwt';
+import { Strategy as JwtBaseStrategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 

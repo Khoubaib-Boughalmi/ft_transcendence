@@ -1,12 +1,11 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { IsLowercase, IsOptional, IsUUID, Length } from 'class-validator';
 import { JwtGuard } from 'src/auth/auth.guards';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AppService } from 'src/app.service';
 import { FormDataRequest } from 'nestjs-form-data';
-import { diskStorage, memoryStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer';
 import filetypeinfo from 'magic-bytes.js';
 import { UserGateway } from './user.gateway';
 

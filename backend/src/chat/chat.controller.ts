@@ -1,4 +1,3 @@
-// router.route("/").post(verifyAuth, getOrCreateOneToOneChat).get(verifyAuth, getCurrentUserChats);
 import {
 	Controller,
 	Get,
@@ -6,7 +5,6 @@ import {
 	Body,
 	Param,
 	Req,
-	Res,
 	UseGuards,
 	HttpException,
 	UseInterceptors,
@@ -15,18 +13,10 @@ import {
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import {
-	IsArray,
-	IsBoolean,
-	IsDecimal,
-	IsIn,
 	IsLowercase,
-	IsNumber,
 	IsOptional,
 	IsUUID,
 	Length,
-	ValidateNested,
-	isDecimal,
-	isString,
 } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
 import { JwtGuard } from 'src/auth/auth.guards';
@@ -344,59 +334,5 @@ export class ChatController {
 			},
 		});
 		return { message: 'Icon deleted' };
-	}
-
-	@UseGuards(JwtGuard)
-	@Post('/createOneToOneChat')
-	@FormDataRequest()
-	async createOneToOneChat(@Req() req, @Body() body: UserDTO) {
-		const { userId } = body;
-		if (!userId) {
-			return {
-				error: 'userId is required',
-			};
-		}
-		return this.chatService.createDM(req.user.id, userId);
-	}
-
-	@Post('/sendMessage')
-	@UseGuards(JwtGuard)
-	@FormDataRequest()
-	async sendMessage(@Req() req, @Body() body: any): Promise<any> {
-		const { chatId, content } = body;
-		if (!chatId || !content) {
-			return {
-				error: 'chatId and content are required',
-			};
-		}
-		return this.chatService.sendMessage(req.user.id, chatId, content);
-	}
-
-	@Get('/getChatMessages/:chatId')
-	@UseGuards(JwtGuard)
-	async getChatMessages(@Req() req, @Param() params): Promise<any> {
-		const { chatId } = params;
-		if (!chatId) {
-			return {
-				error: 'chatId is required',
-			};
-		}
-		return this.chatService.getChatMessages(chatId);
-	}
-
-	@Post('/updateChatInfo')
-	@UseGuards(JwtGuard)
-	@FormDataRequest()
-	async updateChatInfo(@Req() req, @Body() body: any): Promise<any> {
-		const { chatId, chatName, groupAdmins, chatPassword } = body;
-		if (!chatId) {
-			return {
-				error: 'chatId is required',
-			};
-		}
-		return this.chatService.updateChat({
-			where: { id: chatId },
-			data: { chatName, chatAdmins: groupAdmins, chatPassword },
-		});
 	}
 }

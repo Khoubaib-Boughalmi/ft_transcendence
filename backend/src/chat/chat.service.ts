@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Message, Chat, Prisma, User } from '@prisma/client';
+import { Chat, Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
-import { UserDTO } from './chat.controller';
 import { UserProfileMicro, UserService } from 'src/user/user.service';
 import { SocketService } from 'src/socket/socket.service';
 import { WsException } from '@nestjs/websockets';

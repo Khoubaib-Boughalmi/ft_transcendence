@@ -3,15 +3,14 @@ import {
 	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer,
-	WsException,
+	WebSocketServer
 } from '@nestjs/websockets';
+import { IsOptional, Length } from 'class-validator';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
-import { UserService } from './user.service';
 import { ChatService } from 'src/chat/chat.service';
 import { SocketService } from 'src/socket/socket.service';
-import { IsOptional, Length } from 'class-validator';
+import { UserService } from './user.service';
 
 export class MessageDTO {
 	@IsOptional()

@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserController } from './user.controller';
-import { PrismaService } from 'src/prisma.service';
-import { AppService } from 'src/app.service';
-import { NestjsFormDataModule } from 'nestjs-form-data';
-import { UserGateway } from './user.gateway';
-import { AuthService } from 'src/auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { SocketModule } from 'src/socket/socket.module';
+import { NestjsFormDataModule } from 'nestjs-form-data';
+import { AppService } from 'src/app.service';
+import { AuthService } from 'src/auth/auth.service';
 import { ChatModule } from 'src/chat/chat.module';
+import { PrismaService } from 'src/prisma.service';
+import { SocketModule } from 'src/socket/socket.module';
+import { UserController } from './user.controller';
+import { UserGateway } from './user.gateway';
+import { UserService } from './user.service';
 
 @Module({
 	providers: [
