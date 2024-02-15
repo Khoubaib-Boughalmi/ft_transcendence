@@ -1,12 +1,12 @@
 import type { Config } from "tailwindcss";
-const {nextui} = require("@nextui-org/react");
+const { nextui } = require("@nextui-org/react");
 
 const config: Config = {
 	content: [
 		"./pages/**/*.{js,ts,jsx,tsx,mdx}",
 		"./components/**/*.{js,ts,jsx,tsx,mdx}",
 		"./app/**/*.{js,ts,jsx,tsx,mdx}",
-		"./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",	
+		"./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
 	],
 	theme: {
 		extend: {
@@ -14,11 +14,11 @@ const config: Config = {
 				flag: ["var(--flag)", "sans-serif"],
 			},
 			gridTemplateRows: {
-				'matches': 'repeat(3, minmax(0, 64px))',
+				matches: "repeat(3, minmax(0, 64px))",
 			},
 			keyframes: {
 				popup: {
-					"0%": { scale: "0.5", opacity: "0", },
+					"0%": { scale: "0.5", opacity: "0" },
 					"100%": { scale: "1", opacity: "1" },
 				},
 				overlay: {
@@ -39,7 +39,7 @@ const config: Config = {
 					"0%": { opacity: "0" },
 					"75": { opacity: "0" },
 					"100%": { opacity: "1" },
-				}
+				},
 			},
 			animation: {
 				popup: "popup 0.1s ease-in-out",
@@ -48,10 +48,8 @@ const config: Config = {
 				lefttoright: "lefttoright 0.25s ease-in-out",
 				righttoleft: "righttoleft 0.25s ease-in-out",
 				slow_fadein: "slow_fadein 0.5s",
-			
 			},
-			colors:
-			{
+			colors: {
 				background: {
 					DEFAULT: "var(--background-default)",
 					100: "var(--background-100)",
@@ -118,9 +116,6 @@ const config: Config = {
 		},
 	},
 	darkMode: "class",
-	plugins: [
-		require('@tailwindcss/container-queries'),
-		nextui()
-	],
+	plugins: [require("@tailwindcss/container-queries"), nextui()],
 };
 export default config;

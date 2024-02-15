@@ -1,25 +1,24 @@
 "use client";
 
 import { useChatContext } from "@/lib/utils";
-import { Button } from "./Button";
-import { twMerge } from "tailwind-merge";
 import { Compass } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { twMerge } from "tailwind-merge";
+import { Button } from "./Button";
 
 export default function ServerCreateButton() {
 	const router = useRouter();
-	const {
-		expanded,
-		serversMutate,
-		servers,
-		setExpanded,
-	} = useChatContext();
+	const { expanded, serversMutate, servers, setExpanded } = useChatContext();
 
 	return (
 		<Button
-			style={expanded ? {
-				viewTransitionName: "create",
-			} : {}}
+			style={
+				expanded
+					? {
+							viewTransitionName: "create",
+						}
+					: {}
+			}
 			onClick={() => {
 				router.push("/chat/discover");
 				setExpanded(false);

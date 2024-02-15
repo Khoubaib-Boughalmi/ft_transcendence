@@ -20,7 +20,7 @@ export function Button({
 	children,
 	iconOnly = false,
 	startContent,
-	endContent,	
+	endContent,
 	variant = "default",
 	as: As = "button",
 	disabled,
@@ -50,7 +50,7 @@ export function Button({
 				variant == "transparent" &&
 					"from-white/0 to-white/0 shadow-none data-[disabled=false]:hover:from-white/10 data-[disabled=false]:hover:to-white/10",
 				iconOnly && "p-2",
-				isDisabled && "opacity-50 cursor-not-allowed",
+				isDisabled && "cursor-not-allowed opacity-50",
 				className,
 			)}
 			{...(props as React.ButtonHTMLAttributes<HTMLButtonElement> &

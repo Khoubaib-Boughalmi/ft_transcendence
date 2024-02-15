@@ -1,12 +1,18 @@
 "use client";
 
-import { twMerge } from "tailwind-merge";
-import { SuperSkeleton } from "./SuperSkeleton";
-import { useContext, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import PublicContext from "@/contexts/PublicContext";
+import Image from "next/image";
+import { useContext, useEffect, useRef } from "react";
+import { twMerge } from "tailwind-merge";
 
-export default function SuperImage({ src, className, width, height, alt, ...props }: {
+export default function SuperImage({
+	src,
+	className,
+	width,
+	height,
+	alt,
+	...props
+}: {
 	src: string;
 	width: number;
 	height: number;
@@ -18,11 +24,13 @@ export default function SuperImage({ src, className, width, height, alt, ...prop
 
 	const updateLoadedImages = () => {
 		if (!loadedImages.includes(src))
-		setLoadedImages((prev: string[]) => [...prev, src].filter((v, i, a) => a.indexOf(v) === i));
+			setLoadedImages((prev: string[]) =>
+				[...prev, src].filter((v, i, a) => a.indexOf(v) === i),
+			);
 	};
 
 	useEffect(() => {
-		if (imgRef.current && imgRef.current.complete) updateLoadedImages();	
+		if (imgRef.current && imgRef.current.complete) updateLoadedImages();
 	}, [src]);
 
 	const loaded = loadedImages.includes(src);
@@ -34,11 +42,11 @@ export default function SuperImage({ src, className, width, height, alt, ...prop
 				src={src}
 				alt={alt}
 				width={width}
-				height={height}	
+				height={height}
 				className={twMerge(
 					className,
 					!className?.includes("absolute") && `relative`,
-					"bg-card-200"
+					"bg-card-200",
 				)}
 				onLoad={updateLoadedImages}
 				{...props}

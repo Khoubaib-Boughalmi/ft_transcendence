@@ -1,4 +1,4 @@
-import { User } from './profile'
+import { User } from "./profile";
 
 export type Server = {
 	name: string;
@@ -34,7 +34,7 @@ export type Message = {
 	chatInfo?: {
 		name: string;
 		icon: string;
-	}
+	};
 };
 
 export type ChatContextType = {

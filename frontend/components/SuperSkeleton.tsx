@@ -1,7 +1,10 @@
 import { Skeleton } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 
-export function SuperSkeleton({ isLoaded, ...props }: React.ComponentProps<typeof Skeleton>) {
+export function SuperSkeleton({
+	isLoaded,
+	...props
+}: React.ComponentProps<typeof Skeleton>) {
 	const [render, setRender] = useState(true);
 
 	useEffect(() => {
@@ -12,7 +15,5 @@ export function SuperSkeleton({ isLoaded, ...props }: React.ComponentProps<typeo
 		}
 	}, [isLoaded]);
 
-	return <>
-		{render && <Skeleton isLoaded={isLoaded} {...props} />}
-	</>
+	return <>{render && <Skeleton isLoaded={isLoaded} {...props} />}</>;
 }

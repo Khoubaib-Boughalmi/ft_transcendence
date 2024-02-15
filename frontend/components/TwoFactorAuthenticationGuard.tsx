@@ -1,19 +1,12 @@
 "use client";
 import PublicContext from "@/contexts/PublicContext";
+import { useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
+import { Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useContext, useRef, useState } from "react";
+import { Button } from "./Button";
 import Card from "./Card";
 import Input from "./Input";
-import { Lock } from "lucide-react";
-import { Button } from "./Button";
-import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
-import axios from "@/lib/axios";
-import {
-	makeForm,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
-} from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 
 export default function Guard({ children }: { children: React.ReactNode }) {
 	const router = useRouter();

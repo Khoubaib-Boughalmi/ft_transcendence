@@ -1,13 +1,12 @@
-import { User } from "@/types/profile";
-import SuperImage from "./SuperImage";
-import Status from "./Status";
-import { twMerge } from "tailwind-merge";
-import Link from "next/link";
-import { Tooltip } from "@nextui-org/react";
-import UserHover from "./UserHover";
-import NoData from "./NoData";
-import { useEffect, useRef, useState } from "react";
 import { useIsOnline } from "@/lib/utils";
+import { User } from "@/types/profile";
+import { Tooltip } from "@nextui-org/react";
+import Link from "next/link";
+import { twMerge } from "tailwind-merge";
+import NoData from "./NoData";
+import Status from "./Status";
+import SuperImage from "./SuperImage";
+import UserHover from "./UserHover";
 
 type ClassNames = {
 	list?: string;
@@ -120,14 +119,14 @@ function UserListListEntry({
 				<Link
 					href={`/profile/${user.username}`}
 					className={twMerge(
-						`flex-1 gap-4 text-white relative
+						`relative flex-1 gap-4 text-white
 						transition-all hover:scale-105 hover:brightness-110`,
 						!Controls && isOnline == false && "brightness-[60%]",
 						size == "xs" && "gap-2",
 						classNames?.entry,
 					)}
-				>		
-					{(showBadge && showBadge(user)) && (
+				>
+					{showBadge && showBadge(user) && (
 						<div className="absolute left-0 top-0 z-10">
 							<img
 								src="/owner.png"

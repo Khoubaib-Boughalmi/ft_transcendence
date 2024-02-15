@@ -1,6 +1,6 @@
 "use client";
-import { ReactNode } from "react";
 import Divider from "@/components/Divider";
+import { ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
 
 export default function Card({

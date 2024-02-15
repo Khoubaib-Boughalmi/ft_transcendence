@@ -3,11 +3,11 @@ import { twMerge } from "tailwind-merge";
 export default function SettingSection({
 	title,
 	children,
-    className,
+	className,
 }: {
 	title: string;
 	children: React.ReactNode;
-    className?: string;
+	className?: string;
 }) {
 	return (
 		<div className={twMerge("flex w-full flex-col gap-2", className)}>

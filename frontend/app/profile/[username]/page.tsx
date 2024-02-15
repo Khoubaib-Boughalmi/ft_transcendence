@@ -1,54 +1,44 @@
 "use client";
 import { Button } from "@/components/Button";
+import Card from "@/components/Card";
+import Chart from "@/components/Chart";
+import Divider from "@/components/Divider";
+import MessageBox from "@/components/MessageBox";
+import ModalSet from "@/components/ModalSet";
+import NoData from "@/components/NoData";
+import Status from "@/components/Status";
+import SuperImage from "@/components/SuperImage";
+import { SuperSkeleton } from "@/components/SuperSkeleton";
+import UserList from "@/components/UserList";
+import PublicContext from "@/contexts/PublicContext";
+import {
+	InteractionFunctionality,
+	fetcherUnsafe,
+	getFlag,
+	getRank,
+	interactionDictionary,
+} from "@/lib/utils";
+import { user1 } from "@/mocks/profile";
+import { Achievement, InteractionType, Match, User } from "@/types/profile";
+import { useDisclosure } from "@nextui-org/react";
 import {
 	Check,
 	Equal,
 	Expand,
+	HeartHandshake,
 	Medal,
 	MessageSquareIcon,
 	MoreHorizontal,
 	Swords,
+	UserMinus2,
 	UserPlus2,
 	UserX2,
-	X,
 	Video,
-	HeartHandshake,
-	UserMinus2,
+	X,
 } from "lucide-react";
-import { useContext, useEffect, useRef, useState, createContext } from "react";
-import Divider from "@/components/Divider";
-import {
-	useDisclosure,
-	Tooltip,
-	Skeleton,
-	Dropdown,
-	DropdownTrigger,
-	DropdownMenu,
-	DropdownItem,
-} from "@nextui-org/react";
-import Chart from "@/components/Chart";
-import Card from "@/components/Card";
-import { User, Match, Achievement, StatusType } from "@/types/profile";
-import UserHover from "@/components/UserHover";
-import { fetcher, fetcherUnsafe, getFlag, getRank } from "@/lib/utils";
-import { dummyUser, user1, user2 } from "@/mocks/profile";
-import ModalSet from "@/components/ModalSet";
-import PublicContext from "@/contexts/PublicContext";
-import { SuperSkeleton } from "@/components/SuperSkeleton";
-import Status from "@/components/Status";
-import useSWR from "swr";
-import Error from "next/error";
-import SuperImage from "@/components/SuperImage";
-import NoData from "@/components/NoData";
-import UserList from "@/components/UserList";
-import axios from "@/lib/axios";
-import toast from "react-hot-toast";
-import { SuperDropdown } from "@/components/SuperDropdown";
-import { InteractionType } from "@/types/profile";
-import { interactionDictionary } from "@/lib/utils";
-import { InteractionFunctionality } from "@/lib/utils";
-import MessageBox from "@/components/MessageBox";
 import { notFound } from "next/navigation";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import useSWR from "swr";
 
 const ProfileContext = createContext({});
 
@@ -922,8 +912,7 @@ export default function Home({ params }: any) {
 	};
 	const falseUser = { ...user1, ...user };
 
-	if (userError)
-		notFound();
+	if (userError) notFound();
 
 	return (
 		<main className="relative mb-12 flex w-[1250px] max-w-full select-none flex-col justify-center gap-4">

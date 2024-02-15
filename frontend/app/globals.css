@@ -86,7 +86,7 @@
 	--secondary-900: #fce0d1;
 }
 
-[data-theme='green'] {
+[data-theme="green"] {
 	--card-default: #003300;
 	--card-100: #001400;
 	--card-200: #002900;
@@ -112,7 +112,7 @@
 	--accent-900: #dafcd7;
 }
 
-[data-theme='blue'] {
+[data-theme="blue"] {
 	--card-default: #001f3f;
 	--card-100: #00101a;
 	--card-200: #002036;
@@ -138,7 +138,7 @@
 	--accent-900: #daebfc;
 }
 
-[data-theme='purple'] {
+[data-theme="purple"] {
 	--card-default: #400033;
 	--card-100: #1a0010;
 	--card-200: #360029;

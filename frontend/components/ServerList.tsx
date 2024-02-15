@@ -1,37 +1,13 @@
 "use client";
 
 import { useChatContext } from "@/lib/utils";
+import { ScrollShadow } from "@nextui-org/react";
+import { ArrowLeft, Menu, Server as ServerIcon, Users2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { Button } from "./Button";
-import {
-	AirVent,
-	ArrowLeft,
-	ArrowRight,
-	Check,
-	Compass,
-	Globe,
-	Globe2,
-	LogOut,
-	MailPlus,
-	Menu,
-	MessageSquarePlus,
-	MoreHorizontal,
-	Pencil,
-	Plus,
-	Search,
-	SendHorizontal,
-	Server as ServerIcon,
-	Settings2,
-	Sparkles,
-	Trash2,
-	UserPlus2,
-	Users2,
-	X,
-} from "lucide-react";
-import { ScrollShadow } from "@nextui-org/react";
-import ServerListEntry from "./ServerListEntry";
 import ServerCreateButton from "./ServerCreateButton";
+import ServerListEntry from "./ServerListEntry";
 
 export default function ServerList() {
 	const { expanded, setExpanded, listTab, setListTab, servers } =
@@ -105,7 +81,10 @@ export default function ServerList() {
 									return server.isDM;
 							})
 							.map((server, i) => (
-								<ServerListEntry key={server.id} server={server} />
+								<ServerListEntry
+									key={server.id}
+									server={server}
+								/>
 							))}
 						<ServerCreateButton />
 						{/* <ServerListEntry /> */}

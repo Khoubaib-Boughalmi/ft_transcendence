@@ -1,21 +1,25 @@
 "use client";
-import { ReactNode, useContext, useEffect, useState } from "react";
-import { twMerge } from "tailwind-merge";
-import SectionContainer from "@/components/SectionContainer";
-import { useDisclosure } from "@nextui-org/react";
-import useSWR, { useSWRConfig } from "swr";
-import { fetcher, makeForm, useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing, useChatContext } from "@/lib/utils";
-import SuperImage from "@/components/SuperImage";
-import Input from "@/components/Input";
-import { ArrowRight, Check, Globe2, Plus, Search, Users2 } from "lucide-react";
-import PublicContext from "@/contexts/PublicContext";
-import ModalSet from "@/components/ModalSet";
-import Card from "@/components/Card";
 import { Button } from "@/components/Button";
+import Card from "@/components/Card";
 import Divider from "@/components/Divider";
+import Input from "@/components/Input";
+import ModalSet from "@/components/ModalSet";
 import NoData from "@/components/NoData";
+import SuperImage from "@/components/SuperImage";
+import PublicContext from "@/contexts/PublicContext";
+import {
+	fetcher,
+	makeForm,
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	useChatContext,
+} from "@/lib/utils";
 import { Server } from "@/types/chat";
+import { useDisclosure } from "@nextui-org/react";
+import { ArrowRight, Check, Globe2, Plus, Search, Users2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ReactNode, useContext, useEffect, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { twMerge } from "tailwind-merge";
 
 function ServerCreationModal({
 	isOpen,
@@ -28,12 +32,7 @@ function ServerCreationModal({
 	onOpenChange: any;
 	children: ReactNode;
 }) {
-	const {
-		expanded,
-		serversMutate,
-		servers,
-		setExpanded,
-	} = useChatContext();
+	const { expanded, serversMutate, servers, setExpanded } = useChatContext();
 	const { sessionMutate, setExpecting } = useContext(PublicContext) as any;
 	const [createLoading, setCreateLoading] = useState(false);
 	const [joinLoading, setJoinLoading] = useState(false);
@@ -65,7 +64,7 @@ function ServerCreationModal({
 		if (name == "") return;
 		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/join`,
-			makeForm({ name, password: [password, undefined][+!password]}),
+			makeForm({ name, password: [password, undefined][+!password] }),
 			setJoinLoading,
 			`Successfully joined the channel`,
 			`Failed to join the channel`,
@@ -249,7 +248,6 @@ function DiscoverListEntry({ server }: { server: Server }) {
 		</div>
 	);
 }
-
 
 export default function DiscoverPage() {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();

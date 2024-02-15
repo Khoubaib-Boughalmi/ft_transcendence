@@ -6,13 +6,13 @@ import { Button } from "./Button";
 
 export default function DeleteButton({
 	type,
-    endpoint,
+	endpoint,
 	children,
 	data,
-	callback
+	callback,
 }: {
 	type: "avatar" | "banner" | "icon";
-    endpoint: string;
+	endpoint: string;
 	children?: React.ReactNode;
 	data?: any;
 	callback?: any;
@@ -20,12 +20,11 @@ export default function DeleteButton({
 	const [loading, setLoading] = useState(false);
 	const { sessionMutate } = useContext(PublicContext) as any;
 
-	
 	const postCallback = async () => {
 		if (callback) await callback();
 		await sessionMutate();
-	}
-	
+	};
+
 	const handleImageDelete = async () => {
 		const formData = new FormData();
 		if (data)

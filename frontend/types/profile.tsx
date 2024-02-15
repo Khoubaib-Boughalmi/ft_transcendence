@@ -4,8 +4,8 @@ export type Rank = {
 	color: "bronze" | "silver" | "gold" | "platinum" | "diamond";
 };
 export type StatusType = "Online" | "Offline" | "Busy";
-export type MatchType = "Classic" | "Power"	
-export type MatchLeague = "Casual" | "Ranked" | "Tournament"
+export type MatchType = "Classic" | "Power";
+export type MatchLeague = "Casual" | "Ranked" | "Tournament";
 export type Achievement = {
 	id: number;
 	name: string;
@@ -28,36 +28,36 @@ export type Match = {
 	score2: number;
 };
 
-// 
-	export type UserProfile = {
-		id: string;
-		username: string;
-		email: string;
-		createdAt: Date;
-		avatar: string;
-		banner: string;
-		country: string;
-		level: number;
-		level_percentage: number;
-		wins: number;
-		losses: number;
-		matches: number;
-		rank: number;
-		division: string;
-	};
+//
+export type UserProfile = {
+	id: string;
+	username: string;
+	email: string;
+	createdAt: Date;
+	avatar: string;
+	banner: string;
+	country: string;
+	level: number;
+	level_percentage: number;
+	wins: number;
+	losses: number;
+	matches: number;
+	rank: number;
+	division: string;
+};
 
-	export type UserProfileMicro = UserProfile;
+export type UserProfileMicro = UserProfile;
 
-	export type UserProfileMini = UserProfile & {
-		friends: UserProfileMicro[];
-	};
+export type UserProfileMini = UserProfile & {
+	friends: UserProfileMicro[];
+};
 
-	export type UserProfileFull = UserProfileMini & {
-		two_factor: boolean;
-		friend_requests: UserProfileMicro[];
-		blocked_users: UserProfileMicro[];
-	};
-// 
+export type UserProfileFull = UserProfileMini & {
+	two_factor: boolean;
+	friend_requests: UserProfileMicro[];
+	blocked_users: UserProfileMicro[];
+};
+//
 
 export type User = {
 	id: string;
@@ -81,4 +81,10 @@ export type User = {
 	blocked_users: User[];
 	two_factor: boolean;
 };
-export type InteractionType = "add" | "accept" | "reject" | "block" | "unblock" | "unfriend";
+export type InteractionType =
+	| "add"
+	| "accept"
+	| "reject"
+	| "block"
+	| "unblock"
+	| "unfriend";

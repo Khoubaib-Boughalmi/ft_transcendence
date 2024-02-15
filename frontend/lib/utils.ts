@@ -1,11 +1,10 @@
-import { Rank, User, Match, Achievement, StatusType, InteractionType } from "@/types/profile";
+import ChatContext from "@/contexts/ChatContext";
 import axios from "@/lib/axios";
+import { ChatContextType } from "@/types/chat";
+import { InteractionType, Rank, User } from "@/types/profile";
 import { useContext, useRef } from "react";
 import toast from "react-hot-toast";
-import PublicContext from "@/contexts/PublicContext";
 import useSWR from "swr";
-import ChatContext from "@/contexts/ChatContext";
-import { ChatContextType } from "@/types/chat";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -47,7 +46,9 @@ export function getRank(rank: number) {
 
 export function makeForm(data: any) {
 	const formData = new FormData();
-	Object.keys(data).forEach((key) => data[key] != undefined && formData.append(key, data[key]));
+	Object.keys(data).forEach(
+		(key) => data[key] != undefined && formData.append(key, data[key]),
+	);
 	return formData;
 }
 
@@ -70,12 +71,12 @@ export async function useAbstractedAttemptedExclusivelyPostRequestToTheNestBacke
 	setLoading?: (loading: boolean) => void,
 	success?: string,
 	error?: string,
-	mutation?: () => Promise<void>
+	mutation?: () => Promise<void>,
 ) {
 	try {
 		if (setLoading) setLoading(true);
 		const res = await axios.post(endpoint, data);
-		mutation && await mutation()
+		mutation && (await mutation());
 		success && toast.success(success);
 	} catch (err) {
 		error && toast.error(error);
@@ -107,12 +108,7 @@ export const interactionDictionary = {
 		"Failed to Reject Request",
 		"/user/rejectFriend",
 	],
-	block: [
-		"Block",
-		"User Blocked",
-		"Failed to Block User",
-		"/user/blockUser",
-	],
+	block: ["Block", "User Blocked", "Failed to Block User", "/user/blockUser"],
 	unblock: [
 		"Unblock",
 		"User Unblocked",
@@ -121,8 +117,14 @@ export const interactionDictionary = {
 	],
 };
 
-export async function InteractionFunctionality(type: InteractionType, user: User, sessionMutate: any, setLoading?: any) {
-	const [buttonText, successText, errorText, endpointURL] = interactionDictionary[type];
+export async function InteractionFunctionality(
+	type: InteractionType,
+	user: User,
+	sessionMutate: any,
+	setLoading?: any,
+) {
+	const [buttonText, successText, errorText, endpointURL] =
+		interactionDictionary[type];
 
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 		endpointURL,
@@ -130,7 +132,7 @@ export async function InteractionFunctionality(type: InteractionType, user: User
 		setLoading,
 		successText,
 		errorText,
-		sessionMutate
+		sessionMutate,
 	);
 }
 
@@ -146,15 +148,15 @@ export function randomString() {
 	return Math.random().toString(36).substring(7);
 }
 
-
 export function useChatContext() {
 	return useContext(ChatContext) as ChatContextType;
 }
 export function useServerList() {
-	const { data: servers, mutate: serversMutate, isLoading: serversLoading } = useSWR(
-		"/chat/channel/list",
-		fetcher
-	) as any;
+	const {
+		data: servers,
+		mutate: serversMutate,
+		isLoading: serversLoading,
+	} = useSWR("/chat/channel/list", fetcher) as any;
 	const prevServers = useRef(null) as any;
 	return { servers, serversMutate, prevServers, serversLoading };
 }

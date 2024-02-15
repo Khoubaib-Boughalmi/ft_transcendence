@@ -2,7 +2,9 @@ import { SendHorizontal } from "lucide-react";
 import { Button } from "./Button";
 import Input from "./Input";
 
-export default function MessageInput(props: React.ComponentProps<typeof Input>) {
+export default function MessageInput(
+	props: React.ComponentProps<typeof Input>,
+) {
 	return (
 		<Input
 			id="message"
@@ -21,7 +23,7 @@ export default function MessageInput(props: React.ComponentProps<typeof Input>) 
 					iconOnly
 				></Button>
 			}
-            {...props}
+			{...props}
 		/>
 	);
 }

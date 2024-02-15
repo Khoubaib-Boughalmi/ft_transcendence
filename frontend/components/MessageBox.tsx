@@ -1,14 +1,14 @@
-import { User } from "@/types/profile";
-import ModalSet from "./ModalSet";
-import MessageInput from "./MessageInput";
+import { maxMessageLength } from "@/constants/chat";
+import PublicContext from "@/contexts/PublicContext";
 import socket from "@/lib/socket";
 import { randomString, useServerList } from "@/lib/utils";
-import { useContext, useState } from "react";
-import PublicContext from "@/contexts/PublicContext";
-import { useRouter } from "next/navigation";
 import { Server } from "@/types/chat";
+import { User } from "@/types/profile";
+import { useRouter } from "next/navigation";
+import { useContext, useState } from "react";
+import MessageInput from "./MessageInput";
 import MessageLengthIndicator from "./MessageLengthIndicator";
-import { maxMessageLength } from "@/constants/chat";
+import ModalSet from "./ModalSet";
 
 export default function MessageBox({
 	user,

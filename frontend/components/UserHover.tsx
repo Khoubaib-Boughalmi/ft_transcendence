@@ -1,14 +1,13 @@
-import { InteractionType, User } from "@/types/profile";
+import PublicContext from "@/contexts/PublicContext";
 import {
 	InteractionFunctionality,
 	fetcher,
 	getFlag,
 	getRank,
 } from "@/lib/utils";
-import Status from "./Status";
-import Divider from "./Divider";
-import SuperImage from "./SuperImage";
-import { Button } from "./Button";
+import { dummyUser } from "@/mocks/profile";
+import { User } from "@/types/profile";
+import { Skeleton, useDisclosure } from "@nextui-org/react";
 import {
 	HeartHandshake,
 	MessageSquareIcon,
@@ -18,13 +17,12 @@ import {
 	UserX2,
 } from "lucide-react";
 import { useContext, useState } from "react";
-import PublicContext from "@/contexts/PublicContext";
-import { twMerge } from "tailwind-merge";
 import useSWR from "swr";
-import { Skeleton, useDisclosure } from "@nextui-org/react";
-import { SuperSkeleton } from "./SuperSkeleton";
-import { dummyUser } from "@/mocks/profile";
+import { twMerge } from "tailwind-merge";
+import { Button } from "./Button";
 import MessageBox from "./MessageBox";
+import Status from "./Status";
+import SuperImage from "./SuperImage";
 
 export default function UserHover({ user }: { user: User }) {
 	const [loading, setLoading] = useState(false);
@@ -48,7 +46,13 @@ export default function UserHover({ user }: { user: User }) {
 
 	return (
 		<>
-			<MessageBox user={fakeUser} isOpen={isMessageOpen} onOpen={onMessageOpen} onClose={onMessageClose} onOpenChange={onMessageOpenChange} />
+			<MessageBox
+				user={fakeUser}
+				isOpen={isMessageOpen}
+				onOpen={onMessageOpen}
+				onClose={onMessageClose}
+				onOpenChange={onMessageOpenChange}
+			/>
 			<div className="flex w-48 flex-col gap-1">
 				<div className="w-full flex-col">
 					<div

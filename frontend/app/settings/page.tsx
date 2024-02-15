@@ -1,30 +1,27 @@
 "use client";
+import { Button } from "@/components/Button";
 import Card from "@/components/Card";
+import DeleteButton from "@/components/DeleteButton";
 import Divider from "@/components/Divider";
 import Input from "@/components/Input";
+import ModalSet from "@/components/ModalSet";
+import SettingSection from "@/components/SettingSection";
+import SuperImage from "@/components/SuperImage";
+import UploadButton from "@/components/UploadButton";
 import UserHover from "@/components/UserHover";
-import { Spinner, useDisclosure } from "@nextui-org/react";
-import { User } from "@/types/profile";
+import PublicContext from "@/contexts/PublicContext";
 import {
 	fetcher,
 	getFlag,
 	makeForm,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 } from "@/lib/utils";
-import { Button } from "@/components/Button";
+import { User } from "@/types/profile";
+import { useDisclosure } from "@nextui-org/react";
+import { Lock, Unlock } from "lucide-react";
 import Link from "next/link";
-import { user1 } from "@/mocks/profile";
-import ModalSet from "@/components/ModalSet";
-import { useContext, useEffect, useRef, useState } from "react";
-import { Lock, Trash, Trash2, Unlock } from "lucide-react";
-import SuperImage from "@/components/SuperImage";
-import axios from "@/lib/axios";
-import PublicContext from "@/contexts/PublicContext";
-import useSWR, { useSWRConfig } from "swr";
-import toast from "react-hot-toast";
-import SettingSection from "@/components/SettingSection";
-import UploadButton from "@/components/UploadButton";
-import DeleteButton from "@/components/DeleteButton";
+import { useContext, useRef, useState } from "react";
+import useSWR from "swr";
 
 function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
@@ -218,7 +215,6 @@ export default function Settings() {
 		);
 	};
 
-
 	return (
 		<main className="mb-12 flex w-[1000px] max-w-full flex-col justify-center gap-4">
 			<Card
@@ -263,10 +259,17 @@ export default function Settings() {
 						<Divider />
 						<SettingSection title="Avatar">
 							<div className="flex gap-2">
-								<UploadButton endpoint="/user/settings/upload-avatar" name="avatar" variant="secondary">
+								<UploadButton
+									endpoint="/user/settings/upload-avatar"
+									name="avatar"
+									variant="secondary"
+								>
 									Upload Avatar
 								</UploadButton>
-								<DeleteButton endpoint="/user/settings/delete-avatar" type="avatar">
+								<DeleteButton
+									endpoint="/user/settings/delete-avatar"
+									type="avatar"
+								>
 									{/* Delete Avatar */}
 								</DeleteButton>
 							</div>
@@ -274,19 +277,25 @@ export default function Settings() {
 						<Divider />
 						<SettingSection title="Banner">
 							<div className="flex gap-2">
-								<UploadButton endpoint="/user/settings/upload-banner" name="banner" variant="secondary">
+								<UploadButton
+									endpoint="/user/settings/upload-banner"
+									name="banner"
+									variant="secondary"
+								>
 									Upload Banner
 								</UploadButton>
-								<DeleteButton endpoint="/user/settings/delete-banner" type="banner">
+								<DeleteButton
+									endpoint="/user/settings/delete-banner"
+									type="banner"
+								>
 									{/* Delete Banner */}
 								</DeleteButton>
 							</div>
 						</SettingSection>
 					</div>
 					<div className="flex items-center justify-center rounded-xl bg-black text-white ">
-						<div className="p-2 rounded-2xl bg-card-200">
-
-						<UserHover user={session} />
+						<div className="rounded-2xl bg-card-200 p-2">
+							<UserHover user={session} />
 						</div>
 					</div>
 				</div>

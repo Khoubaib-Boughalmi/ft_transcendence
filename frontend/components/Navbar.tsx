@@ -1,50 +1,11 @@
 "use client";
 
-import {
-	Bell,
-	Check,
-	LogIn,
-	LogOut,
-	LucideIcon,
-	MessageCircle,
-	MessageSquareIcon,
-	Paintbrush2,
-	Search,
-	Settings2,
-	Trash,
-	User2,
-	UserCircle2,
-	UserPlus2,
-	Users2,
-	X,
-} from "lucide-react";
 import { Button } from "@/components/Button";
-import { useEffect, useState, useContext, useMemo } from "react";
-import PublicContext from "@/contexts/PublicContext";
-import Status from "@/components/Status";
 import Input from "@/components/Input";
-import { User } from "@/types/profile";
-import {
-	Badge,
-	Divider,
-	Dropdown,
-	DropdownItem,
-	DropdownMenu,
-	DropdownSection,
-	DropdownTrigger,
-	Skeleton,
-	Spinner,
-	Tooltip,
-	useDisclosure,
-} from "@nextui-org/react";
-import { SuperSkeleton } from "./SuperSkeleton";
-import SuperImage from "./SuperImage";
-import { SuperDropdown, SuperDropdownMenu } from "./SuperDropdown";
-import { useRouter } from "next/navigation";
-import { cookies } from "next/headers";
+import Status from "@/components/Status";
+import PublicContext from "@/contexts/PublicContext";
 import axios from "@/lib/axios";
-import { twMerge } from "tailwind-merge";
-import { Lock, User as UserIcon } from "lucide-react";
+import socket from "@/lib/socket";
 import {
 	fetcher,
 	getFlag,
@@ -53,14 +14,42 @@ import {
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	useChatContext,
 } from "@/lib/utils";
-import UserList from "./UserList";
-import { user1 } from "@/mocks/profile";
-import socket from "@/lib/socket";
-import ModalSet from "./ModalSet";
-import { useTheme } from "next-themes";
-import useSWR from "swr";
 import { Message } from "@/types/chat";
+import { User } from "@/types/profile";
+import {
+	Badge,
+	Divider,
+	DropdownItem,
+	DropdownSection,
+	DropdownTrigger,
+	Spinner,
+	useDisclosure,
+} from "@nextui-org/react";
+import {
+	Bell,
+	Check,
+	Lock,
+	LogOut,
+	MessageSquareIcon,
+	Paintbrush2,
+	Search,
+	Settings2,
+	User2,
+	UserPlus2,
+	Users2,
+	X,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
+import { useContext, useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
+import { twMerge } from "tailwind-merge";
+import ModalSet from "./ModalSet";
 import NoData from "./NoData";
+import { SuperDropdown, SuperDropdownMenu } from "./SuperDropdown";
+import SuperImage from "./SuperImage";
+import { SuperSkeleton } from "./SuperSkeleton";
+import UserList from "./UserList";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 const themes = [
@@ -372,7 +361,7 @@ function FriendsButton() {
 					</DropdownItem>
 				</DropdownSection>
 				<DropdownItem aria-label="Controls" className="mb-2 p-0">
-					<div className="flex w-full gap-2 rounded-3xl bg-card-200 overflow-hidden">
+					<div className="flex w-full gap-2 overflow-hidden rounded-3xl bg-card-200">
 						{[
 							[Users2, "Friends"],
 							[UserPlus2, "Requests"],
@@ -388,7 +377,7 @@ function FriendsButton() {
 											? undefined
 											: "transparent"
 									}
-									className="flex-1 flex-col gap-0 p-1 text-xs rounded-none"
+									className="flex-1 flex-col gap-0 rounded-none p-1 text-xs"
 									{...saveTheWorld}
 								>
 									<Icon size={16} className="flex-shrink-0" />

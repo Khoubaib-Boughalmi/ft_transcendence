@@ -1,14 +1,13 @@
-import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
-import "./globals.css";
-import { Navbar } from "../components/Navbar";
-import localFont from "next/font/local";
-import { cookies } from "next/headers";
-import PublicContext from "@/contexts/PublicContext";
+import LoginGuard from "@/components/LoginGuard";
 import Providers from "@/components/Providers";
 import SuperImage from "@/components/SuperImage";
 import TwoFactorAuthenticationGuard from "@/components/TwoFactorAuthenticationGuard";
-import LoginGuard from "@/components/LoginGuard";
+import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
+import localFont from "next/font/local";
+import { cookies } from "next/headers";
+import { Navbar } from "../components/Navbar";
+import "./globals.css";
 
 const flags = localFont({
 	src: "../public/TwemojiCountryFlags.woff2",

@@ -1,9 +1,9 @@
 "use client";
 import { Button } from "@/components/Button";
+import Card from "@/components/Card";
+import { Modal, ModalContent } from "@nextui-org/react";
 import { X } from "lucide-react";
 import { ComponentProps, ReactNode } from "react";
-import { Modal, ModalContent } from "@nextui-org/react";
-import Card from "@/components/Card";
 
 export default function ModalSet({
 	children,
@@ -31,7 +31,7 @@ export default function ModalSet({
 				backdrop="blur"
 				{...modalProps}
 			>
-				<ModalContent className="bg-transparent shadow-none select-none">
+				<ModalContent className="select-none bg-transparent shadow-none">
 					<Card
 						header={
 							<div className="flex w-full items-center justify-between">

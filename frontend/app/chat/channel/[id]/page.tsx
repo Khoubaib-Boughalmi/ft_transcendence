@@ -1,92 +1,53 @@
 "use client";
 import { Button } from "@/components/Button";
+import Card from "@/components/Card";
+import DeleteButton from "@/components/DeleteButton";
+import Divider from "@/components/Divider";
+import GayMarkdown from "@/components/GayMarkdown";
+import Input from "@/components/Input";
+import MessageInput from "@/components/MessageInput";
+import MessageLengthIndicator from "@/components/MessageLengthIndicator";
+import ModalSet from "@/components/ModalSet";
+import SettingSection from "@/components/SettingSection";
+import Status from "@/components/Status";
+import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
 import SuperImage from "@/components/SuperImage";
+import SuperSwitch from "@/components/SuperSwitch";
+import UploadButton from "@/components/UploadButton";
+import UserList from "@/components/UserList";
+import { commands, maxMessageLength } from "@/constants/chat";
+import PublicContext from "@/contexts/PublicContext";
+import generateBullshitExpression from "@/lib/bullshit";
+import socket from "@/lib/socket";
 import {
-	AirVent,
-	ArrowLeft,
-	ArrowRight,
+	makeForm,
+	randomString,
+	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	useChatContext,
+} from "@/lib/utils";
+import { Message } from "@/types/chat";
+import { User } from "@/types/profile";
+import {
+	DropdownItem,
+	DropdownTrigger,
+	Tooltip,
+	useDisclosure,
+} from "@nextui-org/react";
+import {
 	Check,
-	Compass,
-	Globe,
-	Globe2,
 	LogOut,
-	MailPlus,
-	Menu,
-	MessageSquarePlus,
 	MoreHorizontal,
 	Mouse,
 	Pencil,
 	Plus,
-	Search,
-	SendHorizontal,
-	Server as ServerIcon,
 	Settings2,
 	Sparkles,
-	Trash2,
 	UserPlus2,
 	Users2,
 	X,
 } from "lucide-react";
-import {
-	ReactNode,
-	createContext,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
-import UserList from "@/components/UserList";
-import { user1, user2 } from "@/mocks/profile";
-import {
-	Dropdown,
-	DropdownItem,
-	DropdownTrigger,
-	ScrollShadow,
-	Spinner,
-	Switch,
-	Textarea,
-	Tooltip,
-	useDisclosure,
-} from "@nextui-org/react";
-import Input from "@/components/Input";
-import { User } from "@/types/profile";
-import generateBullshitExpression from "@/lib/bullshit";
-import Divider from "@/components/Divider";
-import { SuperDropdown, SuperDropdownMenu } from "@/components/SuperDropdown";
-import useSWR, { SWRConfig, useSWRConfig } from "swr";
-import {
-	useChatContext,
-	randomString,
-	fetcher,
-	makeForm,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
-} from "@/lib/utils";
-import ModalSet from "@/components/ModalSet";
-import Card from "@/components/Card";
-import PublicContext from "@/contexts/PublicContext";
-import SettingSection from "@/components/SettingSection";
-import SuperSwitch from "@/components/SuperSwitch";
-import UploadButton from "@/components/UploadButton";
-import DeleteButton from "@/components/DeleteButton";
-import socket from "@/lib/socket";
-import NoData from "@/components/NoData";
-import toast from "react-hot-toast";
-import Status from "@/components/Status";
-import MessageInput from "@/components/MessageInput";
-import {
-	Server,
-	Message,
-	ChatContextType,
-	Argument,
-	Command,
-} from "@/types/chat";
-import { commands, maxMessageLength } from "@/constants/chat";
-import ChatContext from "@/contexts/ChatContext";
-import { redirect } from "next/navigation";
-import GayMarkdown from "@/components/GayMarkdown";
-import MessageLengthIndicator from "@/components/MessageLengthIndicator";
 
 function MemberControls({
 	list,
@@ -546,16 +507,14 @@ function ChatInput() {
 	}, [message]);
 
 	const tooltipLogic = () => {
-		if (message.length >= maxMessageLength)
-		{
-			if (tooltipTimeout.current)
-				clearTimeout(tooltipTimeout.current);
+		if (message.length >= maxMessageLength) {
+			if (tooltipTimeout.current) clearTimeout(tooltipTimeout.current);
 			setShowTooltip(true);
 			tooltipTimeout.current = setTimeout(() => {
-				setShowTooltip(false)
-			}, 1000)
+				setShowTooltip(false);
+			}, 1000);
 		}
-	}
+	};
 
 	return (
 		<div className="flex h-20 items-center gap-4 p-4 pr-1">
@@ -923,9 +882,11 @@ export default function App({ params }: any) {
 								{!selectedServer?.isDM ? (
 									<Tooltip
 										// className="max-w-[50vw] text-center"
-										content={<div className="max-w-[50vw]">
-											{selectedServer.description}
-										</div>}
+										content={
+											<div className="max-w-[50vw]">
+												{selectedServer.description}
+											</div>
+										}
 									>
 										<div className="line-clamp-2 text-xs text-foreground-500">
 											{selectedServer.description}

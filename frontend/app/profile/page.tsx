@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter, redirect } from "next/navigation";
-import { useContext } from "react";
-import Error from "next/error";
 import PublicContext from "@/contexts/PublicContext";
+import Error from "next/error";
+import { redirect, useRouter } from "next/navigation";
+import { useContext } from "react";
 
 export default function Page() {
 	const { session, sessionLoading } = useContext(PublicContext) as any;

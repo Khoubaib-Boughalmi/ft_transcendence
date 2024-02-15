@@ -1,16 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import {
-	Chart as ChartJS,
 	CategoryScale,
+	Chart as ChartJS,
+	Filler,
+	LineElement,
 	LinearScale,
 	PointElement,
-	LineElement,
-	Title,
 	Tooltip,
-	Filler,
-	Legend,
 } from "chart.js";
+import { useEffect, useState } from "react";
 
 import { Line } from "react-chartjs-2";
 
@@ -39,23 +37,21 @@ ChartJS.register(
 );
 
 const labels = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-];;
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December",
+];
 
-export default function App({
-	activity
-}: any) {
+export default function App({ activity }: any) {
 	const style = useStyles() as any;
 	const data = {
 		labels,
@@ -81,7 +77,7 @@ export default function App({
 				display: false,
 			},
 			x: {
-                display: false,
+				display: false,
 				ticks: {
 					color: style.backgroundColor,
 				},
@@ -90,7 +86,7 @@ export default function App({
 	};
 
 	return (
-		<div className="rounded-b-[25px] overflow-hidden" >
+		<div className="overflow-hidden rounded-b-[25px]">
 			<Line options={options} data={data} />
 		</div>
 	);

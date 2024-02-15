@@ -2,7 +2,6 @@
 import { useChatContext } from "@/lib/utils";
 import { twMerge } from "tailwind-merge";
 
-
 export default function SectionContainer({ children }: any) {
 	const { expanded } = useChatContext();
 

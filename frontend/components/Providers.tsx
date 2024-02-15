@@ -1,17 +1,16 @@
 "use client";
 
 import PublicContext from "@/contexts/PublicContext";
-import { NextUIProvider } from "@nextui-org/react";
-import axios from "@/lib/axios";
-import { fetcher } from "@/lib/utils";
-import useSWR, { mutate } from "swr";
-import { dummyUser } from "@/mocks/profile";
-import { useContext, useEffect, useState } from "react";
-import jwt from "jsonwebtoken";
-import { Toaster } from "react-hot-toast";
 import socket from "@/lib/socket";
-import { ThemeProvider } from "next-themes";
+import { fetcher } from "@/lib/utils";
+import { dummyUser } from "@/mocks/profile";
 import { Message } from "@/types/chat";
+import { NextUIProvider } from "@nextui-org/react";
+import jwt from "jsonwebtoken";
+import { ThemeProvider } from "next-themes";
+import { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
+import useSWR, { mutate } from "swr";
 
 export default function Providers({ accessToken, children }: any) {
 	const noRefresh = {
@@ -55,10 +54,12 @@ export default function Providers({ accessToken, children }: any) {
 			mutate(key);
 		});
 		socket.on("notifications", async (message: Message) => {
-			session && message.user.id != session.id && setNotifications((prev: Message[] | null) => [
-				...(prev ?? []),
-				message,
-			]);
+			session &&
+				message.user.id != session.id &&
+				setNotifications((prev: Message[] | null) => [
+					...(prev ?? []),
+					message,
+				]);
 		});
 
 		return () => {
