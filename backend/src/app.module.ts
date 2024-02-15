@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import * as Joi from 'joi';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from './socket/socket.module';
-import * as Joi from 'joi';
+import { UserModule } from './user/user.module';
 
 @Module({
 	imports: [
@@ -32,6 +33,23 @@ import * as Joi from 'joi';
 		UserModule,
 		ChatModule,
 		SocketModule,
+		ThrottlerModule.forRoot([
+			{
+				name: 'short',
+				ttl: 1000,
+				limit: 20,
+			},
+			{
+				name: 'medium',
+				ttl: 10000,
+				limit: 100,
+			},
+			{
+				name: 'long',
+				ttl: 60000,
+				limit: 1000,
+			},
+		]),
 	],
 	controllers: [AppController],
 	providers: [AppService],
