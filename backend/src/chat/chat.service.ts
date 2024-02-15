@@ -181,10 +181,12 @@ export class ChatService {
 	}
 
 	getChatNameAndIconForNotifications(chatId: string) {
-		return (this.chatsCache[chatId] && this.chatsCache[chatId].isGroupChat) ? {
-			name: this.chatsCache[chatId].chatName,
-			icon: this.chatsCache[chatId].chatIcon,
-		} : null;
+		return this.chatsCache[chatId] && this.chatsCache[chatId].isGroupChat
+			? {
+					name: this.chatsCache[chatId].chatName,
+					icon: this.chatsCache[chatId].chatIcon,
+				}
+			: null;
 	}
 
 	async getCurrentUserChats(userId: string) {
@@ -214,7 +216,11 @@ export class ChatService {
 		const filteredChats = updatedChats.filter((chat) => {
 			if (chat.isDM) {
 				const otherUser = chat.membersIds.find((id) => id !== userId);
-				if (blockedUsers.find((blockedUser) => blockedUser.id === otherUser)) {
+				if (
+					blockedUsers.find(
+						(blockedUser) => blockedUser.id === otherUser,
+					)
+				) {
 					return false;
 				}
 			}
@@ -284,11 +290,14 @@ export class ChatService {
 		if (chat.isGroupChat && !chat.users.includes(user.id))
 			throw new WsException('Invalid chat');
 
-		const message = await this.createMessage({
-			chat_id: chat.id,
-			user_id: user.id,
-			content: payload.message,
-		}, payload);
+		const message = await this.createMessage(
+			{
+				chat_id: chat.id,
+				user_id: user.id,
+				content: payload.message,
+			},
+			payload,
+		);
 		return message;
 	}
 
@@ -431,7 +440,10 @@ export class ChatService {
 			: 0;
 	}
 
-	async createMessage(data: Prisma.MessageCreateInput, payload: any): Promise<ChatMessage> {
+	async createMessage(
+		data: Prisma.MessageCreateInput,
+		payload: any,
+	): Promise<ChatMessage> {
 		const serverMessage = await this.processCommand(data);
 		if (serverMessage !== null) {
 			const newData = {
@@ -460,18 +472,24 @@ export class ChatService {
 				throw new WsException({
 					message: `You are muted for ${muteTime} more seconds.`,
 					chatId: data.chat_id,
-					queueId: payload.queueId
+					queueId: payload.queueId,
 				});
 			}
 
 			// if it's a DM, check if the target is blocked
 			if (!chat.isGroupChat) {
-				const target_blocks = await this.userService.getBlockedUsers(payload.targetId);
-				if (target_blocks.find((target_profile) => target_profile.id === data.user_id)) {
+				const target_blocks = await this.userService.getBlockedUsers(
+					payload.targetId,
+				);
+				if (
+					target_blocks.find(
+						(target_profile) => target_profile.id === data.user_id,
+					)
+				) {
 					throw new WsException({
 						message: `Your message could not be delivered.`,
 						chatId: data.chat_id,
-						queueId: payload.queueId
+						queueId: payload.queueId,
 					});
 				}
 			}
@@ -516,10 +534,10 @@ export class ChatService {
 					message.user_id == 'server'
 						? ({
 								id: 'server',
-						  } as any)
+							} as any)
 						: userProfiles.find(
 								(user) => user.id === message.user_id,
-						  ),
+							),
 				content: message.content,
 				createdAt: message.created_at,
 				updatedAt: message.updated_at,

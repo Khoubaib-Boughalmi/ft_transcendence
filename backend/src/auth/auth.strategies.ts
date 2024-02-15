@@ -14,7 +14,11 @@ export class IntraStrategy extends PassportStrategy(IntraBaseStrategy) {
 		});
 	}
 
-	async validate(accessToken: string, refreshToken: string, profile: Profile) {
+	async validate(
+		accessToken: string,
+		refreshToken: string,
+		profile: Profile,
+	) {
 		return this.authService.validateUser(profile);
 	}
 }
@@ -42,7 +46,10 @@ export class JwtStrategy extends PassportStrategy(JwtBaseStrategy, 'jwt') {
 }
 
 @Injectable()
-export class JwtNo2faStrategy extends PassportStrategy(JwtBaseStrategy, 'jwt-no-2fa') {
+export class JwtNo2faStrategy extends PassportStrategy(
+	JwtBaseStrategy,
+	'jwt-no-2fa',
+) {
 	constructor(private readonly authService: AuthService) {
 		super({
 			jwtFromRequest: cookieExtractor,

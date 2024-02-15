@@ -27,11 +27,13 @@ async function bootstrap() {
 	app.setGlobalPrefix('/api');
 	app.useWebSocketAdapter(new PregoSocketAdapter(app));
 	app.enableCors({ origin: process.env.FRONTEND_URL, credentials: true });
-	app.useGlobalPipes(new ValidationPipe({
-		forbidNonWhitelisted: true,
-		transform: true,
-		whitelist: true,
-	}));
+	app.useGlobalPipes(
+		new ValidationPipe({
+			forbidNonWhitelisted: true,
+			transform: true,
+			whitelist: true,
+		}),
+	);
 	app.use(cookieParser());
 	await app.listen(3000);
 }

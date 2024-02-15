@@ -3,7 +3,7 @@ import {
 	OnGatewayDisconnect,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer
+	WebSocketServer,
 } from '@nestjs/websockets';
 import { IsOptional, Length } from 'class-validator';
 import { Server, Socket } from 'socket.io';
@@ -124,7 +124,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 				this.server.to(message.chatId).emit('notifications', {
 					...message,
 					queueId: payload.queueId,
-					chatInfo: this.chatService.getChatNameAndIconForNotifications(message.chatId),
+					chatInfo:
+						this.chatService.getChatNameAndIconForNotifications(
+							message.chatId,
+						),
 				});
 			}
 		} catch (e) {

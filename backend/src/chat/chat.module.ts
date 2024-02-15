@@ -8,9 +8,9 @@ import { AppService } from 'src/app.service';
 import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
-  controllers: [ChatController],
-  providers: [ChatService, PrismaService, UserService, AppService],
-  imports: [NestjsFormDataModule, SocketModule],
+	controllers: [ChatController],
+	providers: [ChatService, PrismaService, UserService, AppService],
+	imports: [NestjsFormDataModule, SocketModule],
 	exports: [ChatService],
 })
 export class ChatModule {}

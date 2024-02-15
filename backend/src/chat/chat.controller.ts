@@ -12,12 +12,7 @@ import {
 	UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import {
-	IsLowercase,
-	IsOptional,
-	IsUUID,
-	Length,
-} from 'class-validator';
+import { IsLowercase, IsOptional, IsUUID, Length } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
 import { JwtGuard } from 'src/auth/auth.guards';
 import { Transform, Type } from 'class-transformer';
@@ -53,7 +48,7 @@ export class ChannelInviteDTO {
 	id: string;
 
 	@IsLowercase()
-    @Length(1, 36)
+	@Length(1, 36)
 	username: string;
 }
 
@@ -86,15 +81,15 @@ export class ChannelUpdateDTO {
 	description: string;
 
 	@IsOptional()
-	@Transform(({ value }) => value == 'true' ? true : false)
+	@Transform(({ value }) => (value == 'true' ? true : false))
 	enable_password: boolean;
-	
+
 	@Length(6, 120)
 	@IsOptional()
 	password: string;
-	
+
 	@IsOptional()
-	@Transform(({ value }) => value == 'true' ? true : false)
+	@Transform(({ value }) => (value == 'true' ? true : false))
 	enable_inviteonly: boolean;
 }
 
@@ -119,10 +114,15 @@ export class ChatController {
 
 		const final = await this.chatService.chats({
 			take: 8,
-			where: { 
+			where: {
 				OR: [
-					{ chatName: { contains: search, mode: "insensitive" }, },
-					{ chatDescription: { contains: search, mode: "insensitive" } }
+					{ chatName: { contains: search, mode: 'insensitive' } },
+					{
+						chatDescription: {
+							contains: search,
+							mode: 'insensitive',
+						},
+					},
 				],
 				passwordProtected: false,
 				inviteOnly: false,
@@ -144,13 +144,13 @@ export class ChatController {
 		const all = await Promise.all([
 			this.chatService.getChatMembers(params.id),
 			this.chatService.getChatInvites(params.id),
-			this.chatService.getChatBans(params.id)
+			this.chatService.getChatBans(params.id),
 		]);
 		return {
 			members: all[0],
 			invites: all[1],
 			bans: all[2],
-		}
+		};
 	}
 
 	@Post('channel/create')
@@ -160,7 +160,10 @@ export class ChatController {
 		const chat = await this.chatService.chat({ chatName: body.name });
 		if (chat) throw new HttpException('Channel name already in use', 400);
 
-		const newChannel = await this.chatService.createChannel(req.user.id, body.name);
+		const newChannel = await this.chatService.createChannel(
+			req.user.id,
+			body.name,
+		);
 		await this.chatService.joinChannelOnSocket(newChannel.id, req.user.id);
 	}
 
@@ -170,7 +173,11 @@ export class ChatController {
 	async channelJoin(@Req() req, @Body() body: ChannelJoinDTO) {
 		const chat = await this.chatService.chat({ chatName: body.name });
 		if (!chat) throw new HttpException('Channel not found', 404);
-		if (chat.passwordProtected && (!body.password || !bcrypt.compareSync(body?.password, chat.chatPassword)))
+		if (
+			chat.passwordProtected &&
+			(!body.password ||
+				!bcrypt.compareSync(body?.password, chat.chatPassword))
+		)
 			throw new HttpException('Invalid password', 403);
 		if (chat.bans.includes(req.user.id))
 			throw new HttpException('You are banned from this channel', 403);
@@ -204,8 +211,7 @@ export class ChatController {
 		if (!(await this.chatService.isChatOwnerOrAdmin(req.user.id, body.id)))
 			throw new HttpException('You are not allowed to do that', 403);
 
-        if (body.password)
-            body.password = bcrypt.hashSync(body.password, 10);
+		if (body.password) body.password = bcrypt.hashSync(body.password, 10);
 
 		const update = await this.chatService.updateChat({
 			where: { id: body.id },
@@ -265,10 +271,7 @@ export class ChatController {
 	@Post('channel/revoke_ban')
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
-	async channelBanInvite(
-		@Req() req,
-		@Body() body: ChannelRevokeBanDTO,
-	) {
+	async channelBanInvite(@Req() req, @Body() body: ChannelRevokeBanDTO) {
 		const user = await this.userService.user({ id: body.userId });
 		if (!user) throw new HttpException('User not found', 404);
 

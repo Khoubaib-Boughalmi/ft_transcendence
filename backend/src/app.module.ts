@@ -36,4 +36,4 @@ import * as Joi from 'joi';
 	controllers: [AppController],
 	providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
