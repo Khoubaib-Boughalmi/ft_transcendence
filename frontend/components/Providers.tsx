@@ -11,6 +11,9 @@ import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import useSWR, { mutate } from "swr";
+import ContextMenuPortal from "./ ContextMenuPortal";
+import { useServerId } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 export default function Providers({ accessToken, children }: any) {
 	const noRefresh = {
@@ -34,6 +37,7 @@ export default function Providers({ accessToken, children }: any) {
 	const twoFactorAuthenticated = payload?.two_factor_passed === true;
 	const [expecting, setExpecting] = useState(false);
 	const [notifications, setNotifications] = useState<Message[] | null>(null);
+	const pathname = usePathname();
 
 	useEffect(() => {
 		const sessionNotifications =
@@ -54,8 +58,10 @@ export default function Providers({ accessToken, children }: any) {
 			mutate(key);
 		});
 		socket.on("notifications", async (message: Message) => {
+			const serverId = useServerId(pathname);
 			session &&
 				message.user.id != session.id &&
+				(!serverId || serverId != message.chatId) &&
 				setNotifications((prev: Message[] | null) => [
 					...(prev ?? []),
 					message,
@@ -92,15 +98,17 @@ export default function Providers({ accessToken, children }: any) {
 				},
 			}}
 		>
-			<ThemeProvider defaultTheme="red">
-				<NextUIProvider>{children}</NextUIProvider>
-			</ThemeProvider>
-			<Toaster
-				toastOptions={{
-					className: "!bg-card-500 !text-white !p-4",
-				}}
-				position="bottom-left"
-			/>
+			<ContextMenuPortal>
+				<ThemeProvider defaultTheme="red">
+					<NextUIProvider>{children}</NextUIProvider>
+				</ThemeProvider>
+				<Toaster
+					toastOptions={{
+						className: "!bg-card-500 !text-white !p-4",
+					}}
+					position="bottom-left"
+				/>
+			</ContextMenuPortal>
 		</PublicContext.Provider>
 	);
 }
