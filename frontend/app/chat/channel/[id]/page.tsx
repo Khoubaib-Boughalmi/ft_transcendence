@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/Button";
 import Card from "@/components/Card";
+import ContextMenuTrigger from "@/components/ContextMenuTrigger";
 import DeleteButton from "@/components/DeleteButton";
 import Divider from "@/components/Divider";
 import GayMarkdown from "@/components/GayMarkdown";
@@ -16,6 +17,7 @@ import SuperSwitch from "@/components/SuperSwitch";
 import UploadButton from "@/components/UploadButton";
 import UserList from "@/components/UserList";
 import { commands, maxMessageLength } from "@/constants/chat";
+import ContextMenuContext from "@/contexts/ContextMenuContext";
 import PublicContext from "@/contexts/PublicContext";
 import generateBullshitExpression from "@/lib/bullshit";
 import socket from "@/lib/socket";
@@ -24,6 +26,7 @@ import {
 	randomString,
 	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	useChatContext,
+	useContextMenu,
 } from "@/lib/utils";
 import { Message } from "@/types/chat";
 import { User } from "@/types/profile";
@@ -42,6 +45,7 @@ import {
 	Plus,
 	Settings2,
 	Sparkles,
+	Trash,
 	UserPlus2,
 	Users2,
 	X,
@@ -193,9 +197,43 @@ function RevokeBanButton({ user }: { user: User }) {
 	);
 }
 
+function RevokeAdminButton({ user }: { user: User }) {
+	const { selectedServerId, serverMutate } = useChatContext();
+	const [loading, setLoading] = useState(false);
+
+	const handleRevokeAdmin = (user: User) => {
+		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/remove_admin",
+			makeForm({
+				chatId: selectedServerId,
+				userId: user.id,
+			}),
+			setLoading,
+			`Successfully deopped ${user.username}`,
+			`Failed to deop ${user.username}`,
+			serverMutate,
+		);
+	};
+
+	return (
+		<div className="flex items-center justify-center">
+			<Button
+				onClick={() => handleRevokeAdmin(user)}
+				className="pl-3"
+				startContent={<X />}
+				variant="danger"
+				loading={loading}
+			>
+				Demote
+			</Button>
+		</div>
+	);
+}
+
 function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	const {
 		selectedServerMembers,
+		selectedServerAdmins,
 		selectedServer,
 		serverMutate,
 		selectedServerInvites,
@@ -431,6 +469,18 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 							</div>
 						</SettingSection>
 						<Divider className="my-4" />
+						<SettingSection title="Operators">
+							<div className="flex w-full flex-col gap-4">
+								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+									Channel Operators
+								</div>
+								<MemberControls
+									list={selectedServerAdmins}
+									controls={RevokeAdminButton}
+								/>
+							</div>
+						</SettingSection>
+						<Divider className="my-4" />
 						<SettingSection title="Bans">
 							<div className="flex w-full flex-col gap-4">
 								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
@@ -476,7 +526,12 @@ function MemberList() {
 					}}
 					users={selectedServerMembers}
 					showBadge={(user) => {
-						return selectedServer?.owner == user.id;
+						const isOwner = selectedServer?.owner == user.id;
+						const isAdmin = selectedServer?.admins.includes(user.id);
+
+						if (isOwner) return "/owner.png";
+						if (isAdmin) return "/hammer.png";
+						return null;
 					}}
 				/>
 			</div>
@@ -662,20 +717,34 @@ function MessageListEntry({
 	message: Message;
 	index: number;
 }) {
+	const { closeMenu } = useContextMenu();
+	const { session } = useContext(PublicContext) as any;
 	const date = new Date(message.createdAt).toLocaleDateString();
 	const time = new Date(message.createdAt).toLocaleTimeString();
 	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
-	const { displayedMessages, setDisplayedMessages, messageParents } =
-		useChatContext();
+	const {
+		displayedMessages,
+		setDisplayedMessages,
+		messageParents,
+		selectedServer,
+		serverMutate,
+		setAkashicRecords,
+		selectedServerId,
+	} = useChatContext();
 	const displayed =
 		displayedMessages[message.groupid] || message.blocked != true;
+	const optionsAllowed = 
+		message.user.id == session.id ||
+		((selectedServer?.admins.includes(session.id) ||
+			selectedServer?.owner == session.id) &&
+			message.user.id != selectedServer?.owner);
 
 	if (message.blocked && !message.parent && displayed != true) return null;
 
 	return (
 		<>
 			{message.user.id == "server" ? (
-				<div className="mt-2 flex w-full items-center gap-2 text-foreground-500">
+				<div className="mt-2 flex w-full items-center gap-2 text-foreground-500 px-6">
 					<div className="rounded-full bg-card-100 p-2 px-4 text-xs text-white">
 						SERVER
 					</div>
@@ -683,16 +752,71 @@ function MessageListEntry({
 				</div>
 			) : (
 				displayed && (
-					<div
+					<ContextMenuTrigger
 						className={twMerge(
-							"flex gap-4",
+							"flex gap-4 rounded-3xl px-8 hover:bg-black/15",
 							!message.noAvatar && "mt-4",
 							!message.loaded && !message.error && "opacity-50",
 						)}
+						menuContent={
+							<div className="flex w-64 flex-col gap-2 rounded-3xl bg-card-250 p-4">
+								<div className="flex flex-col">
+									<span className="text-xs text-foreground-500">
+										{message.user.username}'s message
+									</span>
+									<span>
+										{dateStr + " at " + time}
+									</span>
+								</div>
+								<Divider />
+								<div className="flex flex-col">
+									<Button
+										onClick={() => {
+											useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+												"/chat/channel/message/delete",
+												makeForm({
+													msgId: message.id,
+												}),
+												undefined,
+												`Successfully deleted the message`,
+												`Failed to delete the message`,
+											);
+											setAkashicRecords((prev) => {
+												const newRecords = {
+													...prev,
+													[selectedServerId!]: prev[
+														selectedServerId!
+													].map(
+														(msg) => {
+															if (
+																msg.id ==
+																message.id
+															)
+																msg.loaded = false;
+															return msg;
+														}
+													),
+												};
+
+												return newRecords;
+											});
+
+											closeMenu();
+										}}
+										startContent={<Trash size={16} />}
+										className="w-full justify-start"
+										variant="transparent"
+										disabled={!optionsAllowed}
+									>
+										Delete
+									</Button>
+								</div>
+							</div>
+						}
 					>
 						<div
 							className={twMerge(
-								"relative aspect-square h-0 w-12 flex-shrink-0",
+								"relative aspect-square h-0 w-11 flex-shrink-0",
 								message.noAvatar && "opacity-0",
 							)}
 						>
@@ -737,7 +861,7 @@ function MessageListEntry({
 								<GayMarkdown message={message} />
 							</div>
 						</div>
-					</div>
+					</ContextMenuTrigger>
 				)
 			)}
 			{message.blocked && message.parent && (
@@ -971,7 +1095,7 @@ export default function App({ params }: any) {
 						>
 							<div
 								suppressHydrationWarning
-								className="flex min-h-full flex-col-reverse gap-0 p-2 px-8"
+								className="flex min-h-full flex-col-reverse gap-0 p-2 px-0"
 							>
 								{selectedServerMessages.map((message, i) => {
 									return (
