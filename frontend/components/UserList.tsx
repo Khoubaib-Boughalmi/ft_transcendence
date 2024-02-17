@@ -7,6 +7,7 @@ import NoData from "./NoData";
 import Status from "./Status";
 import SuperImage from "./SuperImage";
 import UserHover from "./UserHover";
+import { ReactNode } from "react";
 
 type ClassNames = {
 	list?: string;
@@ -98,9 +99,10 @@ function UserListListEntry({
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
 	Controls?: any;
-	showBadge?: (user: User) => boolean;
+	showBadge?: (user: User) => string | null;
 }) {
 	const isOnline = useIsOnline(user.id);
+	const badge = showBadge && showBadge(user);
 
 	return (
 		<SuperTooltip
@@ -126,10 +128,10 @@ function UserListListEntry({
 						classNames?.entry,
 					)}
 				>
-					{showBadge && showBadge(user) && (
+					{badge && (
 						<div className="absolute left-0 top-0 z-10">
 							<img
-								src="/owner.png"
+								src={badge}
 								className="h-3 w-3 object-cover"
 							/>
 						</div>
@@ -188,7 +190,7 @@ export default function UserList({
 	type: "list" | "grid";
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
-	showBadge?: (user: User) => boolean;
+	showBadge?: (user: User) => string | null;
 	Controls?: ({ user }: { user: User }) => any;
 }) {
 	if (type == "list")
