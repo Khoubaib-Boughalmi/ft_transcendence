@@ -19,7 +19,7 @@ import { UserService } from './user.service';
 		AuthService,
 	],
 	controllers: [UserController],
-	exports: [UserService],
+	exports: [UserService, UserGateway],
 	imports: [
 		SocketModule,
 		ChatModule,

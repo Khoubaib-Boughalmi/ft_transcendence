@@ -11,6 +11,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { ChatService } from 'src/chat/chat.service';
 import { SocketService } from 'src/socket/socket.service';
 import { UserService } from './user.service';
+import { Inject, forwardRef } from '@nestjs/common';
 
 export class MessageDTO {
 	@IsOptional()
@@ -30,6 +31,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor(
 		private authService: AuthService,
 		private userService: UserService,
+		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
 		private socketService: SocketService,
 	) {}
@@ -82,6 +84,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		for (const channel of channels) {
 			client.join(channel.id);
 		}
+	}
+
+	async mutateChat(chatId: string, payload: any) {
+		this.server.to(chatId).emit('mutate', payload);
 	}
 
 	private MessageProcessingQueue: string[][] = [];

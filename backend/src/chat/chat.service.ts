@@ -5,6 +5,7 @@ import { UserProfileMicro, UserService } from 'src/user/user.service';
 import { SocketService } from 'src/socket/socket.service';
 import { WsException } from '@nestjs/websockets';
 import { v4 as uuidv4 } from 'uuid';
+import { UserGateway } from 'src/user/user.gateway';
 
 export type ChatChannel = {
 	name: string;
@@ -37,6 +38,7 @@ export class ChatService {
 		private prisma: PrismaService,
 		private userService: UserService,
 		private socketService: SocketService,
+		private userGateWay: UserGateway,
 	) {
 		// On server start, cache all the chat channels
 		this.prisma.chat.findMany().then((chats: Chat[]) => {
@@ -564,6 +566,12 @@ export class ChatService {
 				id: message.id,
 			},
 		});
+
+		const chat = this.chatsCache[message.chat_id];
+		this.userGateWay.mutateChat(
+			chat.id,
+			`/chat/channel/messages/${chat.id}`,
+		);
 	}
 
 	async getChatMessages(chatId: string) {
