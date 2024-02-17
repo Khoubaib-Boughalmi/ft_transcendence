@@ -310,13 +310,16 @@ export class ChatService {
 			invalidChat: 'Invalid channel.',
 			invalidPermissions: 'Invalid permissions.',
 		};
+
+		const isTargetOk = (target: User, chat: Chat) => { return target && target.id !== data.user_id && target.id !== chat.chatOwner; };
+
 		const commands = {
 			kick: async (args: string[], chat: Chat) => {
 				if (!args[0]) throw new WsException(errors.invalidArgs);
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!target) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
 				this.socketService
@@ -331,7 +334,7 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!target) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
 				await this.updateChat({
@@ -356,7 +359,7 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!target) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
 				await this.revokeBan(chat, target);
 				return `${target.username} has been unbanned from the channel.`;
 			},
@@ -366,7 +369,7 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!target) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
 				const duration = Number(args[1]);
 				if (isNaN(duration))
 					throw new WsException(errors.invalidDuration);
@@ -394,7 +397,7 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!target) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
 				await this.updateChat({
 					where: {
 						id: chat.id,
@@ -409,6 +412,33 @@ export class ChatService {
 				});
 				return `${target.username} has been unmuted.`;
 			},
+			op: async (args: string[], chat: Chat) => {
+				if (!args[0]) throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				await this.updateChat({
+					where: {
+						id: chat.id,
+					},
+					data: {
+						chatAdmins: {
+							push: target.id,
+						},
+					},
+				});
+				return `${target.username} has been promoted to admin.`;
+			},
+			unop: async (args: string[], chat: Chat) => {
+				if (!args[0]) throw new WsException(errors.invalidArgs);
+				const target = await this.userService.user({
+					username: args[0],
+				});
+				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				await this.removeAdminFromChat(chat, target.id);
+				return `${target.username} has been demoted from admin.`;
+			},
 		};
 		const { content, chat_id } = data;
 		if (!content.startsWith('/')) return null;
@@ -416,12 +446,7 @@ export class ChatService {
 		const command = args.shift().slice(1);
 		const chat = this.chatsCache[chat_id];
 		if (!chat) throw new WsException(errors.invalidChat);
-		if (
-			!(
-				chat.chatAdmins.includes(data.user_id) ||
-				chat.chatOwner === data.user_id
-			)
-		)
+		if (!chat.chatAdmins.includes(data.user_id) && data.user_id != chat.chatOwner)
 			throw new WsException(errors.invalidPermissions);
 		if (!chat.isGroupChat) throw new WsException(errors.invalidChat);
 		if (!commands[command]) throw new WsException(errors.invalidCommand);
