@@ -5,6 +5,7 @@ import ServerList from "@/components/ServerList";
 import ChatContext from "@/contexts/ChatContext";
 import PublicContext from "@/contexts/PublicContext";
 import socket from "@/lib/socket";
+import { useServerId } from "@/lib/utils";
 import { fetcherUnsafe, useChatContext, useServerList } from "@/lib/utils";
 import { Message, Server } from "@/types/chat";
 import { User } from "@/types/profile";
@@ -30,9 +31,8 @@ function ChatSection({ children }: { children: ReactNode }) {
 }
 
 function useSelectedServer(servers: Server[]) {
-	const pathName = usePathname();
-	const isChat = pathName.includes("/channel");
-	const selectedServerId = isChat ? pathName.split("/").pop()! : null;
+	const pathname = usePathname();
+	const selectedServerId = useServerId(pathname);
 	const selectedServer = servers?.find(
 		(server: Server) => server.id == selectedServerId,
 	);
@@ -40,7 +40,7 @@ function useSelectedServer(servers: Server[]) {
 	return { selectedServerId, selectedServer, prevSelectedServerId };
 }
 
-function useSelectedServerMessages(
+function      useSelectedServerMessages(
 	selectedServerId: string | null,
 	setAkashicRecords: any,
 ) {
@@ -101,6 +101,7 @@ function useSelectedServerData(selectedServerId: string | null) {
 		selectedServerMembers: selectedServerData?.members || [],
 		selectedServerInvites: selectedServerData?.invites || [],
 		selectedServerBans: selectedServerData?.bans || [],
+		selectedServerAdmins: selectedServerData?.admins || []
 	};
 }
 
@@ -168,6 +169,7 @@ export default function Page({
 		selectedServerMembers,
 		selectedServerInvites,
 		selectedServerBans,
+		selectedServerAdmins
 	} = useSelectedServerData(selectedServerId);
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
@@ -257,6 +259,7 @@ export default function Page({
 					if (serverMessages) {
 						if (messageFound) {
 							messageFound.loaded = true;
+							messageFound.id = message.id;
 						}
 						return {
 							...prev,
@@ -338,6 +341,7 @@ export default function Page({
 					setTimesNavigated,
 					navigateToServer,
 					prevSelectedServerMessages,
+					selectedServerAdmins
 				}}
 			>
 				<ServerList />
