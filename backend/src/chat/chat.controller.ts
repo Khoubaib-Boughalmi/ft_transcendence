@@ -150,7 +150,11 @@ export class ChatController {
 	async channelMessageDelete(@Req() req, @Body() body: MessageDeleteDTO) {
 		const message: Message = await this.chatService.message({ id: body.msgId });
 		if (!message) throw new HttpException('Message not found', 404);
-		if (message.user_id !== req.user.id)
+		// If it's a message by the owner then only the owner can delete it
+		if (this.chatService.isChatOwner(message.user_id, message.chat_id) && message.user_id !== req.user.id)
+			throw new HttpException('You are not allowed to do that', 403);
+		// If it's a message by someone else then only the owner or admin can delete it
+		if (message.user_id !== req.user.id && !this.chatService.isChatOwnerOrAdmin(req.user.id, message.chat_id))
 			throw new HttpException('You are not allowed to do that', 403);
 		await this.chatService.deleteMessage(message);
 	}
