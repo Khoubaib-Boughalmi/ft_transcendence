@@ -45,12 +45,13 @@ export type ChatContextType = {
 	selectedServerMembers: User[];
 	selectedServerBans: User[];
 	selectedServerInvites: User[];
+	selectedServerAdmins: User[];
 	messageParents: any;
 	selectedServer: Server | undefined;
 	selectedServerId: string | null;
 	servers: Server[];
 	serversMutate: () => Promise<void>;
-	setAkashicRecords: (records: { [key: string]: Message[] }) => void;
+	setAkashicRecords: React.Dispatch<React.SetStateAction<{ [key: string]: Message[] }>>;
 	setDisplayedMessages: (displayedMessages: any) => void;
 	setExpanded: (expanded: boolean) => void;
 	setListTab: (tab: "servers" | "friends") => void;
