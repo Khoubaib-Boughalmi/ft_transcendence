@@ -55,6 +55,27 @@ export const commands: Command[] = [
 			},
 		],
 	},
+	{
+		name: "/op",
+		description: "Grants op privileges to a user.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to grant op privileges.",
+			},
+		],
+	},
+	{
+		name: "/unop",
+		description: "Revokes op privileges from a user.",
+		arguments: [
+			{
+				name: "username",
+				description: "The username of the user to revoke op privileges.",
+			},
+		],
+	}
+	
 ];
 
 export const maxMessageLength = 1024;
