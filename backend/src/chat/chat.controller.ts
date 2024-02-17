@@ -22,6 +22,7 @@ import filetypeinfo from 'magic-bytes.js';
 import { AppService } from 'src/app.service';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
+import { Message } from '@prisma/client';
 
 export class UserDTO {
 	@IsLowercase()
@@ -93,6 +94,11 @@ export class ChannelUpdateDTO {
 	enable_inviteonly: boolean;
 }
 
+export class MessageDeleteDTO {
+	@IsUUID()
+	msgId: string;
+}
+
 @Controller('chat')
 export class ChatController {
 	constructor(
@@ -136,6 +142,17 @@ export class ChatController {
 	@UseGuards(JwtGuard)
 	async channelMessages(@Req() req, @Param() params: ChannelUpdateDTO) {
 		return this.chatService.getChatMessages(params.id);
+	}
+
+	@Post('channel/message/delete')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelMessageDelete(@Req() req, @Body() body: MessageDeleteDTO) {
+		const message: Message = await this.chatService.message({ id: body.msgId });
+		if (!message) throw new HttpException('Message not found', 404);
+		if (message.user_id !== req.user.id)
+			throw new HttpException('You are not allowed to do that', 403);
+		await this.chatService.deleteMessage(message);
 	}
 
 	@Get('channel/members/:id')

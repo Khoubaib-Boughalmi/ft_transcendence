@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Chat, Prisma, User } from '@prisma/client';
+import { Chat, Message, Prisma, User } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { UserProfileMicro, UserService } from 'src/user/user.service';
 import { SocketService } from 'src/socket/socket.service';
@@ -507,6 +507,22 @@ export class ChatService {
 				updatedAt: message.updated_at,
 			};
 		}
+	}
+
+	async message(
+		messageWhereUniqueInput: Prisma.MessageWhereUniqueInput,
+	): Promise<Message | null> {
+		return this.prisma.message.findUnique({
+			where: messageWhereUniqueInput,
+		});
+	}
+
+	async deleteMessage(message: Message) {
+		await this.prisma.message.delete({
+			where: {
+				id: message.id,
+			},
+		});
 	}
 
 	async getChatMessages(chatId: string) {
