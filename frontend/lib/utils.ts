@@ -1,7 +1,9 @@
 import ChatContext from "@/contexts/ChatContext";
+import ContextMenuContext from "@/contexts/ContextMenuContext";
 import axios from "@/lib/axios";
 import { ChatContextType } from "@/types/chat";
 import { InteractionType, Rank, User } from "@/types/profile";
+import { usePathname } from "next/navigation";
 import { useContext, useRef } from "react";
 import toast from "react-hot-toast";
 import useSWR from "swr";
@@ -159,4 +161,19 @@ export function useServerList() {
 	} = useSWR("/chat/channel/list", fetcher) as any;
 	const prevServers = useRef(null) as any;
 	return { servers, serversMutate, prevServers, serversLoading };
+}
+
+export function useContextMenu(): {
+	setContextMenu: (contextMenu: React.ReactNode) => void;
+	setMaterializePosition: (position: { x: number; y: number } | null) => void;
+	materializePosition: { x: number; y: number };
+	closeMenu: () => void;
+} {
+	return useContext(ContextMenuContext) as any;
+}
+
+export function useServerId(pathname: string) {
+	const isChat = pathname.includes("/channel");
+	const selectedServerId = isChat ? pathname.split("/").pop()! : null;
+	return selectedServerId;
 }
