@@ -170,17 +170,21 @@ export class ChatController {
 	@Get('channel/members/:id')
 	@UseGuards(JwtGuard)
 	async channelMembers(@Req() req, @Param() params: ChannelUpdateDTO) {
-		const all = await Promise.all([
-			this.chatService.getChatMembers(params.id),
-			this.chatService.getChatInvites(params.id),
-			this.chatService.getChatBans(params.id),
-			this.chatService.getChatAdmins(params.id),
+		const chat = await this.chatService.chat({ id: params.id });
+		if (!chat) throw new HttpException('Channel not found', 404);
+
+		const [members, invites, bans] = await Promise.all([
+			this.chatService.getChatMembers(chat.id),
+			this.chatService.getChatInvites(chat.id),
+			this.chatService.getChatBans(chat.id),
 		]);
+
 		return {
-			members: all[0],
-			invites: all[1],
-			bans: all[2],
-			admins: all[3],
+			members,
+			invites,
+			bans,
+			admins: chat.chatAdmins.map((admin) => members.find((m) => m.id === admin)),
+			owner: members.find((m) => m.id === chat.chatOwner),
 		};
 	}
 

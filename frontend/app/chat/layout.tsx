@@ -94,11 +94,20 @@ function useSelectedServerData(selectedServerId: string | null) {
 		fetcherUnsafe,
 	) as any;
 
+	// Sort the members list so that the owner is always first, then the admins, then the rest of the members in alphabetical order
+	const sortedMembersList = selectedServerData?.members?.sort((a: User, b: User) => {
+		if (a.id == selectedServerData?.owner.id) return -1;
+		if (b.id == selectedServerData?.owner.id) return 1;
+		if (selectedServerData?.admins?.find((admin: User) => admin.id == a.id)) return -1;
+		if (selectedServerData?.admins?.find((admin: User) => admin.id == b.id)) return 1;
+		return a.username.localeCompare(b.username);
+	});
+
 	return {
 		selectedServerData,
 		selectedServerDataLoading,
 		selectedServerDataMutate,
-		selectedServerMembers: selectedServerData?.members || [],
+		selectedServerMembers: sortedMembersList || [],
 		selectedServerInvites: selectedServerData?.invites || [],
 		selectedServerBans: selectedServerData?.bans || [],
 		selectedServerAdmins: selectedServerData?.admins || []
