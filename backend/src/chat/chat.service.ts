@@ -608,6 +608,13 @@ export class ChatService {
 		return bans;
 	}
 
+	async getChatAdmins(chatId: string): Promise<UserProfileMicro[]> {
+		const chat = this.chatsCache[chatId];
+		if (!chat) return [];
+		const admins = await this.userService.getMicroProfiles(chat.chatAdmins);
+		return admins;
+	}
+
 	async joinChat(chat: Chat, userId: string, password?: string) {
 		await this.updateChat({
 			where: { id: chat.id },

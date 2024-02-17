@@ -151,11 +151,11 @@ export class ChatController {
 		const message: Message = await this.chatService.message({ id: body.msgId });
 		if (!message) throw new HttpException('Message not found', 404);
 		// If it's a message by the owner then only the owner can delete it
-		if (this.chatService.isChatOwner(message.user_id, message.chat_id) && message.user_id !== req.user.id)
-			throw new HttpException('You are not allowed to do that', 403);
+		if ((await this.chatService.isChatOwner(message.user_id, message.chat_id)) && message.user_id !== req.user.id)
+			throw new HttpException('You are not allowed to do that 1', 403);
 		// If it's a message by someone else then only the owner or admin can delete it
-		if (message.user_id !== req.user.id && !this.chatService.isChatOwnerOrAdmin(req.user.id, message.chat_id))
-			throw new HttpException('You are not allowed to do that', 403);
+		if (message.user_id !== req.user.id && !(await this.chatService.isChatOwnerOrAdmin(req.user.id, message.chat_id)))
+			throw new HttpException('You are not allowed to do that 2', 403);
 		await this.chatService.deleteMessage(message);
 	}
 
@@ -166,11 +166,13 @@ export class ChatController {
 			this.chatService.getChatMembers(params.id),
 			this.chatService.getChatInvites(params.id),
 			this.chatService.getChatBans(params.id),
+			this.chatService.getChatAdmins(params.id),
 		]);
 		return {
 			members: all[0],
 			invites: all[1],
 			bans: all[2],
+			admins: all[3],
 		};
 	}
 
