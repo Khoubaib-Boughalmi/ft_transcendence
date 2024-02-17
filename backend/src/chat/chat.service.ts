@@ -311,7 +311,13 @@ export class ChatService {
 			invalidPermissions: 'Invalid permissions.',
 		};
 
-		const isTargetOk = (target: User, chat: Chat) => { return target && target.id !== data.user_id && target.id !== chat.chatOwner; };
+		const isTargetOk = (target: User, chat: Chat) => {
+			return (
+				target &&
+				target.id !== data.user_id &&
+				target.id !== chat.chatOwner
+			);
+		};
 
 		const commands = {
 			kick: async (args: string[], chat: Chat) => {
@@ -319,7 +325,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
 				this.socketService
@@ -334,7 +341,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				await this.leaveChat(chat, target.id);
 				await this.leaveChannelOnSocket(chat.id, target.id);
 				await this.updateChat({
@@ -359,7 +367,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				await this.revokeBan(chat, target);
 				return `${target.username} has been unbanned from the channel.`;
 			},
@@ -369,7 +378,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				const duration = Number(args[1]);
 				if (isNaN(duration))
 					throw new WsException(errors.invalidDuration);
@@ -397,7 +407,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				await this.updateChat({
 					where: {
 						id: chat.id,
@@ -417,7 +428,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				await this.updateChat({
 					where: {
 						id: chat.id,
@@ -435,7 +447,8 @@ export class ChatService {
 				const target = await this.userService.user({
 					username: args[0],
 				});
-				if (!isTargetOk(target, chat)) throw new WsException(errors.invalidTarget);
+				if (!isTargetOk(target, chat))
+					throw new WsException(errors.invalidTarget);
 				await this.removeAdminFromChat(chat, target.id);
 				return `${target.username} has been demoted from admin.`;
 			},
@@ -446,7 +459,10 @@ export class ChatService {
 		const command = args.shift().slice(1);
 		const chat = this.chatsCache[chat_id];
 		if (!chat) throw new WsException(errors.invalidChat);
-		if (!chat.chatAdmins.includes(data.user_id) && data.user_id != chat.chatOwner)
+		if (
+			!chat.chatAdmins.includes(data.user_id) &&
+			data.user_id != chat.chatOwner
+		)
 			throw new WsException(errors.invalidPermissions);
 		if (!chat.isGroupChat) throw new WsException(errors.invalidChat);
 		if (!commands[command]) throw new WsException(errors.invalidCommand);
@@ -696,20 +712,19 @@ export class ChatService {
 		return chat;
 	}
 
-	async isChatOwner(userId: string, chatId: string): Promise<boolean> {
+	isChatOwner(userId: string, chatId: string): boolean {
 		const chat = this.chatsCache[chatId];
 		return chat?.chatOwner === userId || false;
 	}
 
-	async isChatAdmin(userId: string, chatId: string): Promise<boolean> {
+	isChatAdmin(userId: string, chatId: string): boolean {
 		const chat = this.chatsCache[chatId];
 		return chat?.chatAdmins?.includes(userId) || false;
 	}
 
-	async isChatOwnerOrAdmin(userId: string, chatId: string): Promise<boolean> {
+	isChatOwnerOrAdmin(userId: string, chatId: string): boolean {
 		return (
-			(await this.isChatOwner(userId, chatId)) ||
-			(await this.isChatAdmin(userId, chatId))
+			this.isChatOwner(userId, chatId) || this.isChatAdmin(userId, chatId)
 		);
 	}
 

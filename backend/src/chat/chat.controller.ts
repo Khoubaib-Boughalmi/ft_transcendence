@@ -148,13 +148,21 @@ export class ChatController {
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
 	async channelMessageDelete(@Req() req, @Body() body: MessageDeleteDTO) {
-		const message: Message = await this.chatService.message({ id: body.msgId });
+		const message: Message = await this.chatService.message({
+			id: body.msgId,
+		});
 		if (!message) throw new HttpException('Message not found', 404);
 		// If it's a message by the owner then only the owner can delete it
-		if ((await this.chatService.isChatOwner(message.user_id, message.chat_id)) && message.user_id !== req.user.id)
+		if (
+			this.chatService.isChatOwner(message.user_id, message.chat_id) &&
+			message.user_id !== req.user.id
+		)
 			throw new HttpException('You are not allowed to do that 1', 403);
 		// If it's a message by someone else then only the owner or admin can delete it
-		if (message.user_id !== req.user.id && !(await this.chatService.isChatOwnerOrAdmin(req.user.id, message.chat_id)))
+		if (
+			message.user_id !== req.user.id &&
+			!this.chatService.isChatOwnerOrAdmin(req.user.id, message.chat_id)
+		)
 			throw new HttpException('You are not allowed to do that 2', 403);
 		await this.chatService.deleteMessage(message);
 	}
@@ -231,7 +239,7 @@ export class ChatController {
 	@UseGuards(JwtGuard)
 	@FormDataRequest()
 	async channelUpdate(@Req() req, @Body() body: ChannelUpdateDTO) {
-		if (!(await this.chatService.isChatOwnerOrAdmin(req.user.id, body.id)))
+		if (!this.chatService.isChatOwnerOrAdmin(req.user.id, body.id))
 			throw new HttpException('You are not allowed to do that', 403);
 
 		if (body.password) body.password = bcrypt.hashSync(body.password, 10);
@@ -300,15 +308,26 @@ export class ChatController {
 
 		const chat = await this.chatService.chat({ id: body.chatId });
 		if (!chat) throw new HttpException('Channel not found', 404);
-		if (!chat.users.includes(req.user.id))
-			throw new HttpException(
-				'You are not a member of this channel',
-				403,
-			);
 		if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id))
 			throw new HttpException('You are not allowed to do that', 403);
 
 		return this.chatService.revokeBan(chat, user);
+	}
+
+	@Post('channel/remove_admin')
+	@UseGuards(JwtGuard)
+	@FormDataRequest()
+	async channelRemoveAdmin(@Req() req, @Body() body: ChannelRevokeBanDTO) {
+		const user = await this.userService.user({ id: body.userId });
+		if (!user) throw new HttpException('User not found', 404);
+
+		const chat = await this.chatService.chat({ id: body.chatId });
+		if (!chat) throw new HttpException('Channel not found', 404);
+		if (!this.chatService.isChatOwnerOrAdmin(req.user.id, chat.id))
+			throw new HttpException('You are not allowed to do that', 403);
+		if (this.chatService.isChatOwner(user.id, chat.id))
+			throw new HttpException('You are not allowed to do that', 403);
+		return this.chatService.removeAdminFromChat(chat, user.id);
 	}
 
 	@UseGuards(JwtGuard)
@@ -321,12 +340,7 @@ export class ChatController {
 	) {
 		try {
 			// Validate the permissions
-			if (
-				!(await this.chatService.isChatOwnerOrAdmin(
-					req.user.id,
-					body.id,
-				))
-			)
+			if (!this.chatService.isChatOwnerOrAdmin(req.user.id, body.id))
 				throw new HttpException('You are not allowed to do that', 403);
 			// Validate the magic bytes
 			const fileType = filetypeinfo(file.buffer);
@@ -350,7 +364,7 @@ export class ChatController {
 	@Post('channel/delete-icon')
 	@FormDataRequest()
 	async channelDeleteIcon(@Req() req, @Body() body: ChannelUpdateDTO) {
-		if (!(await this.chatService.isChatOwnerOrAdmin(req.user.id, body.id)))
+		if (!this.chatService.isChatOwnerOrAdmin(req.user.id, body.id))
 			throw new HttpException('You are not allowed to do that', 403);
 		await this.chatService.updateChat({
 			where: { id: body.id },
