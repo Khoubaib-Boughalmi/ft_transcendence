@@ -8,7 +8,6 @@ import {
 import { AuthSerializer } from './auth.serializer';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service';
 import { UserModule } from 'src/user/user.module';
 import { NestjsFormDataModule } from 'nestjs-form-data';
 

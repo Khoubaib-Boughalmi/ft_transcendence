@@ -5,7 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class IntraAuthGuard extends AuthGuard('42') {
 	async canActivate(context: ExecutionContext) {
 		const activate = (await super.canActivate(context)) as boolean;
-		const request = context.switchToHttp().getRequest();
+		// const request = context.switchToHttp().getRequest();
 		return activate;
 	}
 }
@@ -13,7 +13,7 @@ export class IntraAuthGuard extends AuthGuard('42') {
 export class JwtGuard extends AuthGuard('jwt') {
 	async canActivate(context: ExecutionContext) {
 		const activate = (await super.canActivate(context)) as boolean;
-		const request = context.switchToHttp().getRequest();
+		// const request = context.switchToHttp().getRequest();
 		return activate;
 	}
 }
@@ -21,7 +21,7 @@ export class JwtGuard extends AuthGuard('jwt') {
 export class JwtNo2faGuard extends AuthGuard('jwt-no-2fa') {
 	async canActivate(context: ExecutionContext) {
 		const activate = (await super.canActivate(context)) as boolean;
-		const request = context.switchToHttp().getRequest();
+		// const request = context.switchToHttp().getRequest();
 		return activate;
 	}
 }

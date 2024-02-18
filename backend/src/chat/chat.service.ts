@@ -152,7 +152,7 @@ export class ChatService {
 			invites: true,
 		},
 	): Promise<ChatChannel[]> {
-		let chats: ChatChannel[] = [];
+		const chats: ChatChannel[] = [];
 		for (const chat of inputChats) {
 			// Get the micro profile of each chat member
 			const chatMembers: UserProfileMicro[] =
@@ -590,7 +590,7 @@ export class ChatService {
 		]);
 
 		// Populate the messages with the user and chat
-		let messages: ChatMessage[] = [];
+		const messages: ChatMessage[] = [];
 		for (const message of chatMessages) {
 			messages.push({
 				id: message.id,
@@ -639,7 +639,7 @@ export class ChatService {
 		return admins;
 	}
 
-	async joinChat(chat: Chat, userId: string, password?: string) {
+	async joinChat(chat: Chat, userId: string) {
 		await this.updateChat({
 			where: { id: chat.id },
 			data: { users: { push: userId } },
@@ -657,7 +657,7 @@ export class ChatService {
 		});
 	}
 
-	async removeOwnerFromChat(chat: Chat, userId: string) {
+	async removeOwnerFromChat(chat: Chat) {
 		await this.updateChat({
 			where: {
 				id: chat.id,
@@ -671,7 +671,7 @@ export class ChatService {
 	async deleteEmptyChat(chat: Chat) {
 		// Try to delete the chat if it's empty
 		try {
-			const chatUpdated: Chat = await this.prisma.chat.delete({
+			await this.prisma.chat.delete({
 				where: {
 					id: chat.id,
 					users: {
@@ -700,8 +700,7 @@ export class ChatService {
 			await this.removeAdminFromChat(chat, userId);
 
 		// If you were the chat owner, remove the chat owner
-		if (chat.chatOwner === userId)
-			await this.removeOwnerFromChat(chat, userId);
+		if (chat.chatOwner === userId) await this.removeOwnerFromChat(chat);
 
 		// If the chat is empty, delete it
 		await this.deleteEmptyChat(chat);

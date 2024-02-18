@@ -15,7 +15,7 @@ import { ChatService } from './chat.service';
 import { IsLowercase, IsOptional, IsUUID, Length } from 'class-validator';
 import { FormDataRequest } from 'nestjs-form-data';
 import { JwtGuard } from 'src/auth/auth.guards';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/user/user.controller';
 import filetypeinfo from 'magic-bytes.js';
@@ -183,7 +183,9 @@ export class ChatController {
 			members,
 			invites,
 			bans,
-			admins: chat.chatAdmins.map((admin) => members.find((m) => m.id === admin)),
+			admins: chat.chatAdmins.map((admin) =>
+				members.find((m) => m.id === admin),
+			),
 			owner: members.find((m) => m.id === chat.chatOwner),
 		};
 	}
@@ -219,7 +221,7 @@ export class ChatController {
 		if (chat.inviteOnly && !chat.invites.includes(req.user.id))
 			throw new HttpException('You are not allowed to do that', 403);
 
-		await this.chatService.joinChat(chat, req.user.id, body.password);
+		await this.chatService.joinChat(chat, req.user.id);
 		await this.chatService.joinChannelOnSocket(chat.id, req.user.id);
 	}
 
@@ -248,7 +250,7 @@ export class ChatController {
 
 		if (body.password) body.password = bcrypt.hashSync(body.password, 10);
 
-		const update = await this.chatService.updateChat({
+		await this.chatService.updateChat({
 			where: { id: body.id },
 			data: {
 				chatName: body.name,
