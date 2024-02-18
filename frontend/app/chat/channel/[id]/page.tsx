@@ -24,7 +24,7 @@ import socket from "@/lib/socket";
 import {
 	makeForm,
 	randomString,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	useChatContext,
 	useContextMenu,
 } from "@/lib/utils";
@@ -64,6 +64,7 @@ function MemberControls({
 		<Card className="relative h-64 overflow-hidden">
 			<div className="absolute inset-0 overflow-y-scroll py-2">
 				<UserList
+					showHover={false}
 					Controls={controls}
 					type="list"
 					users={list}
@@ -83,11 +84,11 @@ function InviteBox() {
 	const [loading, setLoading] = useState(false);
 	const formRef = useRef<HTMLFormElement>(null);
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const handlesubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
 		const username = ((formData.get("name") as string) || "").trim();
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/invite",
 			makeForm({
 				id: selectedServer?.id,
@@ -106,7 +107,7 @@ function InviteBox() {
 	return (
 		<form
 			ref={formRef}
-			onSubmit={handleSubmit}
+			onSubmit={handlesubmit}
 			className="flex w-full gap-4"
 		>
 			<Input
@@ -135,8 +136,8 @@ function RevokeInviteButton({ user }: { user: User }) {
 		useChatContext();
 	const [loading, setLoading] = useState(false);
 
-	const handleRevokeInvite = (user: User) => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+	const handlerevokeinvite = (user: User) => {
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/revoke_invite",
 			makeForm({
 				chatId: selectedServer?.id,
@@ -152,7 +153,7 @@ function RevokeInviteButton({ user }: { user: User }) {
 	return (
 		<div className="flex items-center justify-center">
 			<Button
-				onClick={() => handleRevokeInvite(user)}
+				onClick={() => handlerevokeinvite(user)}
 				className="pl-3"
 				startContent={<X />}
 				variant="danger"
@@ -168,8 +169,8 @@ function RevokeBanButton({ user }: { user: User }) {
 	const { selectedServerId, serverMutate } = useChatContext();
 	const [loading, setLoading] = useState(false);
 
-	const handleRevokeBan = (user: User) => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+	const handlerevokeban = (user: User) => {
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/revoke_ban",
 			makeForm({
 				chatId: selectedServerId,
@@ -185,7 +186,7 @@ function RevokeBanButton({ user }: { user: User }) {
 	return (
 		<div className="flex items-center justify-center">
 			<Button
-				onClick={() => handleRevokeBan(user)}
+				onClick={() => handlerevokeban(user)}
 				className="pl-3"
 				startContent={<X />}
 				variant="danger"
@@ -201,8 +202,8 @@ function RevokeAdminButton({ user }: { user: User }) {
 	const { selectedServerId, serverMutate } = useChatContext();
 	const [loading, setLoading] = useState(false);
 
-	const handleRevokeAdmin = (user: User) => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+	const handlerevokeadmin = (user: User) => {
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/remove_admin",
 			makeForm({
 				chatId: selectedServerId,
@@ -218,7 +219,7 @@ function RevokeAdminButton({ user }: { user: User }) {
 	return (
 		<div className="flex items-center justify-center">
 			<Button
-				onClick={() => handleRevokeAdmin(user)}
+				onClick={() => handlerevokeadmin(user)}
 				className="pl-3"
 				startContent={<X />}
 				variant="danger"
@@ -242,18 +243,16 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	const [passwordEnabled, setPasswordEnabled] = useState(
 		selectedServer?.enable_password,
 	);
-	const [inviteOnlyEnabled, setInviteOnlyEnabled] = useState(
-		selectedServer?.enable_inviteonly,
-	);
+
 	const formRef = useRef<HTMLFormElement>(null);
 
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+	const handlesubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.target as HTMLFormElement);
 		const name = ((formData.get("name") as string) || "").trim();
 		const topic = ((formData.get("topic") as string) || "").trim();
 		const password = ((formData.get("password") as string) || "").trim();
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/update",
 			makeForm({
 				id: selectedServer?.id,
@@ -272,7 +271,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	};
 
 	const handleTogglePassword = (value: boolean) => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/update",
 			makeForm({
 				id: selectedServer?.id,
@@ -288,20 +287,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 		setPasswordEnabled(value);
 	};
 
-	const handleToggleInviteOnly = (value: boolean) => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-			"/chat/channel/update",
-			makeForm({
-				id: selectedServer?.id,
-				enable_inviteonly: value,
-			}),
-			undefined,
-			`Successfully ${!value ? "disabled" : "enabled"} invite only mode`,
-			`Failed to ${!value ? "disable" : "enable"} invite only mode`,
-			serverMutate,
-		);
-		setInviteOnlyEnabled(value);
-	};
+
 
 	if (!selectedServer) return null;
 
@@ -332,7 +318,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 					<form
 						ref={formRef}
 						id="general"
-						onSubmit={handleSubmit}
+						onSubmit={handlesubmit}
 						className="hidden"
 					/>
 					<div className="flex flex-col items-center gap-4 p-4">
@@ -435,40 +421,6 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 				<Divider className="my-8" />
 				<Card header={"Member Settings"} className="bg-card-200">
 					<div className="flex flex-col items-center gap-4 p-4">
-						<SettingSection title="Invites">
-							<div className="flex w-full flex-col gap-4">
-								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
-									Enable invite-only
-									<div className="relative flex flex-1 items-center justify-end">
-										<SuperSwitch
-											isSelected={inviteOnlyEnabled}
-											onValueChange={
-												handleToggleInviteOnly
-											}
-											className="absolute"
-										/>
-									</div>
-								</div>
-								<p className="text-base leading-4">
-									When enabled, users will need an invite to
-									join the channel.
-								</p>
-								<div
-									className={twMerge(
-										"flex flex-col gap-4",
-										!inviteOnlyEnabled &&
-											"pointer-events-none brightness-50",
-									)}
-								>
-									<MemberControls
-										list={selectedServerInvites}
-										controls={RevokeInviteButton}
-									/>
-									<InviteBox />
-								</div>
-							</div>
-						</SettingSection>
-						<Divider className="my-4" />
 						<SettingSection title="Operators">
 							<div className="flex w-full flex-col gap-4">
 								<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
@@ -527,7 +479,9 @@ function MemberList() {
 					users={selectedServerMembers}
 					showBadge={(user) => {
 						const isOwner = selectedServer?.owner == user.id;
-						const isAdmin = selectedServer?.admins.includes(user.id);
+						const isAdmin = selectedServer?.admins.includes(
+							user.id,
+						);
 
 						if (isOwner) return "/owner.png";
 						if (isAdmin) return "/hammer.png";
@@ -559,7 +513,7 @@ function ChatInput() {
 				)
 			: [];
 		return [showCommands, commandsToShow];
-	}, [message]);
+	}, [message, selectedServer?.isDM]);
 
 	const tooltipLogic = () => {
 		if (message.length >= maxMessageLength) {
@@ -710,6 +664,31 @@ function ChatInput() {
 	);
 }
 
+function MessageContextMenu({
+	message,
+	children,
+}: {
+	message: Message;
+	children?: any;
+}) {
+	const date = new Date(message.createdAt).toLocaleDateString();
+	const time = new Date(message.createdAt).toLocaleTimeString();
+	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
+
+	return (
+		<div className="flex w-64 flex-col gap-2 rounded-3xl bg-card-250 p-4">
+			<div className="flex flex-col">
+				<span className="text-xs text-foreground-500">
+					{message.user.username}{`'s message`}
+				</span>
+				<span>{dateStr + " at " + time}</span>
+			</div>
+			<Divider />
+			<div className="flex flex-col">{children}</div>
+		</div>
+	);
+}
+
 function MessageListEntry({
 	message,
 	index,
@@ -733,7 +712,7 @@ function MessageListEntry({
 	} = useChatContext();
 	const displayed =
 		displayedMessages[message.groupid] || message.blocked != true;
-	const optionsAllowed = 
+	const optionsAllowed =
 		message.user.id == session.id ||
 		((selectedServer?.admins.includes(session.id) ||
 			selectedServer?.owner == session.id) &&
@@ -744,12 +723,22 @@ function MessageListEntry({
 	return (
 		<>
 			{message.user.id == "server" ? (
-				<div className="mt-2 flex w-full items-center gap-2 text-foreground-500 px-6">
+				<ContextMenuTrigger
+					className="mt-2 flex w-full items-center gap-2 px-6 text-foreground-500 hover:bg-black/15"
+					menuContent={
+						<MessageContextMenu
+							message={{
+								...message,
+								user: { ...message.user, username: "Server" },
+							}}
+						></MessageContextMenu>
+					}
+				>
 					<div className="rounded-full bg-card-100 p-2 px-4 text-xs text-white">
 						SERVER
 					</div>
 					<div>{message.content}</div>
-				</div>
+				</ContextMenuTrigger>
 			) : (
 				displayed && (
 					<ContextMenuTrigger
@@ -759,59 +748,43 @@ function MessageListEntry({
 							!message.loaded && !message.error && "opacity-50",
 						)}
 						menuContent={
-							<div className="flex w-64 flex-col gap-2 rounded-3xl bg-card-250 p-4">
-								<div className="flex flex-col">
-									<span className="text-xs text-foreground-500">
-										{message.user.username}'s message
-									</span>
-									<span>
-										{dateStr + " at " + time}
-									</span>
-								</div>
-								<Divider />
-								<div className="flex flex-col">
-									<Button
-										onClick={() => {
-											useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
-												"/chat/channel/message/delete",
-												makeForm({
-													msgId: message.id,
+							<MessageContextMenu message={message}>
+								<Button
+									onClick={() => {
+										AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+											"/chat/channel/message/delete",
+											makeForm({
+												msgId: message.id,
+											}),
+											undefined,
+											`Successfully deleted the message`,
+											`Failed to delete the message`,
+										);
+										setAkashicRecords((prev) => {
+											const newRecords = {
+												...prev,
+												[selectedServerId!]: prev[
+													selectedServerId!
+												].map((msg) => {
+													if (msg.id == message.id)
+														msg.loaded = false;
+													return msg;
 												}),
-												undefined,
-												`Successfully deleted the message`,
-												`Failed to delete the message`,
-											);
-											setAkashicRecords((prev) => {
-												const newRecords = {
-													...prev,
-													[selectedServerId!]: prev[
-														selectedServerId!
-													].map(
-														(msg) => {
-															if (
-																msg.id ==
-																message.id
-															)
-																msg.loaded = false;
-															return msg;
-														}
-													),
-												};
+											};
 
-												return newRecords;
-											});
+											return newRecords;
+										});
 
-											closeMenu();
-										}}
-										startContent={<Trash size={16} />}
-										className="w-full justify-start"
-										variant="transparent"
-										disabled={!optionsAllowed}
-									>
-										Delete
-									</Button>
-								</div>
-							</div>
+										closeMenu();
+									}}
+									startContent={<Trash size={16} />}
+									className="w-full justify-start"
+									variant="transparent"
+									disabled={!optionsAllowed}
+								>
+									Delete
+								</Button>
+							</MessageContextMenu>
 						}
 					>
 						<div
@@ -910,11 +883,21 @@ export default function App({ params }: any) {
 		serversMutate,
 		prevSelectedServerId,
 		prevSelectedServerMessages,
+		selectedServerInvites,
+		serverMutate,
 	} = useChatContext();
 	const { session } = useContext(PublicContext) as any;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+	const {
+		isOpen: inviteOpen,
+		onOpen: onInviteOpen,
+		onClose: onInviteClose,
+	} = useDisclosure();
 	const [scrollLocked, setScrollLocked] = useState(false);
+	const [inviteOnlyEnabled, setInviteOnlyEnabled] = useState(
+		selectedServer?.enable_inviteonly,
+	);
 	const initial = useRef(true);
 	const hasPermissions =
 		selectedServer?.owner == session?.id ||
@@ -955,16 +938,16 @@ export default function App({ params }: any) {
 			}
 		};
 
-		messageBoxRef.current?.addEventListener("wheel", handleScroll, {
+		messageBox?.addEventListener("wheel", handleScroll, {
 			passive: true,
 		});
 		return () => {
-			messageBoxRef.current?.removeEventListener("wheel", handleScroll);
+			messageBox?.removeEventListener("wheel", handleScroll);
 		};
-	}, [selectedServerMessages, selectedServerId, messageBoxRef]);
+	}, [selectedServerMessages, selectedServerId, messageBoxRef, prevSelectedServerMessages, prevSelectedServerId, scrollLocked]);
 
 	const handleLeave = () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			"/chat/channel/leave",
 			makeForm({
 				id: selectedServer?.id,
@@ -974,6 +957,21 @@ export default function App({ params }: any) {
 			`Failed to leave the channel`,
 			serversMutate,
 		);
+	};
+
+	const handleToggleInviteOnly = (value: boolean) => {
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/chat/channel/update",
+			makeForm({
+				id: selectedServer?.id,
+				enable_inviteonly: value,
+			}),
+			undefined,
+			`Successfully ${!value ? "disabled" : "enabled"} invite only mode`,
+			`Failed to ${!value ? "disable" : "enable"} invite only mode`,
+			serverMutate,
+		);
+		setInviteOnlyEnabled(value);
 	};
 
 	if (!selectedServer) return null;
@@ -1031,9 +1029,72 @@ export default function App({ params }: any) {
 							</div>
 							<div className="flex shrink-0 items-center justify-end gap-2 px-4">
 								{!selectedServer?.isDM && (
-									<Button variant="ghost" iconOnly>
-										<UserPlus2 />
-									</Button>
+									<>
+										<ModalSet
+											placement="center"
+											isOpen={inviteOpen}
+											onClose={onInviteClose}
+											onOpenChange={onInviteClose}
+											title="Invite Users"
+										>
+											<div className="p-2">
+
+											<div className="p-6 bg-card-200 rounded-3xl">
+
+											<SettingSection title="Invites">
+												<div className="flex w-full flex-col gap-4">
+													<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+														Enable invite-only
+														<div className="relative flex flex-1 items-center justify-end">
+															<SuperSwitch
+																isSelected={
+																	inviteOnlyEnabled
+																}
+																onValueChange={
+																	handleToggleInviteOnly
+																}
+																className="absolute"
+															/>
+														</div>
+													</div>
+													<p className="text-base leading-4">
+														When enabled, users will
+														need an invite to join
+														the channel.
+													</p>
+													<div
+														className={twMerge(
+															"flex flex-col gap-4",
+															!inviteOnlyEnabled &&
+																"pointer-events-none brightness-50",
+														)}
+													>
+														<MemberControls
+															list={
+																selectedServerInvites
+															}
+															controls={
+																RevokeInviteButton
+															}
+														/>
+														<InviteBox />
+													</div>
+												</div>
+											</SettingSection>
+											</div>
+											</div>
+
+
+										</ModalSet>
+
+										<Button
+											variant="ghost"
+											iconOnly
+											onClick={onInviteOpen}
+										>
+											<UserPlus2 />
+										</Button>
+									</>
 								)}
 								<Button
 									iconOnly={showMembers == false}

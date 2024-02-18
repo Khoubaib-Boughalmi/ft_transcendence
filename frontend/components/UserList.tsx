@@ -1,13 +1,13 @@
 import { useIsOnline } from "@/lib/utils";
 import { User } from "@/types/profile";
-import { Tooltip } from "@nextui-org/react";
+import { Tooltip, useDisclosure } from "@nextui-org/react";
 import Link from "next/link";
 import { twMerge } from "tailwind-merge";
 import NoData from "./NoData";
 import Status from "./Status";
 import SuperImage from "./SuperImage";
 import UserHover from "./UserHover";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 type ClassNames = {
 	list?: string;
@@ -59,6 +59,7 @@ function UserListGridEntry({
 		<SuperTooltip
 			delay={hoverDelay || 250}
 			content={<UserHover user={user} />}
+			isDismissable={true}
 		>
 			<Link
 				href={`/profile/${user.username}`}
@@ -93,6 +94,7 @@ function UserListListEntry({
 	hoverDelay,
 	Controls,
 	showBadge,
+	showHover,
 }: {
 	user: User;
 	hoverDelay?: number;
@@ -100,6 +102,7 @@ function UserListListEntry({
 	classNames?: ClassNames;
 	Controls?: any;
 	showBadge?: (user: User) => string | null;
+	showHover?: boolean;
 }) {
 	const isOnline = useIsOnline(user.id);
 	const badge = showBadge && showBadge(user);
@@ -109,6 +112,8 @@ function UserListListEntry({
 			placement="left"
 			delay={hoverDelay || 250}
 			content={<UserHover user={user} />}
+			isDisabled={!showHover}
+			isDismissable={true}
 		>
 			<div
 				className={twMerge(
@@ -130,13 +135,10 @@ function UserListListEntry({
 				>
 					{badge && (
 						<div className="absolute left-0 top-0 z-10">
-							<img
-								src={badge}
-								className="h-3 w-3 object-cover"
-							/>
+							<img src={badge} className="h-3 w-3 object-cover" />
 						</div>
 					)}
-					<div className="flex h-full w-full items-center gap-4 overflow-hidden">
+					<div className="flex h-full w-full items-center gap-3 overflow-hidden">
 						<div
 							className={twMerge(
 								"relative aspect-square h-12 w-12 flex-shrink-0 overflow-hidden rounded-full",
@@ -184,6 +186,7 @@ export default function UserList({
 	classNames,
 	showBadge,
 	Controls,
+	showHover = true,
 }: {
 	users: User[];
 	hoverDelay?: number;
@@ -192,6 +195,7 @@ export default function UserList({
 	classNames?: ClassNames;
 	showBadge?: (user: User) => string | null;
 	Controls?: ({ user }: { user: User }) => any;
+	showHover?: boolean;
 }) {
 	if (type == "list")
 		return (
@@ -206,6 +210,7 @@ export default function UserList({
 						size={size}
 						user={user}
 						showBadge={showBadge}
+						showHover={showHover}
 					/>
 				))}
 			</div>

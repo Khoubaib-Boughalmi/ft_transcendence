@@ -1,5 +1,5 @@
 import PublicContext from "@/contexts/PublicContext";
-import { useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
+import { AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
 import { useContext, useRef, useState } from "react";
 import { Button } from "./Button";
 
@@ -35,7 +35,7 @@ export default function UploadButton({
 				formData.append(key, value);
 
 		if (file)
-			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 				endpoint,
 				formData,
 				setLoading,

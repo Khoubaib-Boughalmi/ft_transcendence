@@ -14,7 +14,7 @@ import {
 	fetcher,
 	getFlag,
 	makeForm,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 } from "@/lib/utils";
 import { User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
@@ -29,7 +29,7 @@ function DisableTwoFactorAuthentication({ user }: { user: User }) {
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 
 	const handleDisable = async () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/auth/2fa/disable`,
 			null,
 			setLoading,
@@ -133,7 +133,7 @@ function EnableTwoFactorAuthentication({ user }: { user: User }) {
 		const formData = new FormData(e.currentTarget);
 		const otp = formData.get("otp");
 		if (otp) {
-			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 				`/auth/2fa/enable`,
 				makeForm({ otp }),
 				setLoading,
@@ -203,7 +203,7 @@ export default function Settings() {
 	const [loading, setLoading] = useState(false);
 
 	const handleSave = async () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/user/settings/update`,
 			makeForm({
 				username,

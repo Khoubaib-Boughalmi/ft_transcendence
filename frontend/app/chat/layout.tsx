@@ -5,12 +5,12 @@ import ServerList from "@/components/ServerList";
 import ChatContext from "@/contexts/ChatContext";
 import PublicContext from "@/contexts/PublicContext";
 import socket from "@/lib/socket";
-import { useServerId } from "@/lib/utils";
+import { randomString, useServerId } from "@/lib/utils";
 import { fetcherUnsafe, useChatContext, useServerList } from "@/lib/utils";
 import { Message, Server } from "@/types/chat";
 import { User } from "@/types/profile";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useContext, useEffect, useRef, useState } from "react";
+import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 
@@ -61,7 +61,6 @@ function      useSelectedServerMessages(
 						...prev,
 						[selectedServerId]: ((data as any) || []).map(
 							(message: Message) => {
-								message.groupid = message.id;
 								message.blocked = session.blocked_users.some(
 									(user: User) => {
 										return user.id == message.user.id;
@@ -96,8 +95,8 @@ function useSelectedServerData(selectedServerId: string | null) {
 
 	// Sort the members list so that the owner is always first, then the admins, then the rest of the members in alphabetical order
 	const sortedMembersList = selectedServerData?.members?.sort((a: User, b: User) => {
-		if (a.id == selectedServerData?.owner.id) return -1;
-		if (b.id == selectedServerData?.owner.id) return 1;
+		if (a.id == selectedServerData?.owner?.id) return -1;
+		if (b.id == selectedServerData?.owner?.id) return 1;
 		if (selectedServerData?.admins?.find((admin: User) => admin.id == a.id)) return -1;
 		if (selectedServerData?.admins?.find((admin: User) => admin.id == b.id)) return 1;
 		return a.username.localeCompare(b.username);
@@ -121,6 +120,10 @@ function useSelectedServerMessagesFixer(
 	const messages = [...(selectedServerMessages || [])];
 
 	messageParents.current = {};
+	for (let i = 0; i < messages.length; i++) {
+		messages[i].groupid = randomString();
+	}
+
 	for (let i = 0; i < messages.length; i++) {
 		if (messages[i].user.id == messages[i + 1]?.user.id) {
 			messages[i].noAvatar = true;
@@ -201,20 +204,20 @@ export default function Page({
 		if (fixedSelectedServerMessages) {
 			prevSelectedServerMessages.current = fixedSelectedServerMessages;
 		}
-	}, [akashicRecords]);
+	}, [akashicRecords, fixedSelectedServerMessages]);
 
-	const serverMutate = async () => {
+	const serverMutate = useCallback(async () => {
 		await Promise.all([
 			serversMutate(),
 			selectedServerMessagesMutate(),
 			selectedServerDataMutate(),
 		]);
-	};
+	}, [selectedServerDataMutate, selectedServerMessagesMutate, serversMutate]);
 
-	const navigateToServer = (serverId: string) => {
+	const navigateToServer = useCallback((serverId: string) => {
 		setTimesNavigated((prev) => prev + 1);
 		router.push(`/chat/channel/${serverId}`);
-	};
+	}, [router]);
 
 	useEffect(() => {
 		if (prevServers.current != null) {
@@ -232,7 +235,7 @@ export default function Page({
 		}
 
 		prevServers.current = servers;
-	}, [servers]);
+	}, [servers, expecting, navigateToServer, prevServers, setExpecting]);
 
 	useEffect(() => {
 		socket.on("message", async (message: Message) => {
@@ -305,7 +308,7 @@ export default function Page({
 			socket.off("message");
 			socket.off("exception");
 		};
-	}, [akashicRecords]);
+	}, [akashicRecords, selectedServerId, session.id, serverMutate]);
 
 	useEffect(() => {
 		if (expanded == false && selectedServer) {
@@ -314,9 +317,9 @@ export default function Page({
 		}
 		if (selectedServer)
 			setNotifications((prev: any) =>
-				[...prev].filter((n: Message) => n.chatId != selectedServer.id),
+				[...(prev || [])].filter((n: Message) => n.chatId != selectedServer.id),
 			);
-	}, [expanded, selectedServer]);
+	}, [expanded, selectedServer, listTab, setNotifications]);
 
 	return (
 		<div

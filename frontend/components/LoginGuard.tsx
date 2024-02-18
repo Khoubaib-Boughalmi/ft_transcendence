@@ -4,7 +4,7 @@ import { Spinner } from "@nextui-org/react";
 import { useContext } from "react";
 import { Button } from "./Button";
 
-export default function ({ children }: any) {
+export default function LoginGuard({ children }: any) {
 	const { verified, verifiedLoading, sessionLoading } = useContext(
 		PublicContext,
 	) as any;

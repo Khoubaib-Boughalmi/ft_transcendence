@@ -2,7 +2,7 @@
 
 import PublicContext from "@/contexts/PublicContext";
 import Image from "next/image";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 export default function SuperImage({
@@ -24,16 +24,16 @@ export default function SuperImage({
 	const imgRef = useRef<HTMLImageElement>(null);
 	const loaded = loadedImages.includes(src);
 
-	const updateLoadedImages = () => {
+	const updateLoadedImages = useCallback(() => {
 		if (!loadedImages.includes(src))
 			setLoadedImages((prev: string[]) =>
 				[...prev, src].filter((v, i, a) => a.indexOf(v) === i),
 			);
-	};
+	}, [loadedImages, setLoadedImages, src]);
 
 	useEffect(() => {
 		if (imgRef.current && imgRef.current.complete) updateLoadedImages();
-	}, [src]);
+	}, [src, updateLoadedImages]);
 
 	useEffect(() => {
 		if (loaded) {

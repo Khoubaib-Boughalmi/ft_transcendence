@@ -6,7 +6,7 @@ import { InteractionType, Rank, User } from "@/types/profile";
 import { usePathname } from "next/navigation";
 import { useContext, useRef } from "react";
 import toast from "react-hot-toast";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -67,7 +67,7 @@ export async function fetcherUnsafe<T>(url: string) {
 	return axios.get<T>(url).then((res) => res.data);
 }
 
-export async function useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+export async function AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 	endpoint: string,
 	data?: any,
 	setLoading?: (loading: boolean) => void,
@@ -128,18 +128,21 @@ export async function InteractionFunctionality(
 	const [buttonText, successText, errorText, endpointURL] =
 		interactionDictionary[type];
 
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 		endpointURL,
 		makeForm({ id: user.id }),
 		setLoading,
 		successText,
 		errorText,
-		sessionMutate,
+		async () => {
+			await sessionMutate();
+			await mutate(`/chat/channel/list`);
+		}
 	);
 }
 
-export function useIsOnline(userId: string) {
-	const { data } = useSWR(`/user/profile/isonline/${userId}`, fetcher, {
+export function useIsOnline(userId: string | null) {
+	const { data } = useSWR(userId ? `/user/profile/isonline/${userId}` : null, fetcher, {
 		refreshInterval: 10000,
 	}) as any;
 
@@ -174,6 +177,6 @@ export function useContextMenu(): {
 
 export function useServerId(pathname: string) {
 	const isChat = pathname.includes("/channel");
-	const selectedServerId = isChat ? pathname.split("/").pop()! : null;
-	return selectedServerId;
+	const selectedServerId = isChat ? pathname.split("/").pop()?.trim() : null;
+	return selectedServerId ?? null;
 }

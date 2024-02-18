@@ -42,6 +42,8 @@ import useSWR from "swr";
 
 const ProfileContext = createContext({});
 
+const titles = ["Overview", "Friends", "Achievements", "Stats"];
+
 function SessionLoadingSkeleton() {
 	const { userLoading } = useContext(ProfileContext) as any;
 
@@ -406,7 +408,7 @@ function ProfileFriends({ user }: { user: User }) {
 						}
 					>
 						<div className="p-2">
-							<UserList type="list" users={user.friends!} />
+							<UserList showHover={false} type="list" users={user.friends!} />
 						</div>
 					</ModalSet>
 				</div>
@@ -425,7 +427,6 @@ function ProfileNavigation() {
 	const [extended, setExtended] = useState(false);
 	const tabNavRef = useRef(null) as any;
 	const originalTabNavTop = useRef(-1) as any;
-	const titles = ["Overview", "Friends", "Achievements", "Stats"];
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -454,7 +455,7 @@ function ProfileNavigation() {
 		handleScroll();
 
 		return () => window.removeEventListener("scroll", handleScroll);
-	}, [tabNavRef.current]);
+	}, []);
 
 	return (
 		<div

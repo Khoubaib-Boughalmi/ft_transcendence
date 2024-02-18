@@ -38,6 +38,7 @@ export default function Providers({ accessToken, children }: any) {
 	const [expecting, setExpecting] = useState(false);
 	const [notifications, setNotifications] = useState<Message[] | null>(null);
 	const pathname = usePathname();
+	const serverId = useServerId(pathname);
 
 	useEffect(() => {
 		const sessionNotifications =
@@ -58,14 +59,18 @@ export default function Providers({ accessToken, children }: any) {
 			mutate(key);
 		});
 		socket.on("notifications", async (message: Message) => {
-			const serverId = useServerId(pathname);
-			session &&
-				message.user.id != session.id &&
-				(!serverId || serverId != message.chatId) &&
+			if (session && message.user.id != session.id && serverId != message.chatId)
+			{
+				console.log({
+					serverId,
+					chatId: message.chatId,
+					equals: serverId == message.chatId,
+				})
 				setNotifications((prev: Message[] | null) => [
 					...(prev ?? []),
 					message,
 				]);
+			}
 		});
 
 		return () => {
@@ -73,7 +78,7 @@ export default function Providers({ accessToken, children }: any) {
 			socket.off("mutate");
 			socket.off("notifications");
 		};
-	}, [accessToken, session]);
+	}, [accessToken, session, serverId]);
 
 	return (
 		<PublicContext.Provider

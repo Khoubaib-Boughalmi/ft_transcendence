@@ -24,7 +24,7 @@ import MessageBox from "./MessageBox";
 import Status from "./Status";
 import SuperImage from "./SuperImage";
 
-export default function UserHover({ user }: { user: User }) {
+export default function UserHover({ user }: { user: User}) {
 	const [loading, setLoading] = useState(false);
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 	const areFriends = session.friends.find((f: User) => f.id == user.id);

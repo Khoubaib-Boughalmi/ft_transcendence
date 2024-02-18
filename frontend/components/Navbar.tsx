@@ -11,7 +11,7 @@ import {
 	getFlag,
 	getRank,
 	makeForm,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	useChatContext,
 } from "@/lib/utils";
 import { Message } from "@/types/chat";
@@ -151,11 +151,11 @@ function NotificationsButton() {
 			<DropdownTrigger aria-label="Trigger">
 				<div className="flex items-center justify-center">
 					<Badge
-						isInvisible={notifications.length == 0}
+						isInvisible={notifications?.length == 0}
 						content={
-							notifications.length > 99
+							notifications?.length > 99
 								? "99+"
-								: notifications.length
+								: notifications?.length
 						}
 						color="danger"
 						className="scale-90 text-xs"
@@ -181,9 +181,9 @@ function NotificationsButton() {
 					>
 						<div className="flex items-center justify-between">
 							<div>Notifications</div>
-							{notifications.length > 0 && (
+							{notifications?.length > 0 && (
 								<div className="text-xs text-foreground-500">
-									{notifications.length}
+									{notifications?.length}
 								</div>
 							)}
 						</div>
@@ -309,10 +309,10 @@ function FriendsButton() {
 		if (doc.startViewTransition && closeOnSelect == false)
 			doc.startViewTransition(() => setActualTab(tab));
 		else setActualTab(tab);
-	}, [tab]);
+	}, [tab, closeOnSelect]);
 
 	const handleControls = (user: User, action: "accept" | "reject") => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/user/${action}Friend`,
 			makeForm({ id: user.id }),
 			setLoading,
@@ -393,6 +393,7 @@ function FriendsButton() {
 				>
 					{actualTab == "requests" ? (
 						<UserList
+							showHover={false}
 							type="list"
 							size="xs"
 							users={session.friend_requests}
@@ -431,6 +432,7 @@ function FriendsButton() {
 						/>
 					) : (
 						<UserList
+							showHover={false}
 							classNames={{ list: "max-h-[70vh]" }}
 							type="list"
 							size="xs"
@@ -460,7 +462,6 @@ function ProfileButton({ user }: { user: User }) {
 			<ModalSet
 				isOpen={isOpen}
 				onClose={onClose}
-				onOpen={onOpen}
 				size="xs"
 				title={"Theme"}
 				onOpenChange={onOpenChange}
@@ -651,7 +652,7 @@ function SearchBar() {
 				realQuery.length == 0 ? 0 : 500,
 			);
 		return () => clearTimeout(timeout);
-	}, [query]);
+	}, [query, realQuery.length, mutate]);
 
 	return (
 		<>
@@ -683,6 +684,7 @@ function SearchBar() {
 						</div>
 					) : query.length > 0 ? (
 						<UserList
+							showHover={false}
 							type="list"
 							classNames={{
 								entryContainer:

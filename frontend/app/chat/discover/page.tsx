@@ -10,7 +10,7 @@ import PublicContext from "@/contexts/PublicContext";
 import {
 	fetcher,
 	makeForm,
-	useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	useChatContext,
 } from "@/lib/utils";
 import { Server } from "@/types/chat";
@@ -41,7 +41,7 @@ function ServerCreationModal({
 		const formData = new FormData(e.target as HTMLFormElement);
 		const name = (formData.get("name") as string).trim();
 		if (name == "") return;
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/create`,
 			makeForm({ name }),
 			setCreateLoading,
@@ -62,7 +62,7 @@ function ServerCreationModal({
 		const name = (formData.get("name") as string).trim();
 		const password = (formData.get("password") as string).trim();
 		if (name == "") return;
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/join`,
 			makeForm({ name, password: [password, undefined][+!password] }),
 			setJoinLoading,
@@ -92,9 +92,9 @@ function ServerCreationModal({
 						className="flex flex-col items-end gap-4 p-4"
 					>
 						<p className="w-full">
-							Channels are where your members communicate. They're
+							{`Channels are where your members communicate. They're
 							best when organized around a topic - #games for
-							example.
+							example.`}
 						</p>
 						<div className="flex h-12 w-full gap-4">
 							<Input
@@ -172,7 +172,7 @@ function DiscoverListEntry({ server }: { server: Server }) {
 	const [loading, setLoading] = useState(false);
 
 	const handleJoin = () => {
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/join`,
 			makeForm({ name: server.name }),
 			setLoading,
@@ -267,7 +267,7 @@ export default function DiscoverPage() {
 			clearTimeout(timeout);
 			cache.delete(`/chat/channel/search/${realQuery}`);
 		};
-	}, [query]);
+	}, [query, realQuery, cache]);
 
 	return (
 		<div className="no-scrollbar flex min-h-full w-full flex-col overflow-y-scroll">
@@ -289,11 +289,11 @@ export default function DiscoverPage() {
 					</div>
 					<div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2">
 						<div className="flex items-end justify-center text-4xl font-medium">
-							Find your community on 1337
+							{`Find your community on 1337`}
 						</div>
 						<p className="text-center text-foreground-500">
-							From gaming, to music, to learning, there's a place
-							for you.
+							{`From gaming, to music, to learning, there's a place
+							for you.`}
 						</p>
 						<Input
 							value={query}

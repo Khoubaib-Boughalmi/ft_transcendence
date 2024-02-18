@@ -38,7 +38,6 @@ function GayMarkdown({ message }: { message: Message }) {
 	return (
 		<Markdown
 			key={message.id}
-			children={message.content}
 			disallowedElements={["p"]}
 			unwrapDisallowed
 			remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -114,7 +113,9 @@ function GayMarkdown({ message }: { message: Message }) {
 					);
 				},
 			}}
-		/>
+		>
+			{message.content}
+		</Markdown>
 	);
 }
 

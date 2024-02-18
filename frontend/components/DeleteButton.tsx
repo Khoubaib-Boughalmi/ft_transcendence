@@ -1,5 +1,5 @@
 import PublicContext from "@/contexts/PublicContext";
-import { useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
+import { AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import { useContext, useState } from "react";
 import { Button } from "./Button";
@@ -30,7 +30,7 @@ export default function DeleteButton({
 		if (data)
 			for (const [key, value] of Object.entries(data) as any)
 				formData.append(key, value);
-		useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			endpoint,
 			formData,
 			setLoading,

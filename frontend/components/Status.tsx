@@ -12,8 +12,9 @@ export default function Status({
 	className?: string;
 	isOnline?: boolean;
 }) {
-	isOnline = isOnline ?? useIsOnline(userId);
-	const status = isOnline == true ? "Online" : "Offline";
+	const response = useIsOnline(isOnline ? null : userId);
+	const or = isOnline ?? response;
+	const status = or == true ? "Online" : "Offline";
 
 	return (
 		<div

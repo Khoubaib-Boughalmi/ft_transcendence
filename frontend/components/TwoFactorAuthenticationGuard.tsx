@@ -1,6 +1,6 @@
 "use client";
 import PublicContext from "@/contexts/PublicContext";
-import { useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
+import { AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
 import { Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useContext, useRef, useState } from "react";
@@ -25,7 +25,7 @@ export default function Guard({ children }: { children: React.ReactNode }) {
 		const formData = new FormData(e.currentTarget);
 		const otp = formData.get("otp");
 		if (otp)
-			useAbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 				"/auth/2fa/login",
 				formData,
 				setLoading,
