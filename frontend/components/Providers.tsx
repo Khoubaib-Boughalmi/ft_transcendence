@@ -11,7 +11,7 @@ import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import useSWR, { mutate } from "swr";
-import ContextMenuPortal from "./ ContextMenuPortal";
+import ContextMenuPortal from "./ContextMenuPortal";
 import { useServerId } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
