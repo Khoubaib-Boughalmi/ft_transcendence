@@ -40,29 +40,32 @@ export default function MessageBox({
 				className="p-4"
 				onSubmit={async (e) => {
 					e.preventDefault();
+					onClose();
 					const formData = new FormData(e.target as HTMLFormElement);
 					const message = (formData.get("message") as string).trim();
 					if (!message) return;
 					if (message?.length < 1) return;
-					setExpecting(true);
 					// wait until the server list is loaded
 					while (serversLoading) {
 						await new Promise((resolve) =>
 							setTimeout(resolve, 100),
 						);
 					}
-					socket.emit("message", {
-						targetId: user.id,
-						queueId: randomString(),
-						message,
-					});
 
 					// if a dm with the user exists, get its id
 					const dm = servers.find(
 						(s: Server) => s.isDM && s.membersIds.includes(user.id),
 					);
 					if (dm) router.push(`/chat/channel/${dm.id}`);
-					else router.push(`/chat/discover`);
+					else {
+						setExpecting(true);
+						socket.emit("message", {
+							targetId: user.id,
+							queueId: randomString(),
+							message,
+						});
+						router.push(`/chat/discover`);
+					}
 				}}
 			>
 				<MessageInput

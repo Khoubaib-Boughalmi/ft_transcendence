@@ -520,7 +520,7 @@ function InteractionButton({
 }
 
 function ProfileTop({ user }: { user: User }) {
-	const { session } = useContext(PublicContext) as any;
+	const { session, onMessageOpen, setMessageTarget } = useContext(PublicContext) as any;
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const userBlocked = session.blocked_users.find(
 		(blocked: User) => blocked.id == user.id,
@@ -532,12 +532,6 @@ function ProfileTop({ user }: { user: User }) {
 		(request: User) => request.id == user.id,
 	);
 	const me = session.id == user.id;
-	const {
-		onOpen: onMessageOpen,
-		onClose: onMessageClose,
-		isOpen: isMessageOpen,
-		onOpenChange: onMessageOpenChange,
-	} = useDisclosure();
 
 	return (
 		<div className="relative flex w-full flex-col">
@@ -594,13 +588,6 @@ function ProfileTop({ user }: { user: User }) {
 							)}
 							{!userBlocked && (
 								<>
-									<MessageBox
-										user={user}
-										isOpen={isMessageOpen}
-										onOpen={onMessageOpen}
-										onClose={onMessageClose}
-										onOpenChange={onMessageOpenChange}
-									/>
 									<ModalSet
 										onClose={onClose}
 										title={`Options for ${user.username}`}
@@ -629,6 +616,7 @@ function ProfileTop({ user }: { user: User }) {
 												className="justify-start"
 												onClick={() => {
 													onClose();
+													setMessageTarget(user);
 													onMessageOpen();
 												}}
 											>

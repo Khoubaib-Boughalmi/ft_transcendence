@@ -24,9 +24,15 @@ import MessageBox from "./MessageBox";
 import Status from "./Status";
 import SuperImage from "./SuperImage";
 
-export default function UserHover({ user }: { user: User}) {
+export default function UserHover({ user }: { user: User }) {
 	const [loading, setLoading] = useState(false);
-	const { session, sessionMutate } = useContext(PublicContext) as any;
+	const {
+		session,
+		sessionMutate,
+		setMessageTarget,
+		onMessageOpen,
+		onMessageClose,
+	} = useContext(PublicContext) as any;
 	const areFriends = session.friends.find((f: User) => f.id == user.id);
 	const isBlocked = session.blocked_users.find((f: User) => f.id == user.id);
 	const { data: fullData, isLoading } = useSWR(
@@ -37,22 +43,9 @@ export default function UserHover({ user }: { user: User}) {
 		...dummyUser,
 		...user,
 	};
-	const {
-		isOpen: isMessageOpen,
-		onOpen: onMessageOpen,
-		onClose: onMessageClose,
-		onOpenChange: onMessageOpenChange,
-	} = useDisclosure();
 
 	return (
 		<>
-			<MessageBox
-				user={fakeUser}
-				isOpen={isMessageOpen}
-				onOpen={onMessageOpen}
-				onClose={onMessageClose}
-				onOpenChange={onMessageOpenChange}
-			/>
 			<div className="flex w-48 flex-col gap-1">
 				<div className="w-full flex-col">
 					<div
@@ -83,7 +76,9 @@ export default function UserHover({ user }: { user: User}) {
 								{user.username}
 							</span>
 							<span className="flex gap-1 text-[0.5rem]">
-								<span className="font-flag">{getFlag(user.country)}</span>
+								<span className="font-flag">
+									{getFlag(user.country)}
+								</span>
 								<span>{user.country}</span>
 							</span>
 						</div>
@@ -138,7 +133,10 @@ export default function UserHover({ user }: { user: User}) {
 										className="aspect-square flex-1"
 										iconOnly
 										variant="ghost"
-										onClick={onMessageOpen}
+										onClick={() => {
+											setMessageTarget(user);
+											onMessageOpen();
+										}}
 									>
 										<MessageSquareIcon />
 									</Button>

@@ -5,7 +5,7 @@ import socket from "@/lib/socket";
 import { fetcher } from "@/lib/utils";
 import { dummyUser } from "@/mocks/profile";
 import { Message } from "@/types/chat";
-import { NextUIProvider } from "@nextui-org/react";
+import { NextUIProvider, useDisclosure } from "@nextui-org/react";
 import jwt from "jsonwebtoken";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
@@ -14,6 +14,7 @@ import useSWR, { mutate } from "swr";
 import ContextMenuPortal from "./ContextMenuPortal";
 import { useServerId } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import MessageBox from "./MessageBox";
 
 export default function Providers({ accessToken, children }: any) {
 	const noRefresh = {
@@ -39,6 +40,8 @@ export default function Providers({ accessToken, children }: any) {
 	const [notifications, setNotifications] = useState<Message[] | null>(null);
 	const pathname = usePathname();
 	const serverId = useServerId(pathname);
+	const { isOpen: isMessageOpen, onOpen: onMessageOpen, onClose: onMessageClose, onOpenChange: onMessageOpenChange } = useDisclosure();
+	const [messageTarget, setMessageTarget] = useState(dummyUser);
 
 	useEffect(() => {
 		const sessionNotifications =
@@ -59,13 +62,11 @@ export default function Providers({ accessToken, children }: any) {
 			mutate(key);
 		});
 		socket.on("notifications", async (message: Message) => {
-			if (session && message.user.id != session.id && serverId != message.chatId)
-			{
-				console.log({
-					serverId,
-					chatId: message.chatId,
-					equals: serverId == message.chatId,
-				})
+			if (
+				session &&
+				message.user.id != session.id &&
+				serverId != message.chatId
+			) {
 				setNotifications((prev: Message[] | null) => [
 					...(prev ?? []),
 					message,
@@ -95,6 +96,9 @@ export default function Providers({ accessToken, children }: any) {
 				notifications,
 				setNotifications,
 				setExpecting,
+				setMessageTarget,
+				onMessageOpen,
+				onMessageClose,
 				fullMutate: () =>
 					Promise.all([sessionMutate(), verifiedMutate()]),
 				session: {
@@ -105,7 +109,16 @@ export default function Providers({ accessToken, children }: any) {
 		>
 			<ContextMenuPortal>
 				<ThemeProvider defaultTheme="red">
-					<NextUIProvider>{children}</NextUIProvider>
+					<NextUIProvider>
+						<MessageBox
+							user={messageTarget}
+							isOpen={isMessageOpen}
+							onOpen={onMessageOpen}
+							onClose={onMessageClose}
+							onOpenChange={onMessageOpenChange}
+						/>
+						{children}
+					</NextUIProvider>
 				</ThemeProvider>
 				<Toaster
 					toastOptions={{
