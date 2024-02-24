@@ -168,10 +168,12 @@ function ServerCreationModal({
 function DiscoverListEntry({ server }: { server: Server }) {
 	const router = useRouter();
 	const { servers } = useChatContext();
-	const { serversMutate, navigateToServer } = useChatContext();
+	const { serversMutate, navigateToServer, } = useChatContext();
 	const [loading, setLoading] = useState(false);
+	const { setExpecting } = useContext(PublicContext) as any;
 
 	const handleJoin = () => {
+		setExpecting(true);
 		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
 			`/chat/channel/join`,
 			makeForm({ name: server.name }),
@@ -284,7 +286,7 @@ export default function DiscoverPage() {
 							height={720}
 							alt="background"
 							src="/background3.png"
-							className="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-color-dodge brightness-90"
+							className="absolute inset-0 h-full w-full object-cover opacity-50 scale-150 translate-x-1/2 mix-blend-color-dodge brightness-80 blur-lg"
 						/>
 					</div>
 					<div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2">
