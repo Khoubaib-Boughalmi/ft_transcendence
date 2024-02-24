@@ -21,6 +21,7 @@ import ContextMenuContext from "@/contexts/ContextMenuContext";
 import PublicContext from "@/contexts/PublicContext";
 import generateBullshitExpression from "@/lib/bullshit";
 import socket from "@/lib/socket";
+import Image from "next/image";
 import {
 	makeForm,
 	randomString,
@@ -35,9 +36,14 @@ import {
 	DropdownTrigger,
 	Tooltip,
 	useDisclosure,
+	user,
 } from "@nextui-org/react";
 import {
+	Baby,
 	Check,
+	DollarSign,
+	Gavel,
+	Hammer,
 	LogOut,
 	MoreHorizontal,
 	Mouse,
@@ -45,36 +51,67 @@ import {
 	Plus,
 	Settings2,
 	Sparkles,
+	Star,
+	StarOff,
+	Sword,
 	Trash,
+	User2,
 	UserPlus2,
 	Users2,
 	X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
+import MemberControls from "@/components/MemberControls";
 
-function MemberControls({
-	list,
-	controls,
+function MessageContextMenu({
+	message,
+	children,
 }: {
-	list: User[];
-	controls: ({ user }: { user: User }) => any;
+	message: Message;
+	children?: any;
+}) {
+	const date = new Date(message.createdAt).toLocaleDateString();
+	const time = new Date(message.createdAt).toLocaleTimeString();
+	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
+
+	return (
+		<div className="flex w-64 flex-col gap-2 rounded-3xl bg-card-250 p-4">
+			<div className="flex flex-col">
+				<span className="text-xs text-foreground-500">
+					{message.user.username}
+					{`'s message`}
+				</span>
+				<span>{dateStr + " at " + time}</span>
+			</div>
+			<Divider />
+			<div className="mt-2 flex flex-col gap-2">{children}</div>
+		</div>
+	);
+}
+
+function UserContextMenu({
+	user,
+	children,
+	role,
+}: {
+	user: User;
+	children?: any;
+	role: string;
 }) {
 	return (
-		<Card className="relative h-64 overflow-hidden">
-			<div className="absolute inset-0 overflow-y-scroll py-2">
-				<UserList
-					showHover={false}
-					Controls={controls}
-					type="list"
-					users={list}
-					classNames={{
-						list: "gap-0",
-						entryContainer: "bg-transparent py-2",
-					}}
-				/>
+		<div className="flex w-64 flex-col gap-2 rounded-3xl bg-card-250 p-4">
+			<div className="flex flex-col">
+				<span className="text-sm text-foreground-800">
+					{user.username}
+				</span>
+				<div className="text-xs text-foreground-500">{role}</div>
+				{/* <span>{dateStr + " at " + time}</span> */}
 			</div>
-		</Card>
+			<Divider />
+			<div className="mt-2 flex flex-col gap-2">{children}</div>
+		</div>
 	);
 }
 
@@ -287,8 +324,6 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 		setPasswordEnabled(value);
 	};
 
-
-
 	if (!selectedServer) return null;
 
 	return (
@@ -452,8 +487,31 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 }
 
 function MemberList() {
-	const { expanded, showMembers, selectedServerMembers, selectedServer } =
-		useChatContext();
+	const {
+		expanded,
+		showMembers,
+		selectedServerMembers,
+		selectedServer,
+		selectedServerAdmins,
+	} = useChatContext();
+	const { setContextMenu, closeMenu } = useContextMenu();
+	const { session } = useContext(PublicContext) as any;
+	const router = useRouter();
+
+	const getRole = (user: User) => {
+		if (selectedServer?.owner == user.id) return "Channel Owner";
+		if (selectedServer?.admins.includes(user.id)) return "Channel Operator";
+		return "Peasant";
+	};
+
+	const getDisabled = (user: User) => {
+		return !(
+			(selectedServer?.owner == session.id ||
+				selectedServer?.admins.includes(session.id)) &&
+			selectedServer?.owner != user.id &&
+			session.id != user.id
+		);
+	};
 
 	return (
 		<div
@@ -476,6 +534,110 @@ function MemberList() {
 							"rounded-none px-4 bg-card-400 py-2 bg-transparent",
 						entry: twMerge("", expanded && "hover:scale-100"),
 					}}
+					contextContent={(user) => (
+						<UserContextMenu role={getRole(user)} user={user}>
+							<div className="text-xs text-foreground-600">
+								General
+							</div>
+							<Button
+								startContent={
+									<User2 size={18} className="mr-1" />
+								}
+								className="w-full justify-start"
+								variant="transparent"
+								onClick={() => {
+									router.push(`/profile/${user.username}`);
+									closeMenu();
+								}}
+							>
+								Profile
+							</Button>
+							<div className="mt-2 text-xs text-foreground-600">
+								Operator Controls
+							</div>
+							{getRole(user) == "Peasant" ? (
+								<Button
+									startContent={
+										<Star size={18} className="mr-1" />
+									}
+									className="w-full justify-start"
+									variant="transparent"
+									disabled={getDisabled(user)}
+									onClick={() => {
+										socket.emit("message", {
+											chatId: selectedServer?.id,
+											queueId: randomString(),
+											message: `/op ${user.username}`,
+										});
+										closeMenu();
+									}}
+								>
+									Operator
+								</Button>
+							) : getRole(user) == "Channel Operator" ? (
+								<Button
+									startContent={
+										<StarOff size={18} className="mr-1" />
+									}
+									className="w-full justify-start"
+									variant="transparent"
+									disabled={getDisabled(user)}
+									onClick={() => {
+										socket.emit("message", {
+											chatId: selectedServer?.id,
+											queueId: randomString(),
+											message: `/unop ${user.username}`,
+										});
+										closeMenu();
+									}}
+								>
+									Demote
+								</Button>
+							) : null}
+							<Button
+								startContent={
+									<Image
+										width={24}
+										height={24}
+										alt={"kick"}
+										className="invert"
+										src="/kick.svg"
+									/>
+								}
+								className="w-full justify-start"
+								variant="transparent"
+								disabled={getDisabled(user)}
+								onClick={() => {
+									socket.emit("message", {
+										chatId: selectedServer?.id,
+										queueId: randomString(),
+										message: `/kick ${user.username}`,
+									});
+									closeMenu();
+								}}
+							>
+								Kick
+							</Button>
+							<Button
+								startContent={
+									<Gavel size={18} className="mr-1" />
+								}
+								className="w-full justify-start"
+								variant="transparent"
+								disabled={getDisabled(user)}
+								onClick={() => {
+									socket.emit("message", {
+										chatId: selectedServer?.id,
+										queueId: randomString(),
+										message: `/ban ${user.username}`,
+									});
+									closeMenu();
+								}}
+							>
+								Ban
+							</Button>
+						</UserContextMenu>
+					)}
 					users={selectedServerMembers}
 					showBadge={(user) => {
 						const isOwner = selectedServer?.owner == user.id;
@@ -664,31 +826,6 @@ function ChatInput() {
 	);
 }
 
-function MessageContextMenu({
-	message,
-	children,
-}: {
-	message: Message;
-	children?: any;
-}) {
-	const date = new Date(message.createdAt).toLocaleDateString();
-	const time = new Date(message.createdAt).toLocaleTimeString();
-	const dateStr = date == new Date().toLocaleDateString() ? "Today" : date;
-
-	return (
-		<div className="flex w-64 flex-col gap-2 rounded-3xl bg-card-250 p-4">
-			<div className="flex flex-col">
-				<span className="text-xs text-foreground-500">
-					{message.user.username}{`'s message`}
-				</span>
-				<span>{dateStr + " at " + time}</span>
-			</div>
-			<Divider />
-			<div className="flex flex-col">{children}</div>
-		</div>
-	);
-}
-
 function MessageListEntry({
 	message,
 	index,
@@ -709,9 +846,13 @@ function MessageListEntry({
 		serverMutate,
 		setAkashicRecords,
 		selectedServerId,
+		selectedServerMessages,
 	} = useChatContext();
+	const earliestMessageGroupId = selectedServerMessages.find(
+		(msg) => msg.groupid == message.groupid,
+	)?.id!;
 	const displayed =
-		displayedMessages[message.groupid] || message.blocked != true;
+		displayedMessages[earliestMessageGroupId] || message.blocked != true;
 	const optionsAllowed =
 		message.user.id == session.id ||
 		((selectedServer?.admins.includes(session.id) ||
@@ -724,7 +865,7 @@ function MessageListEntry({
 		<>
 			{message.user.id == "server" ? (
 				<ContextMenuTrigger
-					className="mt-2 flex w-full items-center gap-2 px-6 text-foreground-500 hover:bg-black/15"
+					className="mt-4 flex w-full items-center gap-2 px-6 text-foreground-500 hover:bg-black/15"
 					menuContent={
 						<MessageContextMenu
 							message={{
@@ -838,7 +979,7 @@ function MessageListEntry({
 				)
 			)}
 			{message.blocked && message.parent && (
-				<div className="mt-4 flex w-full justify-center gap-4 font-semibold">
+				<div className="mt-4 flex w-full justify-center gap-4 px-8 font-semibold">
 					<Button
 						variant="ghost"
 						className="w-full select-none text-card-900 !outline-none !ring-0"
@@ -846,8 +987,8 @@ function MessageListEntry({
 							setDisplayedMessages((prev: any) => {
 								return {
 									...prev,
-									[message.groupid]:
-										prev[message.groupid] == true
+									[earliestMessageGroupId]:
+										prev[earliestMessageGroupId] == true
 											? false
 											: true,
 								};
@@ -885,8 +1026,10 @@ export default function App({ params }: any) {
 		prevSelectedServerMessages,
 		selectedServerInvites,
 		serverMutate,
+		displayedMessages,
+		prevDisplayedMessages,
 	} = useChatContext();
-	const { session } = useContext(PublicContext) as any;
+	const { session, sessionLoading } = useContext(PublicContext) as any;
 	const messageBoxRef = useRef<HTMLDivElement>(null);
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const {
@@ -904,6 +1047,7 @@ export default function App({ params }: any) {
 		selectedServer?.admins.includes(session?.id);
 
 	useEffect(() => {
+		console.log("scrollLocked", scrollLocked);
 		const messageBox = messageBoxRef.current;
 		const currentScroll = messageBox?.scrollTop || 0;
 		const currentHeight = messageBox?.scrollHeight || 0;
@@ -916,7 +1060,9 @@ export default function App({ params }: any) {
 				(prevSelectedServerMessages.current?.length !=
 					selectedServerMessages.length &&
 					!scrollLocked) ||
-				initial.current
+				initial.current ||
+				(displayedMessages != prevDisplayedMessages.current &&
+					!scrollLocked)
 			)
 				messageBox.scrollTop = messageBox.scrollHeight + 1;
 			initial.current = false;
@@ -938,13 +1084,22 @@ export default function App({ params }: any) {
 			}
 		};
 
-		messageBox?.addEventListener("wheel", handleScroll, {
+		messageBox?.addEventListener("scroll", handleScroll, {
 			passive: true,
 		});
 		return () => {
-			messageBox?.removeEventListener("wheel", handleScroll);
+			messageBox?.removeEventListener("scroll", handleScroll);
 		};
-	}, [selectedServerMessages, selectedServerId, messageBoxRef, prevSelectedServerMessages, prevSelectedServerId, scrollLocked]);
+	}, [
+		selectedServerMessages,
+		selectedServerId,
+		messageBoxRef,
+		prevSelectedServerMessages,
+		prevSelectedServerId,
+		scrollLocked,
+		sessionLoading,
+		displayedMessages,
+	]);
 
 	const handleLeave = () => {
 		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
@@ -984,249 +1139,263 @@ export default function App({ params }: any) {
 				onClose={onClose}
 				onOpenChange={onOpenChange}
 			/>
-			<div className="flex h-full w-full gap-0">
-				<div className="flex flex-1 flex-col">
-					<div className="flex h-24 w-full flex-shrink-0 p-4 pr-0">
-						<div className="flex h-full w-full gap-2 rounded-full bg-card-275">
-							<div className="aspect-square h-full p-2">
-								<div className="relative h-full w-full flex-shrink-0">
-									<SuperImage
-										width={64}
-										height={64}
-										alt={selectedServer.name}
-										className="absolute inset-0 aspect-square h-full w-full rounded-full object-cover"
-										src={selectedServer.icon}
-									/>
+			{!sessionLoading && (
+				<div className="flex h-full w-full gap-0">
+					<div className="flex flex-1 flex-col">
+						<div className="flex h-24 w-full flex-shrink-0 p-4 pr-0">
+							<div className="flex h-full w-full gap-2 rounded-full bg-card-275">
+								<div className="aspect-square h-full p-2">
+									<div className="relative h-full w-full flex-shrink-0">
+										<SuperImage
+											width={64}
+											height={64}
+											alt={selectedServer.name}
+											className="absolute inset-0 aspect-square h-full w-full rounded-full object-cover"
+											src={selectedServer.icon}
+										/>
+									</div>
 								</div>
-							</div>
-							<div className="flex flex-1 flex-col items-start justify-center overflow-hidden">
-								<div className="-mb-1 text-sm">
-									{selectedServer.name}
-								</div>
-								{!selectedServer?.isDM ? (
-									<Tooltip
-										// className="max-w-[50vw] text-center"
-										content={
-											<div className="max-w-[50vw]">
+								<div className="flex flex-1 flex-col items-start justify-center overflow-hidden">
+									<div className="-mb-1 text-sm">
+										{selectedServer.name}
+									</div>
+									{!selectedServer?.isDM ? (
+										<Tooltip
+											// className="max-w-[50vw] text-center"
+											content={
+												<div className="max-w-[50vw]">
+													{selectedServer.description}
+												</div>
+											}
+										>
+											<div className="line-clamp-2 text-xs text-foreground-500">
 												{selectedServer.description}
 											</div>
-										}
-									>
-										<div className="line-clamp-2 text-xs text-foreground-500">
-											{selectedServer.description}
-										</div>
-									</Tooltip>
-								) : (
-									<Status
-										className="mt-1"
-										userId={
-											selectedServer.membersIds.find(
-												(id) => id != session.id,
-											) || ""
-										}
-									/>
-								)}
-							</div>
-							<div className="flex shrink-0 items-center justify-end gap-2 px-4">
-								{!selectedServer?.isDM && (
-									<>
-										<ModalSet
-											placement="center"
-											isOpen={inviteOpen}
-											onClose={onInviteClose}
-											onOpenChange={onInviteClose}
-											title="Invite Users"
-										>
-											<div className="p-2">
-
-											<div className="p-6 bg-card-200 rounded-3xl">
-
-											<SettingSection title="Invites">
-												<div className="flex w-full flex-col gap-4">
-													<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
-														Enable invite-only
-														<div className="relative flex flex-1 items-center justify-end">
-															<SuperSwitch
-																isSelected={
-																	inviteOnlyEnabled
-																}
-																onValueChange={
-																	handleToggleInviteOnly
-																}
-																className="absolute"
-															/>
-														</div>
-													</div>
-													<p className="text-base leading-4">
-														When enabled, users will
-														need an invite to join
-														the channel.
-													</p>
-													<div
-														className={twMerge(
-															"flex flex-col gap-4",
-															!inviteOnlyEnabled &&
-																"pointer-events-none brightness-50",
-														)}
-													>
-														<MemberControls
-															list={
-																selectedServerInvites
-															}
-															controls={
-																RevokeInviteButton
-															}
-														/>
-														<InviteBox />
+										</Tooltip>
+									) : (
+										<Status
+											className="mt-1"
+											userId={
+												selectedServer.membersIds.find(
+													(id) => id != session.id,
+												) || ""
+											}
+										/>
+									)}
+								</div>
+								<div className="flex shrink-0 items-center justify-end gap-2 px-4">
+									{!selectedServer?.isDM && (
+										<>
+											<ModalSet
+												placement="center"
+												isOpen={inviteOpen}
+												onClose={onInviteClose}
+												onOpenChange={onInviteClose}
+												title="Invite Users"
+											>
+												<div className="p-2">
+													<div className="rounded-3xl bg-card-200 p-6">
+														<SettingSection title="Invites">
+															<div className="flex w-full flex-col gap-4">
+																<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+																	Enable
+																	invite-only
+																	<div className="relative flex flex-1 items-center justify-end">
+																		<SuperSwitch
+																			isSelected={
+																				inviteOnlyEnabled
+																			}
+																			onValueChange={
+																				handleToggleInviteOnly
+																			}
+																			className="absolute"
+																		/>
+																	</div>
+																</div>
+																<p className="text-base leading-4">
+																	When
+																	enabled,
+																	users will
+																	need an
+																	invite to
+																	join the
+																	channel.
+																</p>
+																<div
+																	className={twMerge(
+																		"flex flex-col gap-4",
+																		!inviteOnlyEnabled &&
+																			"pointer-events-none brightness-50",
+																	)}
+																>
+																	<MemberControls
+																		list={
+																			selectedServerInvites
+																		}
+																		controls={
+																			RevokeInviteButton
+																		}
+																	/>
+																	<InviteBox />
+																</div>
+															</div>
+														</SettingSection>
 													</div>
 												</div>
-											</SettingSection>
-											</div>
-											</div>
+											</ModalSet>
 
-
-										</ModalSet>
-
-										<Button
-											variant="ghost"
-											iconOnly
-											onClick={onInviteOpen}
-										>
-											<UserPlus2 />
-										</Button>
-									</>
-								)}
-								<Button
-									iconOnly={showMembers == false}
-									variant={showMembers ? undefined : "ghost"}
-									onClick={() => setShowMembers(!showMembers)}
-								>
-									<Users2 />
-								</Button>
-								{!selectedServer?.isDM && (
-									<SuperDropdown>
-										<DropdownTrigger>
-											<div>
-												<Button
-													variant="transparent"
-													iconOnly
-												>
-													<MoreHorizontal />
-												</Button>
-											</div>
-										</DropdownTrigger>
-										<SuperDropdownMenu
-											onAction={(action) => {
-												if (action == "settings") {
-													onOpen();
-												} else if (action == "leave") {
-													handleLeave();
-												}
-											}}
-										>
-											<DropdownItem
-												aria-label="Settings"
-												key={"settings"}
-												startContent={<Settings2 />}
-												className={twMerge(
-													!hasPermissions && "hidden",
-												)}
+											<Button
+												variant="ghost"
+												iconOnly
+												onClick={onInviteOpen}
 											>
-												Settings
-											</DropdownItem>
-											<DropdownItem
-												aria-label="Leave"
-												startContent={<LogOut />}
-												data-exclude={true}
-												color="danger"
-												key={"leave"}
-											>
-												Leave
-											</DropdownItem>
-										</SuperDropdownMenu>
-									</SuperDropdown>
-								)}
-							</div>
-						</div>
-					</div>
-					<div className="relative flex-1 animate-slow_fadein">
-						<div
-							ref={messageBoxRef}
-							className="no-scrollbar chatbox absolute inset-0 overflow-y-scroll"
-						>
-							<div
-								suppressHydrationWarning
-								className="flex min-h-full flex-col-reverse gap-0 p-2 px-0"
-							>
-								{selectedServerMessages.map((message, i) => {
-									return (
-										<MessageListEntry
-											key={message.id}
-											index={i}
-											message={message}
-										/>
-									);
-								})}
-								<div className="w-full p-8 pb-0">
-									<p className="text-foreground-500">
-										{selectedServer.isDM
-											? `
-												This is the start of your direct messages with ${selectedServer.name}, it's a lonely place...`
-											: `This is the start of the
-												channel's history, it's a lonely
-												place...`}
-									</p>
-									<p className="text-xl">
-										{selectedServer.isDM
-											? `Be the first to say hello!`
-											: `Invite some friends to get the
-												conversation started!`}
-									</p>
-									{!selectedServer.isDM && (
-										<Button
-											onClick={onOpen}
-											className="mt-2"
-											startContent={<Pencil />}
-										>
-											Edit channel
-										</Button>
+												<UserPlus2 />
+											</Button>
+										</>
 									)}
-									<Divider className="mt-4 bg-card-500 mix-blend-normal" />
+									<Button
+										iconOnly={showMembers == false}
+										variant={
+											showMembers ? undefined : "ghost"
+										}
+										onClick={() =>
+											setShowMembers(!showMembers)
+										}
+									>
+										<Users2 />
+									</Button>
+									{!selectedServer?.isDM && (
+										<SuperDropdown>
+											<DropdownTrigger>
+												<div>
+													<Button
+														variant="transparent"
+														iconOnly
+													>
+														<MoreHorizontal />
+													</Button>
+												</div>
+											</DropdownTrigger>
+											<SuperDropdownMenu
+												onAction={(action) => {
+													if (action == "settings") {
+														onOpen();
+													} else if (
+														action == "leave"
+													) {
+														handleLeave();
+													}
+												}}
+											>
+												<DropdownItem
+													aria-label="Settings"
+													key={"settings"}
+													startContent={<Settings2 />}
+													className={twMerge(
+														!hasPermissions &&
+															"hidden",
+													)}
+												>
+													Settings
+												</DropdownItem>
+												<DropdownItem
+													aria-label="Leave"
+													startContent={<LogOut />}
+													data-exclude={true}
+													color="danger"
+													key={"leave"}
+												>
+													Leave
+												</DropdownItem>
+											</SuperDropdownMenu>
+										</SuperDropdown>
+									)}
 								</div>
 							</div>
 						</div>
-					</div>
-					<div className="relative h-0 w-full bg-black">
-						<div
-							className={twMerge(
-								"absolute bottom-0 right-0 opacity-0 transition-all",
-								scrollLocked && "opacity-100",
-							)}
-						>
-							<Button
-								startContent={<Mouse size={16} />}
-								variant="ghost"
-								disabled={!scrollLocked}
-								className={twMerge(
-									"animate-pulse disabled:cursor-default",
-								)}
-								onClick={() => {
-									const messageBox = messageBoxRef.current;
-									if (messageBox) {
-										messageBox.scrollTop =
-											messageBox.scrollHeight;
-										setScrollLocked(false);
-									}
-								}}
+						<div className="relative flex-1 animate-slow_fadein">
+							<div
+								ref={messageBoxRef}
+								className="chatbox absolute inset-0 overflow-y-scroll"
 							>
-								Locked
-							</Button>
+								<div
+									suppressHydrationWarning
+									className="flex min-h-full flex-col-reverse gap-0 p-2 px-0 pb-4"
+								>
+									{selectedServerMessages.map(
+										(message, i) => {
+											return (
+												<MessageListEntry
+													key={message.id}
+													index={i}
+													message={message}
+												/>
+											);
+										},
+									)}
+									<div className="w-full p-8 pb-0">
+										<p className="text-foreground-500">
+											{selectedServer.isDM
+												? `
+												This is the start of your direct messages with ${selectedServer.name}, it's a lonely place...`
+												: `This is the start of the
+												channel's history, it's a lonely
+												place...`}
+										</p>
+										<p className="text-xl">
+											{selectedServer.isDM
+												? `Be the first to say hello!`
+												: `Invite some friends to get the
+												conversation started!`}
+										</p>
+										{!selectedServer.isDM &&
+											hasPermissions && (
+												<Button
+													onClick={onOpen}
+													className="mt-2"
+													startContent={<Pencil />}
+												>
+													Edit channel
+												</Button>
+											)}
+										<Divider className="mt-4 bg-card-500 mix-blend-normal" />
+									</div>
+								</div>
+							</div>
 						</div>
+						<div className="relative h-0 w-full bg-black">
+							<div
+								className={twMerge(
+									"absolute bottom-0 right-0 opacity-0 transition-all",
+									scrollLocked && "opacity-100",
+								)}
+							>
+								<Button
+									startContent={<Mouse size={16} />}
+									variant="ghost"
+									disabled={!scrollLocked}
+									className={twMerge(
+										"animate-pulse disabled:cursor-default",
+									)}
+									onClick={() => {
+										const messageBox =
+											messageBoxRef.current;
+										if (messageBox) {
+											messageBox.scrollTop =
+												messageBox.scrollHeight;
+											setScrollLocked(false);
+										}
+									}}
+								>
+									Locked
+								</Button>
+							</div>
+						</div>
+						<ChatInput />
 					</div>
-					<ChatInput />
+					<MemberList />
 				</div>
-				<MemberList />
-			</div>
+			)}
 		</>
 	);
 }
