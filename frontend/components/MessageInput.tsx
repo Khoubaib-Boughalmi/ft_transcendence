@@ -14,6 +14,7 @@ export default function MessageInput(
 			classNames={{
 				container: "pr-0",
 			}}
+			autoFocus
 			endContent={
 				<Button
 					startContent={<SendHorizontal />}
