@@ -10,7 +10,14 @@ import { fetcherUnsafe, useChatContext, useServerList } from "@/lib/utils";
 import { Message, Server } from "@/types/chat";
 import { User } from "@/types/profile";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+	ReactNode,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 
@@ -40,11 +47,11 @@ function useSelectedServer(servers: Server[]) {
 	return { selectedServerId, selectedServer, prevSelectedServerId };
 }
 
-function      useSelectedServerMessages(
+function useSelectedServerMessages(
 	selectedServerId: string | null,
 	setAkashicRecords: any,
 ) {
-	const { session } = useContext(PublicContext) as any;
+	const { session, sessionLoading } = useContext(PublicContext) as any;
 
 	const {
 		data: selectedServerMessages,
@@ -52,10 +59,13 @@ function      useSelectedServerMessages(
 		mutate: selectedServerMessagesMutate,
 		isValidating: selectedServerMessagesValidating,
 	} = useSWR(
-		selectedServerId ? `/chat/channel/messages/${selectedServerId}` : null,
+		selectedServerId && !sessionLoading
+			? `/chat/channel/messages/${selectedServerId}`
+			: null,
 		fetcherUnsafe,
 		{
 			onSuccess: (data) => {
+				console.log({ selectedServerId, session });
 				if (selectedServerId)
 					setAkashicRecords((prev: any) => ({
 						...prev,
@@ -94,13 +104,25 @@ function useSelectedServerData(selectedServerId: string | null) {
 	) as any;
 
 	// Sort the members list so that the owner is always first, then the admins, then the rest of the members in alphabetical order
-	const sortedMembersList = selectedServerData?.members?.sort((a: User, b: User) => {
-		if (a.id == selectedServerData?.owner?.id) return -1;
-		if (b.id == selectedServerData?.owner?.id) return 1;
-		if (selectedServerData?.admins?.find((admin: User) => admin.id == a.id)) return -1;
-		if (selectedServerData?.admins?.find((admin: User) => admin.id == b.id)) return 1;
-		return a.username.localeCompare(b.username);
-	});
+	const sortedMembersList = selectedServerData?.members?.sort(
+		(a: User, b: User) => {
+			if (a.id == selectedServerData?.owner?.id) return -1;
+			if (b.id == selectedServerData?.owner?.id) return 1;
+			if (
+				selectedServerData?.admins?.find(
+					(admin: User) => admin.id == a.id,
+				)
+			)
+				return -1;
+			if (
+				selectedServerData?.admins?.find(
+					(admin: User) => admin.id == b.id,
+				)
+			)
+				return 1;
+			return a.username.localeCompare(b.username);
+		},
+	);
 
 	return {
 		selectedServerData,
@@ -109,7 +131,7 @@ function useSelectedServerData(selectedServerId: string | null) {
 		selectedServerMembers: sortedMembersList || [],
 		selectedServerInvites: selectedServerData?.invites || [],
 		selectedServerBans: selectedServerData?.bans || [],
-		selectedServerAdmins: selectedServerData?.admins || []
+		selectedServerAdmins: selectedServerData?.admins || [],
 	};
 }
 
@@ -121,7 +143,8 @@ function useSelectedServerMessagesFixer(
 
 	messageParents.current = {};
 	for (let i = 0; i < messages.length; i++) {
-		messages[i].groupid = randomString();
+		const newGroup = randomString();
+		messages[i].groupid = newGroup;
 	}
 
 	for (let i = 0; i < messages.length; i++) {
@@ -134,7 +157,7 @@ function useSelectedServerMessagesFixer(
 		if (messages[i + 1]?.blocked == messages[i]?.blocked)
 			messages[i].parent = false;
 		if (i > 0 && messages[i].blocked == messages[i - 1].blocked) {
-			messageParents.current[messages[i].groupid] += 1;
+			messageParents.current[messages[i - 1].groupid] += 1;
 			messages[i].groupid = messages[i - 1].groupid;
 		}
 	}
@@ -151,9 +174,13 @@ export default function Page({
 }) {
 	const router = useRouter();
 
-	const { session, expecting, setExpecting, setNotifications } = useContext(
-		PublicContext,
-	) as any;
+	const {
+		session,
+		expecting,
+		setExpecting,
+		setNotifications,
+		sessionLoading,
+	} = useContext(PublicContext) as any;
 	const { servers, serversMutate, prevServers } = useServerList();
 	const [timesNavigated, setTimesNavigated] = useState(0);
 
@@ -181,15 +208,23 @@ export default function Page({
 		selectedServerMembers,
 		selectedServerInvites,
 		selectedServerBans,
-		selectedServerAdmins
+		selectedServerAdmins,
 	} = useSelectedServerData(selectedServerId);
 
 	const [displayedMessages, setDisplayedMessages] = useState({});
+	const prevDisplayedMessages = useRef(displayedMessages);
+
 	const messageParents = useRef({}) as any;
 	const loadingSectionVisible =
+		(expecting && !selectedServerId) ||
+		sessionLoading ||
 		selectedServerMessagesLoading ||
 		selectedServerDataLoading ||
 		!akashicRecords;
+
+	console.log(
+		{loadingSectionVisible, expecting, selectedServerId}
+	)
 
 	const fixedSelectedServerMessages = useSelectedServerMessagesFixer(
 		selectedServerId
@@ -214,10 +249,13 @@ export default function Page({
 		]);
 	}, [selectedServerDataMutate, selectedServerMessagesMutate, serversMutate]);
 
-	const navigateToServer = useCallback((serverId: string) => {
-		setTimesNavigated((prev) => prev + 1);
-		router.push(`/chat/channel/${serverId}`);
-	}, [router]);
+	const navigateToServer = useCallback(
+		(serverId: string) => {
+			setTimesNavigated((prev) => prev + 1);
+			router.push(`/chat/channel/${serverId}`);
+		},
+		[router],
+	);
 
 	useEffect(() => {
 		if (prevServers.current != null) {
@@ -229,8 +267,8 @@ export default function Page({
 			);
 
 			if (serversInServersButNotInPrevServers?.length > 0 && expecting) {
-				setExpecting(false);
 				navigateToServer(serversInServersButNotInPrevServers[0].id);
+				setExpecting(false);
 			}
 		}
 
@@ -317,14 +355,20 @@ export default function Page({
 		}
 		if (selectedServer)
 			setNotifications((prev: any) =>
-				[...(prev || [])].filter((n: Message) => n.chatId != selectedServer.id),
+				[...(prev || [])].filter(
+					(n: Message) => n.chatId != selectedServer.id,
+				),
 			);
 	}, [expanded, selectedServer, listTab, setNotifications]);
+
+	useEffect(() => {
+		prevSelectedServerId.current = selectedServerId;
+	}, [displayedMessages]);
 
 	return (
 		<div
 			suppressHydrationWarning
-			className="relative z-10 mb-12 w-5/6 overflow-hidden rounded-3xl @container"
+			className="relative z-10 mb-12 w-5/6 overflow-hidden rounded-[2rem] @container"
 		>
 			<ChatContext.Provider
 				value={{
@@ -353,14 +397,15 @@ export default function Page({
 					setTimesNavigated,
 					navigateToServer,
 					prevSelectedServerMessages,
-					selectedServerAdmins
+					selectedServerAdmins,
+					prevDisplayedMessages,
 				}}
 			>
 				<ServerList />
-				{selectedServerId && (
+				{(selectedServerId || expecting) && (
 					<LoadingSection
 						isLoading={loadingSectionVisible}
-						key={selectedServerId + "loading"}
+						key={(selectedServerId ?? randomString())  + "loading"}
 					/>
 				)}
 				{!loadingSectionVisible && (
