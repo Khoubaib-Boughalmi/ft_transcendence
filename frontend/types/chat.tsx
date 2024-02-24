@@ -64,6 +64,7 @@ export type ChatContextType = {
 	timesNavigated: number;
 	navigateToServer: (serverId: string) => void;
 	prevSelectedServerMessages: React.MutableRefObject<Message[]>;
+	prevDisplayedMessages: React.MutableRefObject<any>;
 };
 
 export type Argument = {
