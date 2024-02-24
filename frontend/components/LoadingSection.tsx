@@ -23,6 +23,7 @@ export default function LoadingSection({ isLoading }: { isLoading?: boolean }) {
 	return (
 		visible && (
 			<div
+				suppressHydrationWarning
 				className={twMerge(
 					"absolute inset-0 z-20 opacity-100 transition-opacity duration-500",
 					!isLoading && "opacity-0",
