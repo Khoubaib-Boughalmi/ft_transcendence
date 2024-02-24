@@ -778,11 +778,17 @@ export class ChatService {
 		const sockets = this.socketService.getUserSockets(userId);
 		if (!sockets) return;
 		for (const socket of sockets) socket.join(chatId);
+
+		// Notify the users that the chat has been updated
+		this.userGateWay.mutateChat(chatId, `/chat/channel/members/${chatId}`);
 	}
 
 	async leaveChannelOnSocket(chatId: string, userId: string) {
 		const sockets = this.socketService.getUserSockets(userId);
 		if (!sockets) return;
 		for (const socket of sockets) socket.leave(chatId);
+
+		// Notify the users that the chat has been updated
+		this.userGateWay.mutateChat(chatId, `/chat/channel/members/${chatId}`);
 	}
 }
