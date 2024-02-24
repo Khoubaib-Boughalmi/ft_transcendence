@@ -4,6 +4,7 @@ import Card from "@/components/Card";
 import DeleteButton from "@/components/DeleteButton";
 import Divider from "@/components/Divider";
 import Input from "@/components/Input";
+import MemberControls from "@/components/MemberControls";
 import ModalSet from "@/components/ModalSet";
 import SettingSection from "@/components/SettingSection";
 import SuperImage from "@/components/SuperImage";
@@ -18,7 +19,7 @@ import {
 } from "@/lib/utils";
 import { User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
-import { Lock, Unlock } from "lucide-react";
+import { HeartHandshakeIcon, Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useContext, useRef, useState } from "react";
 import useSWR from "swr";
@@ -197,8 +198,44 @@ function TwoFactorAuthenticationToggle({ user }: { user: User }) {
 	);
 }
 
+function UnlockUser({ user }: { user: User }) {
+	const [loading, setLoading] = useState(false);
+	const { sessionMutate } = useContext(PublicContext) as any;
+
+	const handlerevokeadmin = (user: User) => {
+		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
+			"/user/unblockUser",
+			makeForm({
+				id: user.id,
+			}),
+			setLoading,
+			`Successfully unblocked ${user.username}`,
+			`Failed to unblock ${user.username}`,
+			sessionMutate,
+		);
+	};
+
+	return (
+		<div className="flex items-center justify-center">
+			<Button
+				onClick={() => handlerevokeadmin(user)}
+				className="pl-3"
+				startContent={<HeartHandshakeIcon/>}
+				variant="danger"
+				loading={loading}
+			>
+				Unblock
+			</Button>
+		</div>
+	);
+}
+
+
 export default function Settings() {
-	const { session, sessionMutate } = useContext(PublicContext) as any;
+	const { session, sessionMutate } = useContext(PublicContext) as {
+		session: User;
+		sessionMutate: any;
+	};
 	const [username, setUsername] = useState(session.username);
 	const [loading, setLoading] = useState(false);
 
@@ -219,6 +256,9 @@ export default function Settings() {
 		<main className="mb-12 flex w-[1000px] max-w-full flex-col justify-center gap-4">
 			<Card
 				header={<div className="text-xl">Settings</div>}
+				classNames={{
+					innerContainer: "p-0",
+				}}
 				footer={
 					<div className="flex w-full justify-end">
 						<Button
@@ -231,7 +271,7 @@ export default function Settings() {
 					</div>
 				}
 			>
-				<div className="grid grid-cols-2 gap-8 p-4">
+				<div className="grid grid-cols-2 gap-8 p-6">
 					<div className="flex w-full flex-col items-start gap-6">
 						<SettingSection title="Username">
 							<Input
@@ -299,7 +339,8 @@ export default function Settings() {
 						</div>
 					</div>
 				</div>
-				<div className="flex flex-col gap-8 p-4">
+
+				<div className="flex flex-col gap-8 p-6">
 					<Divider />
 					<SettingSection title="Two-factor authentication">
 						<div className="my-12 flex flex-col items-center justify-center gap-4">
@@ -325,6 +366,17 @@ export default function Settings() {
 							>
 								Learn more
 							</Link>
+						</div>
+					</SettingSection>
+				</div>
+				<Divider />
+				<div className="bg-card-200 p-6 py-8 pb-10">
+					<SettingSection title="Blocks">
+						<div className="flex w-full flex-col gap-4 ">
+							<div className="flex items-end justify-between text-lg leading-[1.125rem] text-foreground-800">
+								Blocked Users
+							</div>
+							<MemberControls list={session.blocked_users} controls={UnlockUser} />
 						</div>
 					</SettingSection>
 				</div>
