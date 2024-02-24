@@ -4,7 +4,7 @@ import axios from "@/lib/axios";
 import { ChatContextType } from "@/types/chat";
 import { InteractionType, Rank, User } from "@/types/profile";
 import { usePathname } from "next/navigation";
-import { useContext, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import useSWR, { mutate } from "swr";
 
@@ -141,10 +141,23 @@ export async function InteractionFunctionality(
 	);
 }
 
-export function useIsOnline(userId: string | null) {
+export function useIsOnline(userId: string | null, setOnlineStates: any = null) {
 	const { data } = useSWR(userId ? `/user/profile/isonline/${userId}` : null, fetcher, {
 		refreshInterval: 10000,
 	}) as any;
+
+	useEffect(() => {
+		if (!setOnlineStates || !userId) return;
+		setOnlineStates((prev: any) => {
+			const prevOnline = prev[userId];
+			const newOnline = data ? data.isOnline : false;
+			if (prevOnline === newOnline) return prev;
+			const newMap = new Map(prev);
+			newMap.set(userId, newOnline);
+			return newMap;
+		})
+		
+	}, [userId, data, setOnlineStates]);
 
 	return data ? data.isOnline : false;
 }

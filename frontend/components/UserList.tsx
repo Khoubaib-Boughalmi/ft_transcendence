@@ -1,3 +1,4 @@
+"use client"
 import { useIsOnline } from "@/lib/utils";
 import { User } from "@/types/profile";
 import { Tooltip, useDisclosure } from "@nextui-org/react";
@@ -7,7 +8,8 @@ import NoData from "./NoData";
 import Status from "./Status";
 import SuperImage from "./SuperImage";
 import UserHover from "./UserHover";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import ContextMenuTrigger from "./ContextMenuTrigger";
 
 type ClassNames = {
 	list?: string;
@@ -95,6 +97,8 @@ function UserListListEntry({
 	Controls,
 	showBadge,
 	showHover,
+	contextContent,
+	setOnlineStates,
 }: {
 	user: User;
 	hoverDelay?: number;
@@ -103,9 +107,11 @@ function UserListListEntry({
 	Controls?: any;
 	showBadge?: (user: User) => string | null;
 	showHover?: boolean;
+	contextContent?: (user: User) => ReactNode;
+	setOnlineStates: any;
 }) {
-	const isOnline = useIsOnline(user.id);
 	const badge = showBadge && showBadge(user);
+	const isOnline = useIsOnline(user.id, setOnlineStates);
 
 	return (
 		<SuperTooltip
@@ -115,64 +121,73 @@ function UserListListEntry({
 			isDisabled={!showHover}
 			isDismissable={true}
 		>
-			<div
-				className={twMerge(
-					`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all`,
-					size == "xs" && "gap-2 p-2",
-					!Controls && isOnline == false && "brightness-[60%]",
-					classNames?.entryContainer,
-				)}
-			>
-				<Link
-					href={`/profile/${user.username}`}
+			<div>
+				<ContextMenuTrigger
+					isDisabled={!contextContent}
+					menuContent={contextContent ? contextContent(user) : null}
 					className={twMerge(
-						`relative flex-1 gap-4 text-white
-						transition-all hover:scale-105 hover:brightness-110`,
+						`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all`,
+						size == "xs" && "gap-2 p-2",
 						!Controls && isOnline == false && "brightness-[60%]",
-						size == "xs" && "gap-2",
-						classNames?.entry,
+						classNames?.entryContainer,
 					)}
 				>
-					{badge && (
-						<div className="absolute left-0 top-0 z-10">
-							<img src={badge} className="h-3 w-3 object-cover" />
-						</div>
-					)}
-					<div className="flex h-full w-full items-center gap-3 overflow-hidden">
-						<div
-							className={twMerge(
-								"relative aspect-square h-12 w-12 flex-shrink-0 overflow-hidden rounded-full",
-								size == "xs" && "h-8 w-8",
-							)}
-						>
-							<SuperImage
-								alt={user.username}
-								width={64}
-								height={64}
-								src={user.avatar}
-								className="h-full w-full object-cover"
-							/>
-						</div>
-						<div className="flex flex-1 flex-col items-start overflow-hidden">
+					<Link
+						href={`/profile/${user.username}`}
+						className={twMerge(
+							`relative flex-1 gap-4 text-white
+						transition-all hover:scale-105 hover:brightness-110`,
+							!Controls &&
+								isOnline == false &&
+								"brightness-[60%]",
+							size == "xs" && "gap-2",
+							classNames?.entry,
+						)}
+					>
+						{badge && (
+							<div className="absolute left-0 top-0 z-10">
+								<img
+									src={badge}
+									className="h-3 w-3 object-cover"
+								/>
+							</div>
+						)}
+						<div className="flex h-full w-full items-center gap-3 overflow-hidden">
 							<div
 								className={twMerge(
-									"w-full truncate text-sm",
-									size == "xs" && "text-xs",
+									"relative aspect-square h-12 w-12 flex-shrink-0 overflow-hidden rounded-full",
+									size == "xs" && "h-8 w-8",
 								)}
 							>
-								{user.username}
-							</div>
-							{!Controls && (
-								<Status
-									isOnline={isOnline}
-									size={size}
-									userId={user.id}
+								<SuperImage
+									alt={user.username}
+									width={64}
+									height={64}
+									src={user.avatar}
+									className="h-full w-full object-cover"
 								/>
-							)}
+							</div>
+							<div className="flex flex-1 flex-col items-start overflow-hidden">
+								<div
+									className={twMerge(
+										"w-full truncate text-sm",
+										size == "xs" && "text-xs",
+									)}
+								>
+									{user.username}
+								</div>
+								{!Controls && (
+									<Status
+										isOnline={isOnline}
+										size={size}
+										userId={user.id}
+									/>
+								)}
+							</div>
 						</div>
-					</div>
-				</Link>
-				{Controls && <Controls user={user} />}
+					</Link>
+					{Controls && <Controls user={user} />}
+				</ContextMenuTrigger>
 			</div>
 		</SuperTooltip>
 	);
@@ -186,6 +201,7 @@ export default function UserList({
 	classNames,
 	showBadge,
 	Controls,
+	contextContent,
 	showHover = true,
 }: {
 	users: User[];
@@ -196,12 +212,23 @@ export default function UserList({
 	showBadge?: (user: User) => string | null;
 	Controls?: ({ user }: { user: User }) => any;
 	showHover?: boolean;
+	contextContent?: (user: User) => ReactNode;
 }) {
+	const [onlineStates, setOnlineStates] = useState<Map<string, boolean>>(new Map());
+	
+	const sortedUsers = useMemo(() => {
+		return users.toSorted((a, b) => {
+			if (onlineStates.get(a.id) && !onlineStates.get(b.id)) return -1;
+			if (!onlineStates.get(a.id) && onlineStates.get(b.id)) return 1;
+			return 0;
+		});
+	}, [users, onlineStates]);
+
 	if (type == "list")
 		return (
-			<div className={twMerge(`flex flex-col gap-2`, classNames?.list)}>
-				{users?.length == 0 && <NoData />}
-				{users?.map((user, i) => (
+			<div className={twMerge(`flex flex-col gap-2 overflow-x-hidden`, classNames?.list)}>
+				{sortedUsers?.length == 0 && <NoData />}
+				{sortedUsers?.map((user, i) => (
 					<UserListListEntry
 						hoverDelay={hoverDelay}
 						key={user.id}
@@ -211,6 +238,8 @@ export default function UserList({
 						user={user}
 						showBadge={showBadge}
 						showHover={showHover}
+						contextContent={contextContent}
+						setOnlineStates={setOnlineStates}
 					/>
 				))}
 			</div>
