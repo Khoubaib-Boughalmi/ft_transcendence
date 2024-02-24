@@ -3,7 +3,6 @@ export type Rank = {
 	name: string;
 	color: "bronze" | "silver" | "gold" | "platinum" | "diamond";
 };
-export type StatusType = "Online" | "Offline" | "Busy";
 export type MatchType = "Classic" | "Power";
 export type MatchLeague = "Casual" | "Ranked" | "Tournament";
 export type Achievement = {
@@ -27,37 +26,6 @@ export type Match = {
 	score1: number;
 	score2: number;
 };
-
-//
-export type UserProfile = {
-	id: string;
-	username: string;
-	email: string;
-	createdAt: Date;
-	avatar: string;
-	banner: string;
-	country: string;
-	level: number;
-	level_percentage: number;
-	wins: number;
-	losses: number;
-	matches: number;
-	rank: number;
-	division: string;
-};
-
-export type UserProfileMicro = UserProfile;
-
-export type UserProfileMini = UserProfile & {
-	friends: UserProfileMicro[];
-};
-
-export type UserProfileFull = UserProfileMini & {
-	two_factor: boolean;
-	friend_requests: UserProfileMicro[];
-	blocked_users: UserProfileMicro[];
-};
-//
 
 export type User = {
 	id: string;
