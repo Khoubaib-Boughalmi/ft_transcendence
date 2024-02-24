@@ -24,7 +24,7 @@ export default function LoginGuard({ children }: any) {
 		}, 1500);
 	}, []);
 
-	if (verifiedLoading)
+	if (verifiedLoading || sessionLoading)
 		return (
 			<div className="z-10 flex items-center justify-center">
 				<Spinner size="lg" />
