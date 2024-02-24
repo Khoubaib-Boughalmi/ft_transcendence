@@ -506,7 +506,7 @@ function ProfileButton({ user }: { user: User }) {
 						} else if (item == "settings") {
 							router.push("/settings");
 						} else if (item == "chat") {
-							router.push("/chat");
+							router.push("/chat/discover");
 						} else if (item == "logout") {
 							axios.get("/auth/logout").then(async () => {
 								await fullMutate();
@@ -622,7 +622,7 @@ function SearchBar() {
 		fetcher,
 	) as any;
 
-	const showLoading =
+	const showLoading = 
 		isLoading || (isValidating && (!data || data.length == 0));
 
 	const result = data?.slice(0, 5) || [];
