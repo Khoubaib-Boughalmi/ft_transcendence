@@ -110,13 +110,13 @@ function useSelectedServerData(selectedServerId: string | null) {
 			if (b.id == selectedServerData?.owner?.id) return 1;
 			if (
 				selectedServerData?.admins?.find(
-					(admin: User) => admin.id == a.id,
+					(admin: User) => admin?.id == a.id,
 				)
 			)
 				return -1;
 			if (
 				selectedServerData?.admins?.find(
-					(admin: User) => admin.id == b.id,
+					(admin: User) => admin?.id == b.id,
 				)
 			)
 				return 1;
@@ -364,6 +364,13 @@ export default function Page({
 	useEffect(() => {
 		prevSelectedServerId.current = selectedServerId;
 	}, [displayedMessages]);
+
+	useEffect(() => {
+		if (!selectedServer)
+			document.title = `Discover`
+		else
+			document.title = `${selectedServer.name} | Chat`
+	}, [selectedServer]);
 
 	return (
 		<div

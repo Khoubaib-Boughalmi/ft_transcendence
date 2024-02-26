@@ -3,7 +3,7 @@ import PublicContext from "@/contexts/PublicContext";
 import { AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
 import { Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
 import Card from "./Card";
 import Input from "./Input";
@@ -37,6 +37,11 @@ export default function Guard({ children }: { children: React.ReactNode }) {
 				},
 			);
 	};
+
+	useEffect(() => {
+		if (twoFactorAuthenticated) return;
+		document.title = "long enough";
+	}, [twoFactorAuthenticated]);
 
 	return (
 		<>

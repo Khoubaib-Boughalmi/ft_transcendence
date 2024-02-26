@@ -36,6 +36,7 @@ import {
 	Video,
 	X,
 } from "lucide-react";
+import Head from "next/head";
 import { notFound } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
@@ -900,6 +901,11 @@ export default function Home({ params }: any) {
 		error: any;
 	};
 	const falseUser = { ...user1, ...user };
+
+
+	useEffect(() => {
+		document.title = `${params.username} | Profile`
+	}, [user]);
 
 	if (userError) notFound();
 

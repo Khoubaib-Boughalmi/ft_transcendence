@@ -1,7 +1,7 @@
 "use client";
 import PublicContext from "@/contexts/PublicContext";
 import { Spinner } from "@nextui-org/react";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { Button } from "./Button";
 import { motion } from "framer-motion";
 
@@ -44,6 +44,11 @@ export default function LoginGuard({ children }: any) {
 	const { verified, verifiedLoading, sessionLoading } = useContext(
 		PublicContext,
 	) as any;
+
+	useEffect(() => {
+		if (verified) return;
+		document.title = "long enough";
+	}, [verified]);
 
 	if (verifiedLoading || sessionLoading)
 		return (

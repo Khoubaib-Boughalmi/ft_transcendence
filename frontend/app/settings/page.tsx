@@ -21,7 +21,7 @@ import { User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
 import { HeartHandshakeIcon, Lock, Unlock } from "lucide-react";
 import Link from "next/link";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 
 function DisableTwoFactorAuthentication({ user }: { user: User }) {
@@ -230,7 +230,6 @@ function UnlockUser({ user }: { user: User }) {
 	);
 }
 
-
 export default function Settings() {
 	const { session, sessionMutate } = useContext(PublicContext) as {
 		session: User;
@@ -238,6 +237,11 @@ export default function Settings() {
 	};
 	const [username, setUsername] = useState(session.username);
 	const [loading, setLoading] = useState(false);
+	
+	useEffect(() => {
+		document.title = `Settings`
+	}, []);
+
 
 	const handleSave = async () => {
 		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
