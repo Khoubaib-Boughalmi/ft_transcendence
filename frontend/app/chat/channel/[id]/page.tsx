@@ -280,6 +280,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 	const [passwordEnabled, setPasswordEnabled] = useState(
 		selectedServer?.enable_password,
 	);
+	const [loading, setLoading] = useState(false);
 
 	const formRef = useRef<HTMLFormElement>(null);
 
@@ -297,7 +298,7 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 				description: topic.length > 0 ? topic : undefined,
 				password: passwordEnabled ? password : undefined,
 			}),
-			undefined,
+			setLoading,
 			`Successfully updated the channel`,
 			`Failed to update the channel`,
 			async () => {
@@ -341,9 +342,10 @@ function SettingsModal({ isOpen, onClose, onOpenChange }: any) {
 					footer={
 						<div className="flex w-full justify-end">
 							<Button
+								loading={loading}
 								type="submit"
 								form="general"
-								startContent={<Check />}
+								startContent={<Check size={18} />}
 							>
 								Submit
 							</Button>
