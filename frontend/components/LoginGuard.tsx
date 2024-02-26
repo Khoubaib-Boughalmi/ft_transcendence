@@ -66,7 +66,7 @@ export default function LoginGuard({ children }: any) {
 					<LongEnough />
 					<div className="-mt-12 text-[1.25em] font-light text-foreground-600">
 						An interactive gaming platform for the 1337 community.
-						All rights reserved 2023 ©.
+						All rights reserved 2024 ©.
 					</div>
 					<Button
 						className="px-96 text-lg"
