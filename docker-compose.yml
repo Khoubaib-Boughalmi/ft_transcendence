@@ -41,7 +41,7 @@ services:
       - database
     restart: always
     # command: ['./wait-for-it.sh', 'database:5432', '--', 'npm', 'run', 'start:dev']
-    command: [npm, run, start:dev]
+    command: [npm, run, 'start:dev']
     container_name: backend
     hostname: backend
 

@@ -7,7 +7,6 @@ COPY . /app/
 RUN apk update; apk --no-cache add bash --virtual builds-deps build-base 
 
 RUN apk --no-cache add --virtual python
-# RUN apk --no-cache add --virtual builds-deps build-base python
 
 RUN npm install --silent
 
