@@ -1,9 +1,7 @@
-# TODO : - use latest version of postgres
-#        - finish wait-for-it script
 version: '3'
 services:
-  Database:
-    image: postgres:10.4
+  database:
+    image: postgres:16.2
     networks:
       - database
     ports:
@@ -11,10 +9,10 @@ services:
     env_file:
       - ./Database/.env
     volumes:
-      - ./Database/:/docker-entrypoint-initDatabase.d
+      - ./Database/:/docker-entrypoint-initdb.d
     restart: always
-    container_name: Database
-    hostname: Database
+    container_name: database
+    hostname: database
   frontend:
     build:
       context: ./frontend
@@ -26,7 +24,8 @@ services:
     ports:
       - 8080:8080
     restart: always
-    command: ['./wait-for-it.sh', 'backend:5500', '--', 'nginx', '-g', 'pid /tmp/nginx.pid; daemon off;']
+    # command: ['./wait-for-it.sh', 'backend:3000', '--', 'nginx', '-g', 'pid /tmp/nginx.pid; daemon off;']
+    command: [npm, run, dev]
     container_name: frontend
     hostname: frontend
   backend:
@@ -37,11 +36,12 @@ services:
       - Pregonanto
       - database
     ports:
-      - 5500:5500
+      - 3000:3000
     depends_on:
-      - Database
+      - database
     restart: always
-    command: ['./wait-for-it.sh', 'Database:5432', '--', 'yarn', 'start']
+    # command: ['./wait-for-it.sh', 'database:5432', '--', 'npm', 'run', 'start:dev']
+    command: [npm, run, start:dev]
     container_name: backend
     hostname: backend
 
@@ -50,3 +50,7 @@ networks:
     driver: bridge
   database:
     driver: bridge
+
+volumes:
+  database:
+    driver: local
