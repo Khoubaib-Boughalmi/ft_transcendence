@@ -9,7 +9,7 @@ const LongEnough = () => {
 	const words = "long enough";
 
 	return (
-		<motion.div className="relative">
+		<motion.div className="relative text-center">
 			{words.split("").map((word, idx) => {
 				return (
 					<motion.span
