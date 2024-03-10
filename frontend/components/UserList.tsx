@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useIsOnline } from "@/lib/utils";
 import { User } from "@/types/profile";
 import { Tooltip, useDisclosure } from "@nextui-org/react";
@@ -21,26 +21,15 @@ function SuperTooltip({
 	children,
 	...props
 }: React.ComponentProps<typeof Tooltip>) {
-	// const [portal, setPortal] = useState(null) as any;
-	// const updatePortal = () => {
-	// 	setPortal(document.querySelector(`*[data-slot="list"]`) || document.querySelector('*[role="dialog"]') || document.body);
-	// }
-
-	// useEffect(() => {
-	// 	updatePortal()
-	// }, []);
-
 	return (
 		<Tooltip
 			className={twMerge("bg-card-200 p-2", props.className)}
 			radius="lg"
-			// onMouseEnter={updatePortal}
 			classNames={{
 				arrow: twMerge("", props.classNames?.arrow),
 				base: twMerge("", props.classNames?.base),
 				content: twMerge("", props.classNames?.content),
 			}}
-			// portalContainer={portal}
 			{...props}
 		>
 			{children}
@@ -99,11 +88,13 @@ function UserListListEntry({
 	showHover,
 	contextContent,
 	setOnlineStates,
+	entryProps,
 }: {
 	user: User;
 	hoverDelay?: number;
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
+	entryProps?: React.HTMLProps<HTMLAnchorElement>;
 	Controls?: any;
 	showBadge?: (user: User) => string | null;
 	showHover?: boolean;
@@ -131,18 +122,20 @@ function UserListListEntry({
 						!Controls && isOnline == false && "brightness-[60%]",
 						classNames?.entryContainer,
 					)}
-				>
+					>
 					<Link
 						href={`/profile/${user.username}`}
 						className={twMerge(
 							`relative flex-1 gap-4 text-white
-						transition-all hover:scale-105 hover:brightness-110`,
+							transition-all hover:scale-105 hover:brightness-110`,
 							!Controls &&
-								isOnline == false &&
-								"brightness-[60%]",
+							isOnline == false &&
+							"brightness-[60%]",
 							size == "xs" && "gap-2",
 							classNames?.entry,
 						)}
+						{...entryProps}
+						ref={null}
 					>
 						{badge && (
 							<div className="absolute left-0 top-0 z-10">
@@ -198,6 +191,7 @@ export default function UserList({
 	type,
 	hoverDelay,
 	size,
+	entryProps,
 	classNames,
 	showBadge,
 	Controls,
@@ -208,14 +202,17 @@ export default function UserList({
 	hoverDelay?: number;
 	type: "list" | "grid";
 	size?: "xs" | "sm" | "md";
+	entryProps?: React.HTMLProps<HTMLAnchorElement>;
 	classNames?: ClassNames;
 	showBadge?: (user: User) => string | null;
 	Controls?: ({ user }: { user: User }) => any;
 	showHover?: boolean;
 	contextContent?: (user: User) => ReactNode;
 }) {
-	const [onlineStates, setOnlineStates] = useState<Map<string, boolean>>(new Map());
-	
+	const [onlineStates, setOnlineStates] = useState<Map<string, boolean>>(
+		new Map(),
+	);
+
 	const sortedUsers = useMemo(() => {
 		return users.toSorted((a, b) => {
 			if (onlineStates.get(a.id) && !onlineStates.get(b.id)) return -1;
@@ -226,7 +223,12 @@ export default function UserList({
 
 	if (type == "list")
 		return (
-			<div className={twMerge(`flex flex-col gap-2 overflow-x-hidden`, classNames?.list)}>
+			<div
+				className={twMerge(
+					`flex flex-col gap-2 overflow-x-hidden`,
+					classNames?.list,
+				)}
+			>
 				{sortedUsers?.length == 0 && <NoData />}
 				{sortedUsers?.map((user, i) => (
 					<UserListListEntry
@@ -240,6 +242,7 @@ export default function UserList({
 						showHover={showHover}
 						contextContent={contextContent}
 						setOnlineStates={setOnlineStates}
+						entryProps={entryProps}
 					/>
 				))}
 			</div>
