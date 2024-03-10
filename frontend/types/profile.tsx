@@ -48,6 +48,7 @@ export type User = {
 	friend_requests: User[];
 	blocked_users: User[];
 	two_factor: boolean;
+	createdAt: Date;
 };
 export type InteractionType =
 	| "add"
