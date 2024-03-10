@@ -18,6 +18,8 @@ model GameMatch {
   // Game info
   player1_id    String
   player2_id    String
+  player1_joined Boolean  @default(false)
+  player2_joined Boolean  @default(false)
   player1_score Int
   player2_score Int
   winner_id     String

@@ -11,6 +11,7 @@ import SuperImage from "@/components/SuperImage";
 import { SuperSkeleton } from "@/components/SuperSkeleton";
 import UserList from "@/components/UserList";
 import PublicContext from "@/contexts/PublicContext";
+import { AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
 import {
 	InteractionFunctionality,
 	fetcherUnsafe,
@@ -21,6 +22,7 @@ import {
 import { user1 } from "@/mocks/profile";
 import { Achievement, InteractionType, User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
+import axios from "@/lib/axios";
 import {
 	Check,
 	Expand,
@@ -35,11 +37,11 @@ import {
 	Video,
 	X,
 } from "lucide-react";
-import Head from "next/head";
-import { notFound } from "next/navigation";
+import { notFound, redirect, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import MatchHistoryList from "@/components/MatchHistoryList";
+import socket from "@/lib/socket";
 
 const ProfileContext = createContext({});
 
@@ -164,7 +166,11 @@ function ProfileFriends({ user }: { user: User }) {
 						}
 					>
 						<div className="p-2">
-							<UserList showHover={false} type="list" users={user.friends!} />
+							<UserList
+								showHover={false}
+								type="list"
+								users={user.friends!}
+							/>
 						</div>
 					</ModalSet>
 				</div>
@@ -275,9 +281,41 @@ function InteractionButton({
 	);
 }
 
+async function inviteplayer(user: User, session: any, router: any) {
+	console.log("Invited", user);
+	console.log("Session", session);
+	const res = await axios.post("/game/invite", {
+		user1: session.id,
+		user2: user.id,
+	});
+	if (res.status == 201) {
+		console.log("Invited", res.data);
+		console.log("redirecting", "/game/" + res.data.id);
+		// socket.emit("message", {
+		// 	targetId: selectedServer?.isDM
+		// 		? selectedServer.membersIds.find((id) => id != session.id)
+		// 		: undefined,
+		// 	chatId: selectedServerId,
+		// 	queueId: newId,
+		// 	message,
+		// });
+		socket.emit("message", {
+			targetId: user.id,
+			chatId: user.id,
+			queueId: res.data.id,
+			message: "http://localhost:8080/game/" + res.data.id,
+		});
+
+		router.push("/game/" + res.data.id);
+	}
+
+	console.log(res);
+}
+
 function ProfileTop({ user }: { user: User }) {
 	const { session, onMessageOpen, setMessageTarget } = useContext(PublicContext) as any;
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+	const router = useRouter();
 	const userBlocked = session.blocked_users.find(
 		(blocked: User) => blocked.id == user.id,
 	);
@@ -384,6 +422,13 @@ function ProfileTop({ user }: { user: User }) {
 												}
 												variant="transparent"
 												className="justify-start"
+												onClick={() => {
+													inviteplayer(
+														user,
+														session,
+														router,
+													);
+												}}
 											>
 												Invite
 											</Button>

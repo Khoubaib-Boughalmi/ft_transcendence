@@ -1,0 +1,9 @@
+export { Island } from "./Island";
+export { Sky } from "./Sky";
+export { Racket } from "./Racket";
+export { Ball } from "./Ball";
+export { Jball } from "./Jball";
+export { Table } from "./Table";
+export { FallbackComponent } from "./FallbackComponent";
+export { TextGeo } from "./TextGeo";
+export { StartGame } from "./StartGame";
