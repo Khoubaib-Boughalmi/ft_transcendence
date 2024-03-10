@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { twMerge } from "tailwind-merge";
 import ModalSet from "./ModalSet";
@@ -50,6 +50,7 @@ import { SuperDropdown, SuperDropdownMenu } from "./SuperDropdown";
 import SuperImage from "./SuperImage";
 import { SuperSkeleton } from "./SuperSkeleton";
 import UserList from "./UserList";
+import { AnimatePresence, motion } from "framer-motion";
 
 const buttons = ["Home", "Leaderboard", "Play"] as const;
 const themes = [
@@ -67,7 +68,7 @@ function Navigation() {
 
 	return (
 		<>
-			{buttons.map((button, i) => (
+			{/* {buttons.map((button, i) => (
 				<Button
 					variant={button === active ? "default" : "transparent"}
 					key={button}
@@ -75,7 +76,7 @@ function Navigation() {
 				>
 					{button}
 				</Button>
-			))}
+			))} */}
 		</>
 	);
 }
@@ -295,21 +296,8 @@ function FriendsButton() {
 	type tabs = "requests" | "friends";
 	const { session, sessionMutate } = useContext(PublicContext) as any;
 	const [tab, setTab] = useState<tabs>("requests");
-	const [actualTab, setActualTab] = useState<tabs>("requests");
 	const [loading, setLoading] = useState(false);
 	const [closeOnSelect, setCloseOnSelect] = useState(true);
-
-	const saveTheWorld = {
-		onMouseEnter: () => setCloseOnSelect(false),
-		onMouseLeave: () => setCloseOnSelect(true),
-	};
-
-	useEffect(() => {
-		const doc = document as any;
-		if (doc.startViewTransition && closeOnSelect == false)
-			doc.startViewTransition(() => setActualTab(tab));
-		else setActualTab(tab);
-	}, [tab, closeOnSelect]);
 
 	const handleControls = (user: User, action: "accept" | "reject") => {
 		AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing(
@@ -360,7 +348,11 @@ function FriendsButton() {
 						</div>
 					</DropdownItem>
 				</DropdownSection>
-				<DropdownItem aria-label="Controls" className="mb-2 p-0">
+				<DropdownItem
+					onMouseEnter={() => setCloseOnSelect(false)}
+					aria-label="Controls"
+					className="mb-2 p-0"
+				>
 					<div className="flex w-full gap-2 overflow-hidden rounded-3xl bg-card-200">
 						{[
 							[Users2, "Friends"],
@@ -378,7 +370,6 @@ function FriendsButton() {
 											: "transparent"
 									}
 									className="flex-1 flex-col gap-0 rounded-none p-1 text-xs"
-									{...saveTheWorld}
 								>
 									<Icon size={16} className="flex-shrink-0" />
 									{text}
@@ -391,54 +382,83 @@ function FriendsButton() {
 					aria-label="List"
 					className="w-56 p-0 opacity-100"
 				>
-					{actualTab == "requests" ? (
-						<UserList
-							showHover={false}
-							type="list"
-							size="xs"
-							users={session.friend_requests}
-							classNames={{
-								list: "max-h-[70vh] overflow-y-auto",
-								entry: twMerge("", loading && "opacity-50"),
-							}}
-							Controls={({ user }: { user: User }) => (
-								<div
-									className="flex flex-shrink-0 gap-1"
-									{...saveTheWorld}
-								>
-									<Button
-										onClick={() =>
-											handleControls(user, "accept")
-										}
-										disabled={loading}
-										className="h-8 w-8"
-										iconOnly
-									>
-										<Check size={12} />
-									</Button>
-									<Button
-										onClick={() =>
-											handleControls(user, "reject")
-										}
-										disabled={loading}
-										className="h-8 w-8"
-										variant="danger"
-										iconOnly
-									>
-										<X size={12} />
-									</Button>
-								</div>
+					<AnimatePresence mode="popLayout">
+						<motion.div
+							initial={{ x: 10, opacity: 0 }}
+							animate={{ x: 0, opacity: 1 }}
+							exit={{ x: -10, opacity: 0 }}
+							transition={{ duration: 0.2 }}
+							key={tab}
+						>
+							{tab == "requests" ? (
+								<UserList
+									showHover={false}
+									type="list"
+									size="xs"
+									users={session.friend_requests}
+									classNames={{
+										list: "max-h-[70vh] overflow-y-auto",
+										entry: twMerge(
+											"",
+											loading && "opacity-50",
+										),
+									}}
+									entryProps={{
+										onMouseEnter: () =>
+											setCloseOnSelect(true),
+									}}
+									Controls={({ user }: { user: User }) => (
+										<div
+											className="flex flex-shrink-0 gap-1"
+											onMouseEnter={() =>
+												setCloseOnSelect(false)
+											}
+										>
+											<Button
+												onClick={() =>
+													handleControls(
+														user,
+														"accept",
+													)
+												}
+												disabled={loading}
+												className="h-8 w-8"
+												iconOnly
+											>
+												<Check size={12} />
+											</Button>
+											<Button
+												onClick={() =>
+													handleControls(
+														user,
+														"reject",
+													)
+												}
+												disabled={loading}
+												className="h-8 w-8"
+												variant="danger"
+												iconOnly
+											>
+												<X size={12} />
+											</Button>
+										</div>
+									)}
+								/>
+							) : (
+								<UserList
+									showHover={false}
+									classNames={{ list: "max-h-[70vh]" }}
+									type="list"
+									size="xs"
+									users={session.friends}
+									entryProps={{
+										onMouseEnter: () =>
+											setCloseOnSelect(true),
+									}}
+								/>
 							)}
-						/>
-					) : (
-						<UserList
-							showHover={false}
-							classNames={{ list: "max-h-[70vh]" }}
-							type="list"
-							size="xs"
-							users={session.friends}
-						/>
-					)}
+						</motion.div>
+					</AnimatePresence>
 				</DropdownItem>
 			</SuperDropdownMenu>
 		</SuperDropdown>
@@ -622,7 +642,7 @@ function SearchBar() {
 		fetcher,
 	) as any;
 
-	const showLoading = 
+	const showLoading =
 		isLoading || (isValidating && (!data || data.length == 0));
 
 	const result = data?.slice(0, 5) || [];
