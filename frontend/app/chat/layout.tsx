@@ -369,7 +369,7 @@ export default function Page({
 		if (!selectedServer)
 			document.title = `Discover`
 		else
-			document.title = `${selectedServer.name} | Chat`
+			document.title = `${decodeURIComponent(selectedServer.name)} | Chat`
 	}, [selectedServer]);
 
 	return (
