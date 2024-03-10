@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import { SocketModule } from './socket/socket.module';
 import { UserModule } from './user/user.module';
+import { GameModule } from './game/game.module';
 
 @Module({
 	imports: [
@@ -50,6 +51,7 @@ import { UserModule } from './user/user.module';
 				limit: 1000,
 			},
 		]),
+		GameModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

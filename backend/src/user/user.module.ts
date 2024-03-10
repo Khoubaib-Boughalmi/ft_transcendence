@@ -4,6 +4,7 @@ import { NestjsFormDataModule } from 'nestjs-form-data';
 import { AppService } from 'src/app.service';
 import { AuthService } from 'src/auth/auth.service';
 import { ChatModule } from 'src/chat/chat.module';
+import { GameService } from 'src/game/game.service';
 import { PrismaService } from 'src/prisma.service';
 import { SocketModule } from 'src/socket/socket.module';
 import { UserController } from './user.controller';
@@ -17,6 +18,7 @@ import { UserService } from './user.service';
 		AppService,
 		UserGateway,
 		AuthService,
+		GameService,
 	],
 	controllers: [UserController],
 	exports: [UserService, UserGateway],

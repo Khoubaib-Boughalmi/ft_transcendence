@@ -11,6 +11,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { ChatService } from 'src/chat/chat.service';
 import { SocketService } from 'src/socket/socket.service';
 import { UserService } from './user.service';
+import { GameService } from '../game/game.service';
 import { Inject, forwardRef } from '@nestjs/common';
 
 export class MessageDTO {
@@ -34,6 +35,7 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		@Inject(forwardRef(() => ChatService))
 		private chatService: ChatService,
 		private socketService: SocketService,
+		private gameService: GameService,
 	) {}
 
 	@WebSocketServer()
@@ -93,6 +95,14 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.server.to(chatId).emit('mutate', payload);
 	}
 
+	async game_start_emit(gameId: string, payload: any) {
+		this.server.to(gameId).emit('game-start', payload);
+	}
+
+	// async numberofOnlineUsers() {
+	// 	return this.socketService.numberofOnlineUsers();
+	// }
+
 	private MessageProcessingQueue: string[][] = [];
 
 	queueMessage(payload: any) {
@@ -144,5 +154,28 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		} finally {
 			this.turnEnded(payload);
 		}
+	}
+
+	@SubscribeMessage('start_game')
+	async start_game(client: Socket, payload: any) {
+		this.gameService.startGame(this.server, client, payload);
+	}
+
+	@SubscribeMessage('game_data')
+	async game_data(client: Socket, payload: any) {
+		// console.log('game_data', payload);
+		this.server.to(payload.gameId).emit('recieve_game_data', payload);
+		// emit game data to the other player but not to the sender
+		// const opponentId = payload.opponentId;
+		// const opponentSockets = this.socketService.getUserSockets(opponentId);
+		// if (!opponentSockets) return;
+		// opponentSockets.forEach((socket) => {
+		// 	if (socket.id != client.id) {
+		// 		socket.emit('recieve_game_data', payload);
+		// 	}
+		// });
+		// send game data to the other player
+		// this.server.to(payload.opponentId).emit('recieve_game_data', payload);
+		// this.gameService.gameData(this.server, client, payload);
 	}
 }
