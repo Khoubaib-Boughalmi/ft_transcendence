@@ -23,6 +23,7 @@ export const user1: User = {
 	two_factor: false,
 	friend_requests: [],
 	blocked_users: [],
+	createdAt: new Date(),
 };
 
 export const user2: User = {
@@ -36,7 +37,7 @@ export const user2: User = {
 	division: "II",
 };
 
-const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
+export const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
 	id: i,
 	user1: user1,
 	user2: user2,
@@ -50,7 +51,7 @@ const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
 	score2: 0,
 }));
 
-const achievements: Achievement[] = Array.from({ length: 30 }).map((_, i) => ({
+export const achievements: Achievement[] = Array.from({ length: 30 }).map((_, i) => ({
 	id: i,
 	name: "Achievement " + i,
 	description:
@@ -60,7 +61,7 @@ const achievements: Achievement[] = Array.from({ length: 30 }).map((_, i) => ({
 	score: 100,
 }));
 
-const friends: any[] = Array.from({ length: 10 }).map((_, i) => ({
+export const friends: any[] = Array.from({ length: 10 }).map((_, i) => ({
 	...(i % 2 == 0 ? user1 : user2),
 	friends: [],
 }));
@@ -94,4 +95,5 @@ export const dummyUser: User = {
 	two_factor: false,
 	friend_requests: [],
 	blocked_users: [],
+	createdAt: new Date(),
 };
