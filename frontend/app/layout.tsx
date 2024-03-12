@@ -39,7 +39,7 @@ export default function RootLayout({
 								width={1280}
 								height={720}
 								alt="Background"
-								className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay "
+								className="z-10 h-full w-full scale-150 object-cover mix-blend-overlay blur-lg"
 								src="/background2.png"
 								priority
 							/>
