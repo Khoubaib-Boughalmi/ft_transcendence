@@ -1,17 +1,13 @@
-FROM node:21-alpine3.18
+FROM node:18.18.0-alpine
+
+RUN npm install -g npm@10.5.0
 
 WORKDIR /app
 
 COPY . /app/
 
-RUN apk update; apk --no-cache add bash --virtual builds-deps build-base 
+RUN npm install
 
-RUN apk --no-cache add --virtual python
-
-RUN npm install --silent
-
-RUN npm run build --silent
+RUN npm run build
 
 EXPOSE 3000
-
-# ENTRYPOINT [ "npm", "run", "start:dev"]

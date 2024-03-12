@@ -1,55 +1,45 @@
 version: '3'
 services:
   database:
-    image: postgres:16.2
-    networks:
-      - database
+    image: postgres:10.4
     ports:
       - '5432:5432'
     env_file:
-      - ./Database/.env
+      - ./database/.env
     volumes:
-      - ./Database/:/docker-entrypoint-initdb.d
+      - ./database:/var/lib/postgresql/data
     restart: always
     container_name: database
     hostname: database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     depends_on:
       - backend
-    networks:
-      - Pregonanto
     ports:
       - 8080:8080
     restart: always
-    # command: ['./wait-for-it.sh', 'backend:3000', '--', 'nginx', '-g', 'pid /tmp/nginx.pid; daemon off;']
-    command: [npm, run, dev]
+    command: [npm, run, start]
     container_name: frontend
     hostname: frontend
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    networks:
-      - Pregonanto
-      - database
     ports:
       - 3000:3000
     depends_on:
       - database
     restart: always
-    # command: ['./wait-for-it.sh', 'database:5432', '--', 'npm', 'run', 'start:dev']
-    command: [npm, run, 'start:dev']
+    command: [npm, run, 'start']
     container_name: backend
     hostname: backend
-
-networks:
-  Pregonanto:
-    driver: bridge
-  database:
-    driver: bridge
 
 volumes:
   database:

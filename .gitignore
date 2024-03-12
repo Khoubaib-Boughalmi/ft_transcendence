@@ -1,3 +1,5 @@
 frontend/.env
-Database/.env
+database/.env
+backend/.env
+database
 .vscode/
