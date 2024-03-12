@@ -1,7 +1,7 @@
 "use client";
 import { useIsOnline } from "@/lib/utils";
 import { User } from "@/types/profile";
-import { Tooltip, useDisclosure } from "@nextui-org/react";
+import { useDisclosure } from "@nextui-org/react";
 import Link from "next/link";
 import { twMerge } from "tailwind-merge";
 import NoData from "./NoData";
@@ -10,32 +10,13 @@ import SuperImage from "./SuperImage";
 import UserHover from "./UserHover";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import ContextMenuTrigger from "./ContextMenuTrigger";
+import SuperTooltip from "./SuperTooltip";
 
 type ClassNames = {
 	list?: string;
 	entry?: string;
 	entryContainer?: string;
 };
-
-function SuperTooltip({
-	children,
-	...props
-}: React.ComponentProps<typeof Tooltip>) {
-	return (
-		<Tooltip
-			className={twMerge("bg-card-200 p-2", props.className)}
-			radius="lg"
-			classNames={{
-				arrow: twMerge("", props.classNames?.arrow),
-				base: twMerge("", props.classNames?.base),
-				content: twMerge("", props.classNames?.content),
-			}}
-			{...props}
-		>
-			{children}
-		</Tooltip>
-	);
-}
 
 function UserListGridEntry({
 	user,
@@ -83,23 +64,25 @@ function UserListListEntry({
 	size,
 	classNames,
 	hoverDelay,
-	Controls,
+	endContent,
 	showBadge,
 	showHover,
 	contextContent,
 	setOnlineStates,
 	entryProps,
+	startContent,
 }: {
 	user: User;
 	hoverDelay?: number;
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
 	entryProps?: React.HTMLProps<HTMLAnchorElement>;
-	Controls?: any;
+	endContent?: (user: User) => ReactNode;
 	showBadge?: (user: User) => string | null;
 	showHover?: boolean;
 	contextContent?: (user: User) => ReactNode;
 	setOnlineStates: any;
+	startContent?: (user: User) => ReactNode;
 }) {
 	const badge = showBadge && showBadge(user);
 	const isOnline = useIsOnline(user.id, setOnlineStates);
@@ -117,18 +100,19 @@ function UserListListEntry({
 					isDisabled={!contextContent}
 					menuContent={contextContent ? contextContent(user) : null}
 					className={twMerge(
-						`flex w-full gap-4 rounded-xl bg-card-400 p-4 text-white transition-all`,
-						size == "xs" && "gap-2 p-2",
-						!Controls && isOnline == false && "brightness-[60%]",
+						`flex w-full gap-4 rounded-xl bg-card-400 p-2 text-white transition-all h-16`,
+						size == "xs" && "gap-2 h-12",
+						!endContent && isOnline == false && "brightness-[60%]",
 						classNames?.entryContainer,
 					)}
 					>
+					{startContent && startContent(user)}
 					<Link
 						href={`/profile/${user.username}`}
 						className={twMerge(
 							`relative flex-1 gap-4 text-white
 							transition-all hover:scale-105 hover:brightness-110`,
-							!Controls &&
+							!endContent &&
 							isOnline == false &&
 							"brightness-[60%]",
 							size == "xs" && "gap-2",
@@ -169,7 +153,7 @@ function UserListListEntry({
 								>
 									{user.username}
 								</div>
-								{!Controls && (
+								{!endContent && (
 									<Status
 										isOnline={isOnline}
 										size={size}
@@ -179,7 +163,7 @@ function UserListListEntry({
 							</div>
 						</div>
 					</Link>
-					{Controls && <Controls user={user} />}
+					{endContent && endContent(user)}
 				</ContextMenuTrigger>
 			</div>
 		</SuperTooltip>
@@ -194,8 +178,9 @@ export default function UserList({
 	entryProps,
 	classNames,
 	showBadge,
-	Controls,
+	endContent,
 	contextContent,
+	startContent,
 	showHover = true,
 }: {
 	users: User[];
@@ -205,9 +190,10 @@ export default function UserList({
 	entryProps?: React.HTMLProps<HTMLAnchorElement>;
 	classNames?: ClassNames;
 	showBadge?: (user: User) => string | null;
-	Controls?: ({ user }: { user: User }) => any;
+	endContent?: (user: User) => ReactNode;
 	showHover?: boolean;
 	contextContent?: (user: User) => ReactNode;
+	startContent?: (user: User) => ReactNode;
 }) {
 	const [onlineStates, setOnlineStates] = useState<Map<string, boolean>>(
 		new Map(),
@@ -234,7 +220,7 @@ export default function UserList({
 					<UserListListEntry
 						hoverDelay={hoverDelay}
 						key={user.id}
-						Controls={Controls}
+						endContent={endContent}
 						classNames={classNames}
 						size={size}
 						user={user}
@@ -243,6 +229,7 @@ export default function UserList({
 						contextContent={contextContent}
 						setOnlineStates={setOnlineStates}
 						entryProps={entryProps}
+						startContent={startContent}
 					/>
 				))}
 			</div>
