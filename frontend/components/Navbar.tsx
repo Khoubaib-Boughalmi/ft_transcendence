@@ -407,7 +407,7 @@ function FriendsButton() {
 										onMouseEnter: () =>
 											setCloseOnSelect(true),
 									}}
-									Controls={({ user }: { user: User }) => (
+									endContent={(user: User) => (
 										<div
 											className="flex flex-shrink-0 gap-1"
 											onMouseEnter={() =>
@@ -712,7 +712,7 @@ function SearchBar() {
 								entry: "truncate hover:scale-[99%]",
 								list: "gap-2",
 							}}
-							Controls={({ user }: { user: User }) => {
+							endContent={(user: User) => {
 								const areFriends = session.friends.some(
 									(f: any) => f.id == user.id,
 								);
