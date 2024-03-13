@@ -84,7 +84,7 @@ export function Ball(gprops) {
 							// console.log(setMypoints);
 							// setMypoints((prev) => prev + 1);
 							// console.log(mypoints);
-							oppPoints.current = oppPoints.current + 1;
+							// oppPoints.current = oppPoints.current + 1;
 							setOppPoints((prev) => prev + 1);
 						} else {
 							console.log("point --------------");
