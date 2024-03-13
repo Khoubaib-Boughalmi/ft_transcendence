@@ -1,6 +1,6 @@
 import { Message } from "@/types/chat";
 import { ClipboardCheck, Copy } from "lucide-react";
-import { memo, useEffect, useState } from "react";
+import { memo, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Markdown from "react-markdown";
 import { Tweet } from "react-tweet";
@@ -8,6 +8,8 @@ import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import SuperImage from "./SuperImage";
 import { Button } from "./Button";
+import PublicContext from "@/contexts/PublicContext";
+import { twMerge } from "tailwind-merge";
 
 const NoExceptURL = (url: string) => {
 	try {
@@ -19,6 +21,7 @@ const NoExceptURL = (url: string) => {
 
 function GayMarkdown({ message }: { message: Message }) {
 	const [copySuccess, setCopySuccess] = useState(false);
+	const { session } = useContext(PublicContext) as any;
 
 	const copyImageUrl = (imageUrl: string) => {
 		navigator.clipboard
@@ -108,19 +111,22 @@ function GayMarkdown({ message }: { message: Message }) {
 					// Display Game invite embed
 					if (url?.startsWith("http://localhost:8080/game")) {
 						return (
-							<div className="bg-gradient-to-r from-primary-200 to-primary-600 rounded-lg mt-4 mb-4 p-4 flex items-center space-x-4 max-w-xs w-full">
-								<SuperImage
-									className="w-full h-full rounded-full object-cover"
-									src={message.user.avatar}
-									alt={message.user.username}
-									width={80}
-									height={80}
-								/>
-								<div className="flex-grow">
-									<p className="text-accent-200 font-semibold">{message.user.username}</p>
-									<p className="text-accent-100">Challenges you to a match!</p>
+							<div className="h-24 bg-card-200 rounded-lg my-2 p-4 flex items-center justify-start gap-4 w-fit">
+								<div className="h-full aspect-square relative">
+									<SuperImage
+										className="absolute inset-0 w-full h-full rounded-full object-cover"
+										src={message.user.avatar}
+										alt={message.user.username}
+										width={32}
+										height={32}
+									/>
 								</div>
-								<div className="flex-shrink-0 space-y-2">
+								<div>
+									<p className="font-semibold">{message.user.username}</p>
+									{message.user.id != session?.id && <p className="text-foreground-800">Challenges you to a match!</p>}
+									{message.user.id === session?.id && <p className="text-foreground-800">You've sent a challenge!</p>}
+								</div>
+								{message.user.id != session?.id && <div className="ml-auto space-y-2">
 									<Button
 										variant="secondary"
 										className="px-4 py-2 rounded-lg"
@@ -130,6 +136,7 @@ function GayMarkdown({ message }: { message: Message }) {
 										Accept
 									</Button>
 								</div>
+								}
 							</div>
 						);
 					}
