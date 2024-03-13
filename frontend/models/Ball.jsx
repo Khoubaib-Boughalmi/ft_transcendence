@@ -17,8 +17,6 @@ export function Ball(gprops) {
 		mTheHost,
 		mypoints,
 		setMypoints,
-		mypPoints,
-		oppPoints,
 		oppPoints2,
 		setOppPoints,
 		...props
