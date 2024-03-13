@@ -13,7 +13,9 @@ import {
 	FallbackComponent,
 	StartGame,
 	GameScore,
+	CameraController,
 	RoundCamera,
+	PlaneTable,
 } from "../models";
 import { useFrame } from "@react-three/fiber";
 import { Controls, useControl } from "react-three-gui";
@@ -32,12 +34,6 @@ const GameData = () => {
 	const ballAPi = useRef(null);
 };
 
-const currentstatus = () => {
-	const racket1position = useRef([0, 0, 0]);
-	const racket2position = useRef([0, 0, 0]);
-	const ballposition = useRef([0, 0, 0]);
-};
-
 // const socket = io("http://localhost:4000");
 
 // import { Physics } from "@react-three/cannon";
@@ -53,10 +49,6 @@ import type { Group, Mesh } from "three";
 const Home = (data: any) => {
 	const [mypoints, setMypoints] = useState(0);
 	const [oppPoints2, setOppPoints] = useState(0);
-
-	useEffect(() => {
-		console.log("useeffect pointss ", mypoints, " vs ", oppPoints2);
-	}, [mypoints, oppPoints2]);
 
 	const gameinfo = data.gameinfo;
 	const session = data.session;
@@ -173,66 +165,11 @@ const Home = (data: any) => {
 		console.log("I am the host", session.id, gameinfo.player1_id);
 	}
 
-	// useEffect(() => {
-	// 	socket.connect();
-	// 	console.log("connected to server", socket.id);
-	// 	// socket.on("start_game", (data) => {
-	// 	// 	console.log(data);
-	// 	// });
-
-	// 	// socket.emit("join_game", { game: "pong" });
-
-	// 	// socket.emit("join_game", { game: "pong" });
-	// });
-
-	// const socketData = useRef(null);
-	// useEffect(() => {
-	// 	if (socketData.current != null) {
-	// 		return null;
-	// 	}
-
-	// 	socket.on("connect", () => {
-	// 		console.log("Connected to server", socket.id);
-	// 	});
-
-	// 	// return () => {
-	// 	//   console.log("Disconnecting from server");
-
-	// 	//   socket.disconnect();
-	// 	// };
-	// }, []);
-
 	const canvasRef = useRef(null);
 
 	const rotationx = useControl("Rotation X", { type: "number" });
 	const rotationy = useControl("Rotation Y", { type: "number" });
 	const rotationz = useControl("Rotation Z", { type: "number" });
-	function Plane(props: PlaneProps) {
-		const [ref, api] = usePlane(
-			() => ({
-				name: "ground",
-				...props,
-				// onCollide: () => {
-				//   console.log("collide table");
-
-				//   // api.position.
-				//   // api.velocity.set(0, 1, 0);
-				//   //rotation ++
-				//   // api.quaternion.set(0, 0, 0, 0);
-				// },
-			}),
-			useRef<Group>(null),
-		);
-
-		return (
-			<group ref={ref} name="ground">
-				<mesh receiveShadow>
-					{/* <planeGeometry args={[10, 10]} /> */}
-					{/* <meshStandardMaterial color="#ff1f00" /> */}
-				</mesh>
-			</group>
-		);
-	}
 
 	const [refreshCanvas, setRefreshCanvas] = useState(true);
 	useEffect(() => {
@@ -285,67 +222,7 @@ const Home = (data: any) => {
 		});
 		// console.log(mousePosition);
 	}, []);
-	const CameraController = () => {
-		const { camera } = useThree();
-		// console.log("camera controller", camera.position);
 
-		const Racket_position = useRef([0, 0, 0]);
-		const updateCameraPosition = () => {
-			// console.log(GameData.racket1APi);
-
-			GameData.racket1APi.position.subscribe(
-				(v) => (Racket_position.current = v),
-			);
-			// console.log("Raacket", Racket_position.current);
-			if (
-				Racket_position.current[0] == 0 &&
-				Racket_position.current[1] == 0
-			) {
-				return null;
-			}
-			const cameraSensitivity = 0.1;
-			camera.position.x = Racket_position.current[0] * 0.7;
-			camera.position.y = Racket_position.current[1] + 1;
-
-			camera.lookAt(0, 0, 0);
-			// console.log("controller", camera.position);
-		};
-
-		useEffect(() => {
-			const interval = setInterval(() => {
-				updateCameraPosition();
-			}, 20); // 100 milliseconds = 0.1 seconds
-
-			return () => clearInterval(interval); // Clean up the interval on component unmount
-		}, []); // Empty dependency array means this effect runs once on mount
-
-		// useFrame(() => {
-		//   GameData.racket1APi.position.subscribe(
-		//     (v) => (Racket_position.current = v)
-		//   );
-		//   // console.log(Racket_position.current);
-
-		//   // console.log(Racket_position.current);
-
-		//   // GameData.ballAPi.velocity.set(0, 0.1, 0);
-
-		//   // console.log(mousePosition);
-
-		//   // Modify these values to adjust sensitivity or direction
-		//   const cameraSensitivity = 0.1;
-		//   // camera.position.x +=
-		//   //   (mousePosition.x - camera.position.x) * cameraSensitivity;
-		//   // camera.position.y +=
-		//   //   (mousePosition.y - camera.position.y) * cameraSensitivity * 0.1;
-		//   camera.position.x = Racket_position.current[0] * 0.7;
-		//   camera.position.y = Racket_position.current[1] + 1;
-
-		//   camera.lookAt(0, 0, 0); // Adjust if you want the camera to look at a different point
-		//   // console.log(canvasRef);
-		// });
-
-		return null;
-	};
 	// window.addEventListener("mousemove", (e) => {
 	//   // console.log((e.clientX / window.innerWidth) * 2 - 1);
 
@@ -387,7 +264,7 @@ const Home = (data: any) => {
 							/>
 						)} */}
 						{/* <RoundCamera />; */}
-						{<CameraController />}
+						{<CameraController GameData={GameData} />}
 						{/* <OrbitControls /> */}
 						<Sky isRotating={isRotating} />
 						<directionalLight
@@ -449,7 +326,7 @@ const Home = (data: any) => {
             userData={{ id: "floor" }}
             position={[0, 1.5, 0]}
           /> */}
-							<Plane
+							<PlaneTable
 								rotation={[-Math.PI / 2, 0, 0]}
 								position={[0, 1.66, 0]}
 							/>

@@ -9,3 +9,5 @@ export { TextGeo } from "./TextGeo";
 export { StartGame } from "./StartGame";
 export { GameScore } from "./GameScore";
 export { RoundCamera } from "./RoundCamera";
+export { CameraController } from "./CameraController";
+export { PlaneTable } from "./PlaneTable";
