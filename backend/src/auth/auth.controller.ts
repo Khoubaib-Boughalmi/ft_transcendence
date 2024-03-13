@@ -7,6 +7,7 @@ import {
 	Body,
 	HttpException,
 	Post,
+	Param,
 } from '@nestjs/common';
 import { IntraAuthGuard, JwtGuard, JwtNo2faGuard } from './auth.guards';
 import { AuthService } from './auth.service';
@@ -38,6 +39,8 @@ export class AuthController {
 	@UseGuards(IntraAuthGuard)
 	async handle42Redirect(@Req() req, @Res() res) {
 		const user = await this.userService.user({ id: req.user.id });
+		if (!user)
+			throw new HttpException('User not found', 404);
 		const { access_token } = await this.authService.login(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
@@ -54,6 +57,23 @@ export class AuthController {
 		} else {
 			res.redirect(process.env.FRONTEND_URL);
 		}
+	}
+
+	@Get('bypass/:username?')
+	async bypassAuth(@Req() req, @Param() params: any, @Res() res) {
+		if (process.env.NODE_ENV !== 'development')
+			throw new HttpException('Not found', 404);
+		console.log("Bypassing auth for user: ", params);
+		const user = await this.userService.user({ username: params.username });
+		if (!user)
+			throw new HttpException('User not found', 404);
+		const { access_token } = await this.authService.login2fa(user);
+		res.cookie('access_token', access_token, {
+			httpOnly: true,
+			sameSite: 'none',
+			secure: true,
+		});
+		res.redirect(process.env.FRONTEND_URL);
 	}
 
 	@Get('2fa/generate')
