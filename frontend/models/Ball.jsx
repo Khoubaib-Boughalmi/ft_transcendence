@@ -8,6 +8,7 @@ import { useTexture } from "@react-three/drei";
 import { m } from "framer-motion";
 // mypoints = { mypoints };
 // setMypoints = { setMypoints };
+
 export function Ball(gprops) {
 	const {
 		GameData,
@@ -16,13 +17,22 @@ export function Ball(gprops) {
 		mTheHost,
 		mypoints,
 		setMypoints,
+		mypPoints,
+		oppPoints,
+		oppPoints2,
+		setOppPoints,
 		...props
 	} = gprops;
 
+	console.log({
+		mypoints,
+	});
+
 	// const [lastPosInGround, setLastPosInGround] = useState([0, 0, 0]);
 	// const [lastRacketisMine, setLastRacketisMine] = useState(false);
-	const lastPosInGround = useRef([0, 0, 0]);
-	const lastRacketisMine = useRef(false);
+	// const lastPosInGround = useRef([0, 0, 0]);
+	// const lastRacketisMine = useRef(false);
+	const lastTime3ndi = useRef(true);
 
 	const position = useRef([0, 0, 0]);
 	const velocity = useRef([0, 0, 0]);
@@ -33,48 +43,84 @@ export function Ball(gprops) {
 			mass: 0.04,
 			velocity: [0, 5, 10],
 			angularVelocity: [0, 0, 0],
+			angularFactor: [0.001, 0, 0],
+			linearFactor: [1, 1, 1],
+
 			...props,
 			// velocity: [1, 2, 10],
 			onCollide: (e) => {
-				console.log("collided with", e.body.name);
-
-				// api.rotation.set(0, 0, 0);
-				// api.quaternion.set(0, 0, 0, 0);
-				// api.angularDamping.set(0, 0, 0);
-				api.angularVelocity.set(0, 0, 0);
 				if (!mTheHost) {
 					console.log("m not the host");
 					return;
 				}
+				// console.log("collided with", e.body.name);
+
+				// api.rotation.set(0, 0, 0);
+				// api.quaternion.set(0, 0, 0, 0);
+				// api.angularDamping.set(0, 0, 0);
+				// api.angularVelocity.set(0, 0, 0);
 				if (!e.body) return;
+				// console.log(
+				// 	"point",
+				// 	mypPoints.current,
+				// 	" vs ",
+				// 	oppPoints.current,
+				// );
 
 				if (e.body.name === "ground") {
 					api.position.subscribe((v) => (position.current = v));
 					api.velocity.subscribe((v) => (velocity.current = v));
+					// console.log("collided with ground", e.contact.contactPoint);
+
 					// setLastPosInGround(position.current);
-					lastPosInGround.current = position.current;
+					// lastPosInGround.current = position.current;
 					// console.log("position", position.current);
 					if (position.current[2] > 5 || position.current[2] < -5) {
-						console.log("lastplace", lastPosInGround);
-						console.log("isMine", lastRacketisMine);
 						// setMyPoints(myPoints + 1);
 						// GamePoints.myPoints++;
 						// console.log("GamePoints", GamePoints.myPoints);
 						api.position.set(0, 2.5, 0);
 						api.velocity.set(0, 0, 3);
+						if (lastTime3ndi.current) {
+							console.log("point ++++++++++++");
+							// console.log(setMypoints);
+							// setMypoints((prev) => prev + 1);
+							// console.log(mypoints);
+							oppPoints.current = oppPoints.current + 1;
+							setOppPoints((prev) => prev + 1);
+						} else {
+							console.log("point --------------");
+							setMypoints((prev) => prev + 1);
+							mypPoints.current = mypPoints.current + 1;
+						}
 					}
 					if (
-						position.current[0] > 1.5 ||
-						position.current[0] < -1.5
+						position.current[0] > 1.8 ||
+						position.current[0] < -1.8
 					) {
+						if (lastTime3ndi.current) {
+							console.log("point ++++++++++++");
+							// mypPoints.current = mypPoints.current + 1;
+							// setMypoints((prev) => prev + 1);
+							setMypoints((prev) => prev + 1);
+						} else {
+							console.log("point --------------");
+							// mypPoints.current = mypPoints.current + 1;
+							setMypoints((prev) => prev - 1);
+						}
 						// GamePoints.oppPoints++;
 						// console.log("GamePoints", GamePoints);
 						// setMyPoints(myPoints + 1);
 
-						console.log("lastplace", lastPosInGround);
-						console.log("isMine", lastRacketisMine);
 						api.position.set(0, 2.5, 0);
 						api.velocity.set(0, 0, 3);
+					}
+					if (e.contact.contactPoint[2] > 0) {
+						console.log("collid 3andk");
+						lastTime3ndi.current = true;
+					} else {
+						lastTime3ndi.current = false;
+						console.log("collid 3nd lakhor");
 					}
 				}
 				if (
@@ -83,14 +129,15 @@ export function Ball(gprops) {
 				) {
 					if (e.body.name === "racket_mine") {
 						// setLastRacketisMine(true);
-						lastRacketisMine.current = true;
+						// lastRacketisMine.current = true;
 					}
 					if (e.body.name === "racket_opp") {
 						// setLastRacketisMine(false);
-						lastRacketisMine.current = false;
+						// lastRacketisMine.current = false;
 					}
 					api.position.subscribe((v) => (position.current = v));
 					api.velocity.subscribe((v) => (velocity.current = v));
+
 					// console.log("collided racket", e.contact.contactPoint);
 					// console.log("----->", e.contact.contactNormal);
 					// console.log("----->", e.contact.rj);
@@ -98,7 +145,7 @@ export function Ball(gprops) {
 					if (e.contact.rj[0] > 0.25) return;
 
 					// if (e.contact.contactNormal[2] < -0.5) return;
-					api.angularVelocity.set(0, 0, 0);
+					// api.angularVelocity.set(0, 0, 0);
 
 					// if (e.contact.contactNormal[1] > 0) {
 					//   console.log("collided with racket from top");
@@ -121,20 +168,20 @@ export function Ball(gprops) {
 					// console.log("position", position.current);
 					if (e.contact.rj[0] < 0) {
 						velocity.current[0] -= Math.random() * 1.5;
-						velocity.current[0] < -1.5
-							? (velocity.current[0] = -1.5)
+						velocity.current[0] < -1
+							? (velocity.current[0] = -1)
 							: null;
 						velocity.current[0] > 0
-							? (velocity.current[0] = -0.5)
+							? (velocity.current[0] = -0.2)
 							: null;
 						// console.log("left ", velocity.current[0]);
 					} else {
 						velocity.current[0] += Math.random() * 1.5;
-						velocity.current[0] > 1.5
-							? (velocity.current[0] = 1.5)
+						velocity.current[0] > 1
+							? (velocity.current[0] = 1)
 							: null;
 						velocity.current[0] < 0
-							? (velocity.current[0] = 0.5)
+							? (velocity.current[0] = 0.2)
 							: null;
 						// console.log("right ", velocity.current[0]);
 					}

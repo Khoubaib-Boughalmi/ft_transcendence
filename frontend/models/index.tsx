@@ -7,3 +7,5 @@ export { Table } from "./Table";
 export { FallbackComponent } from "./FallbackComponent";
 export { TextGeo } from "./TextGeo";
 export { StartGame } from "./StartGame";
+export { GameScore } from "./GameScore";
+export { RoundCamera } from "./RoundCamera";
