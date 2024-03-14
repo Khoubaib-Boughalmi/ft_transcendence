@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
+import { Mesh } from "three";
 import { a } from "@react-spring/three";
 import scene from "../assets/3d/group2.glb";
 // import { useFrame, useThree } from "@react-three/fiber";
@@ -10,7 +11,10 @@ import { usePlane } from "@react-three/cannon";
 
 export function Island(props) {
 	const { nodes, materials } = useGLTF(scene);
-	const [ref] = usePlane(() => ({ material: "ground", type: "Static" }));
+	const [ref] = usePlane<Mesh>(() => ({
+		material: "ground",
+		type: "Static",
+	}));
 	return (
 		<mesh>
 			<group {...props} dispose={null}>
