@@ -2,13 +2,14 @@ import React, { useRef } from "react";
 
 import socket from "@/lib/socket";
 
-export const StartGame = () => {
+export const StartGameComponent = (props) => {
 	const canvasRef = useRef(null);
 
 	const handleStartGame = () => {
 		// Implement your game starting logic here
 		console.log("Game started!");
 		socket.emit("start_game");
+		props.setStartGame(true);
 	};
 
 	return (
@@ -23,4 +24,4 @@ export const StartGame = () => {
 	);
 };
 
-export default StartGame;
+export default StartGameComponent;

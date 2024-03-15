@@ -32,10 +32,11 @@ export function Ball(gprops) {
 		type: "Dynamic",
 		args: [0.05],
 		mass: 0.04,
-		velocity: [0, 5, 10],
+		velocity: [0, 0, 3],
 		angularVelocity: [0, 0, 0],
 		angularFactor: [0.001, 0, 0],
 		linearFactor: [1, 1, 1],
+		position: [0, 2.5, 0],
 		...props,
 		onCollide: (e) => {
 			if (!mTheHost) {
@@ -55,8 +56,10 @@ export function Ball(gprops) {
 					} else {
 						setMypoints((prev) => prev + 1);
 					}
-				}
-				else if (position.current[0] > 1.8 || position.current[0] < -1.8) {
+				} else if (
+					position.current[0] > 1.8 ||
+					position.current[0] < -1.8
+				) {
 					if (lastTime3ndi.current) {
 						setMypoints((prev) => prev + 1);
 					} else {

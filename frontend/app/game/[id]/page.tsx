@@ -66,19 +66,9 @@ export default function Home({ params }: any) {
 			<div className="h-[80vh] w-[75vw]">
 				{ready && game && (
 					<>
-						<h1 className="mb-4 text-center text-4xl font-bold">
+						<h4 className="top-0  mb-4  mt-[-40px] text-center font-bold">
 							Game {game.id}
-						</h1>
-						<div className="flex justify-between">
-							<div>
-								<h1>Player 1</h1>
-								<h1>{game.player1_id}</h1>
-							</div>
-							<div>
-								<h1>Player 2</h1>
-								<h1>{game.player2_id}</h1>
-							</div>
-						</div>
+						</h4>
 						<Game gameinfo={game} session={session} />
 					</>
 				)}

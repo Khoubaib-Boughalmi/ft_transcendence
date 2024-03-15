@@ -12,11 +12,13 @@ import {
 	Table,
 	TextGeo,
 	FallbackComponent,
-	StartGame,
+	StartGameComponent,
 	GameScore,
 	CameraController,
 	RoundCamera,
+	PauseGameComponent,
 	PlaneTable,
+	TimingComponent,
 } from "../models";
 import { useFrame } from "@react-three/fiber";
 import { Controls, useControl } from "react-three-gui";
@@ -145,10 +147,26 @@ const Home = (data: any) => {
 			}, 1);
 		}
 	}, [refreshCanvas]);
+	const [startGame, setStartGame] = useState(false);
+	const [Timing, setTiming] = useState(0);
+
+	useEffect(() => {
+		if (startGame) {
+			let seconds = 3;
+			setTiming(3);
+			const interval = setInterval(() => {
+				setTiming((prev) => prev - 1);
+				seconds--;
+				if (seconds <= 0) {
+					clearInterval(interval);
+				}
+			}, 1000);
+		} else {
+			console.log("Game not started!USEEFFECT");
+		}
+	}, [startGame]);
 
 	const [isRotating, setIsRotating] = useState(false);
-
-	const [startGame, setStartGame] = useState(false);
 
 	const [cameraPosition, setCameraPosition] = useState([0, 2.9, 4.2]);
 	const [animationStarted, setAnimationStarted] = useState(true);
@@ -159,16 +177,29 @@ const Home = (data: any) => {
 		// <Controls.Provider>
 		<div className="relative h-full">
 			<Suspense fallback={<FallbackComponent /> /* or null */}>
-				{/* <StartGame /> */}
+				{!startGame && (
+					<StartGameComponent
+						startGame={startGame}
+						setStartGame={setStartGame}
+					/>
+				)}
+				{startGame && (
+					<PauseGameComponent
+						startGame={startGame}
+						setStartGame={setStartGame}
+					/>
+				)}
+				{Timing != 0 && <TimingComponent Timing={Timing} />}
+				{/* <StartGameComponent /> */}
 				<GameScore myPoints={mypoints} oppPoints={oppPoints2} />
-				{refreshCanvas && (
+				{startGame && (
 					<Canvas
 						style={{
 							borderRadius: `20px`,
 						}}
 						ref={canvasRef}
 						shadows
-						className={` ${isRotating ? "cursor-grabbing" : "cursor-grab"}`}
+						// className={` ${isRotating ? "cursor-grabbing" : "cursor-grab"}`}
 						camera={{
 							near: 0.1,
 							far: 1000,
@@ -227,9 +258,10 @@ const Home = (data: any) => {
 								position={[0, 1.66, 0]}
 							/>
 
+							{/* {!Timing && ( */}
 							<Ball
 								mTheHost={mTheHost}
-								position={[0, 3, 0]}
+								// position={[0, 3, 0]}
 								GameData={GameData}
 								animationStarted={animationStarted}
 								setAnimationStarted={setAnimationStarted}
@@ -238,6 +270,7 @@ const Home = (data: any) => {
 								oppPoints2={oppPoints2}
 								setOppPoints={setOppPoints}
 							/>
+							{/* )} */}
 						</Physics>
 					</Canvas>
 				)}
