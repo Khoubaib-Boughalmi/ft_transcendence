@@ -8,7 +8,7 @@ import { Match, User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
 import { Equal, Medal, X } from "lucide-react";
 
-function MatchHistoryEntry({ match }: { match: Match }) {
+export function MatchHistoryEntry({ match }: { match: Match }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
 	const PlayerSide = ({
