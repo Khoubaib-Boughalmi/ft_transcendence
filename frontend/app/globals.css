@@ -215,6 +215,10 @@ img {
 	overflow-anchor: auto;
 }
 
+body {
+	overflow-y: scroll;
+}
+
 @layer utilities {
 	.no-scrollbar::-webkit-scrollbar {
 		display: none;
