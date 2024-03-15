@@ -18,9 +18,9 @@ export function useStyles() {
 	useEffect(() => {
 		const style = getComputedStyle(document.body);
 		setStyles({
-			primaryColor: style.getPropertyValue("--primary-400"),
-			cardColor: style.getPropertyValue("--card-500"),
-			backgroundColor: style.getPropertyValue("--background-900"),
+			primaryColor: `rgb(${style.getPropertyValue("--primary-400")})`,
+			cardColor: `rgb(${style.getPropertyValue("--card-500")})`,
+			backgroundColor: `rgb(${style.getPropertyValue("--background-900")})`,
 		});
 	}, []);
 
