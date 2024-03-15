@@ -40,7 +40,7 @@ import {
 	X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { twMerge } from "tailwind-merge";
@@ -51,8 +51,13 @@ import SuperImage from "./SuperImage";
 import { SuperSkeleton } from "./SuperSkeleton";
 import UserList from "./UserList";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 
-const buttons = ["Home", "Leaderboard", "Play"] as const;
+const buttons = {
+	Home: "/",
+	Profile: "/profile",
+	Chat: "/chat",
+}
 const themes = [
 	{ name: "Red" },
 	{ name: "Green" },
@@ -61,22 +66,29 @@ const themes = [
 ];
 
 function Navigation() {
-	const [active, setActive] = useState(buttons[0]) as [
-		(typeof buttons)[number],
-		(button: (typeof buttons)[number]) => void,
-	];
+	const router = useRouter();
+	const pathName = usePathname();
+
+	console.log(pathName);
+
+	const current = Object.entries(buttons).reverse().find(([_, href]) => pathName.includes(href))?.[0];
+
 
 	return (
 		<>
-			{/* {buttons.map((button, i) => (
-				<Button
-					variant={button === active ? "default" : "transparent"}
-					key={button}
-					onClick={() => setActive(button)}
-				>
-					{button}
-				</Button>
-			))} */}
+			<div className="flex gap-2">
+				{Object.entries(buttons).map(([name, href]) => (
+					<Button
+						key={name}
+						onClick={() =>
+							router.push(href)
+						}
+						variant={current == name ? "default" : "transparent"}
+					>
+						{name}
+					</Button>
+				))}
+			</div>
 		</>
 	);
 }
@@ -598,7 +610,7 @@ function ProfileButton({ user }: { user: User }) {
 					>
 						Settings
 					</DropdownItem>
-					<DropdownItem
+					{/* <DropdownItem
 						aria-label="Chat"
 						variant="solid"
 						className={twMerge(!twoFactorAuthenticated && "hidden")}
@@ -606,7 +618,7 @@ function ProfileButton({ user }: { user: User }) {
 						startContent={<MessageSquareIcon />}
 					>
 						Chat
-					</DropdownItem>
+					</DropdownItem> */}
 					<DropdownItem
 						variant="solid"
 						key="theme"
@@ -771,7 +783,7 @@ export function Navbar() {
 		>
 			<div
 				data-solid={solid}
-				className="shadow-card/25 flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg transition-all
+				className="overflow-hidden shadow-card/25 flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg transition-all
 				duration-300 ease-in-out data-[solid=true]:h-full data-[solid=true]:w-full data-[solid=true]:rounded-none data-[solid=true]:bg-black
 				data-[solid=true]:bg-opacity-100
 				data-[solid=true]:px-8
@@ -779,6 +791,9 @@ export function Navbar() {
 				"
 			>
 				<div className="m-2 flex h-9 w-full items-center justify-between gap-2">
+					<Link href={"/"} className="h-full aspect-square rounded-full bg-card-400 ring-card-500 ring-0 hover:ring-2 flex justify-center items-center text-card-600 hover:shadow-LE font-black select-none hover:brightness-150 transition-all">
+						LE
+					</Link>
 					<div className="flex h-full flex-1 items-center justify-start gap-2">
 						{twoFactorAuthenticated ? (
 							<SearchBar />
