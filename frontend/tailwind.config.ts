@@ -10,6 +10,9 @@ const config: Config = {
 	],
 	theme: {
 		extend: {
+			boxShadow: {
+				"LE": "0 0 10px 10px rgb(var(--accent-500) / 0.1), 0 0 10px 12px rgb(var(--accent-500) / 0.15)",
+			},
 			fontFamily: {
 				flag: ["var(--flag)", "sans-serif"],
 			},
