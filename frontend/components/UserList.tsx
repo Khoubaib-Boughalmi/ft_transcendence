@@ -77,12 +77,12 @@ function UserListListEntry({
 	size?: "xs" | "sm" | "md";
 	classNames?: ClassNames;
 	entryProps?: React.HTMLProps<HTMLAnchorElement>;
-	endContent?: (user: User) => ReactNode;
+	endContent?: ({ user }: { user: User }) => ReactNode;
 	showBadge?: (user: User) => string | null;
 	showHover?: boolean;
-	contextContent?: (user: User) => ReactNode;
+	contextContent?: ({ user }: { user: User }) => ReactNode;
 	setOnlineStates: any;
-	startContent?: (user: User) => ReactNode;
+	startContent?: ({ user }: { user: User }) => ReactNode;
 }) {
 	const badge = showBadge && showBadge(user);
 	const isOnline = useIsOnline(user.id, setOnlineStates);
@@ -98,7 +98,7 @@ function UserListListEntry({
 			<div>
 				<ContextMenuTrigger
 					isDisabled={!contextContent}
-					menuContent={contextContent ? contextContent(user) : null}
+					menuContent={contextContent ? contextContent({user}) : null}
 					className={twMerge(
 						`flex w-full gap-4 rounded-xl bg-card-400 p-2 text-white transition-all h-16`,
 						size == "xs" && "gap-2 h-12",
@@ -106,7 +106,7 @@ function UserListListEntry({
 						classNames?.entryContainer,
 					)}
 					>
-					{startContent && startContent(user)}
+					{startContent && startContent({user})}
 					<Link
 						href={`/profile/${user.username}`}
 						className={twMerge(
@@ -163,7 +163,7 @@ function UserListListEntry({
 							</div>
 						</div>
 					</Link>
-					{endContent && endContent(user)}
+					{endContent && endContent({user})}
 				</ContextMenuTrigger>
 			</div>
 		</SuperTooltip>
@@ -190,10 +190,10 @@ export default function UserList({
 	entryProps?: React.HTMLProps<HTMLAnchorElement>;
 	classNames?: ClassNames;
 	showBadge?: (user: User) => string | null;
-	endContent?: (user: User) => ReactNode;
+	endContent?: ({ user }: { user: User }) => ReactNode;
 	showHover?: boolean;
-	contextContent?: (user: User) => ReactNode;
-	startContent?: (user: User) => ReactNode;
+	contextContent?: ({ user }: { user: User }) => ReactNode;
+	startContent?: ({ user }: { user: User }) => ReactNode;
 }) {
 	const [onlineStates, setOnlineStates] = useState<Map<string, boolean>>(
 		new Map(),
@@ -207,6 +207,10 @@ export default function UserList({
 		});
 	}, [users, onlineStates]);
 
+	console.log({
+		users
+	})
+
 	if (type == "list")
 		return (
 			<div
@@ -216,22 +220,25 @@ export default function UserList({
 				)}
 			>
 				{sortedUsers?.length == 0 && <NoData />}
-				{sortedUsers?.map((user, i) => (
-					<UserListListEntry
-						hoverDelay={hoverDelay}
-						key={user.id}
-						endContent={endContent}
-						classNames={classNames}
-						size={size}
-						user={user}
-						showBadge={showBadge}
-						showHover={showHover}
-						contextContent={contextContent}
-						setOnlineStates={setOnlineStates}
-						entryProps={entryProps}
-						startContent={startContent}
+				{sortedUsers?.map((user, i) => {
+					console.log("Rendering", user)
+
+					return <UserListListEntry
+					hoverDelay={hoverDelay}
+					key={user.id}
+					endContent={endContent}
+					classNames={classNames}
+					size={size}
+					user={user}
+					showBadge={showBadge}
+					showHover={showHover}
+					contextContent={contextContent}
+					setOnlineStates={setOnlineStates}
+					entryProps={entryProps}
+					startContent={startContent}
 					/>
-				))}
+				}
+					)}
 			</div>
 		);
 

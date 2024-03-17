@@ -536,7 +536,7 @@ function MemberList() {
 							"rounded-none px-4 bg-card-400 py-2 bg-transparent",
 						entry: twMerge("", expanded && "hover:scale-100"),
 					}}
-					contextContent={(user) => (
+					contextContent={({user}) => (
 						<UserContextMenu role={getRole(user)} user={user}>
 							<div className="text-xs text-foreground-600">
 								General
