@@ -295,9 +295,10 @@ export default function Page() {
 											session,
 											session,
 										],
-									].map((users) => {
+									].map((users, i) => {
 										return (
 											<UserList
+												key={i}
 												classNames={{
 													entryContainer:
 														"rounded-3xl pr-4",
@@ -344,7 +345,7 @@ export default function Page() {
 											<NoData />	
 										}
 										{[].map((match) => (
-											<MatchHistoryEntry match={match} />
+											<MatchHistoryEntry match={match} key={match} />
 										))}
 									</div>
 								</div>
