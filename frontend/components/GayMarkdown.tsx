@@ -1,5 +1,5 @@
 import { Message } from "@/types/chat";
-import { Check, ClipboardCheck, Copy, Divide, X } from "lucide-react";
+import { Check, ClipboardCheck, Copy, Divide, Swords, X } from "lucide-react";
 import { memo, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Markdown from "react-markdown";
@@ -116,7 +116,7 @@ function GayMarkdown({ message }: { message: Message }) {
 						return (
 							<div className="my-2 flex">
 								<Card
-									className="overflow-hidden bg-card-200 p-0 shadow-md shadow-card-100/75"
+									className="overflow-hidden bg-card-400 p-0 shadow-md shadow-card-100/75"
 									classNames={{
 										innerContainer: "p-0 flex",
 									}}
@@ -131,21 +131,21 @@ function GayMarkdown({ message }: { message: Message }) {
 										/>
 									</div>
 									<div className="relative flex h-full w-64 flex-col justify-between text-sm text-foreground-700 ">
-										<div className="absolute bottom-0 left-0 top-0 z-10 aspect-square h-full -translate-x-full bg-gradient-to-l from-card-200"></div>
-										<div className="w-full bg-gradient-to-l from-card-300 px-4 py-2 text-end text-xs font-bold leading-3 text-foreground-500">
+										<div className="absolute bottom-0 left-0 top-0 z-10 aspect-square h-full -translate-x-full bg-gradient-to-l from-card-400"></div>
+										<div className="w-full bg-gradient-to-l from-card-300 px-4 py-2 text-center	 text-xs font-bold leading-3 text-foreground-500">
 											MATCH INVITE
 										</div>
 										<div className="flex w-full flex-1 flex-col items-center justify-center gap-2 px-4">
 											{message.user.id != session?.id ? (
 												<>
-													You are courting death!
+													Match invite received!
 													<Divider />
 													<div className="flex w-full justify-center gap-2">
 														<Link href={url}>
 															<Button
 																variant="secondary"
 																startContent={
-																	<Check
+																	<Swords
 																		size={
 																			16
 																		}
@@ -153,24 +153,13 @@ function GayMarkdown({ message }: { message: Message }) {
 																}
 																className="h-8 text-sm"
 															>
-																Accept
+																Join
 															</Button>
 														</Link>
-														<Button
-															iconOnly
-															variant="danger"
-															className="aspect-square h-8 w-8 shrink-0"
-															startContent={
-																<X
-																	className="aspect-square"
-																	size={16}
-																/>
-															}
-														></Button>
 													</div>
 												</>
 											) : (
-												<>Mankind is in danger!</>
+												<>Match invite sent!</>
 											)}
 										</div>
 									</div>
