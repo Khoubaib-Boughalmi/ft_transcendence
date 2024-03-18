@@ -144,7 +144,7 @@ export default function Page() {
 			<Card
 				className="aspect-video h-[75vh]"
 				classNames={{
-					innerContainer: "relative flex gap-4",
+					innerContainer: "relative flex gap-4    ",
 				}}
 			>
 				<div className="absolute inset-0 -z-10 flex items-center justify-center">
