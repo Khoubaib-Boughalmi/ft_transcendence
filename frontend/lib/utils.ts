@@ -1,3 +1,4 @@
+import { challenges } from "@/constants/bs";
 import ChatContext from "@/contexts/ChatContext";
 import ContextMenuContext from "@/contexts/ContextMenuContext";
 import axios from "@/lib/axios";
@@ -192,4 +193,8 @@ export function useServerId(pathname: string) {
 	const isChat = pathname.includes("/channel");
 	const selectedServerId = isChat ? pathname.split("/").pop()?.trim() : null;
 	return selectedServerId ?? null;
+}
+
+export function getRandomChallengeMessage() {
+	return challenges[Math.floor(Math.random() * challenges.length)];
 }
