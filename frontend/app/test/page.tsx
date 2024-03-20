@@ -48,7 +48,12 @@ function PlayerSide({
 							side == "left" && "flex-row-reverse",
 						)}
 					>
-						<div className={twMerge("flex flex-col", side == "left" && "text-right")}>
+						<div
+							className={twMerge(
+								"flex flex-col",
+								side == "left" && "text-right",
+							)}
+						>
 							<div
 								className={twMerge(
 									"flex gap-2 text-2xl",
@@ -81,7 +86,7 @@ function PlayerSide({
 					<Divider className="mt-4" />
 					<div
 						className={twMerge(
-							"mt-4 w-full rounded-full bg-white px-4 py-1 text-black",
+							"mt-4 line-clamp-1 w-full rounded-full bg-white px-4 py-1 text-black",
 							side == "left" && "text-right",
 						)}
 					>
@@ -142,36 +147,48 @@ export default function Page() {
 	return (
 		<div className="flex items-center justify-center pb-16">
 			<Card
-				className="aspect-video h-[75vh]"
+				className="aspect-video h-[75vh] overflow-hidden"
 				classNames={{
-					innerContainer: "relative flex gap-4    ",
+					innerContainer: "relative flex gap-4 flex-col p-0 ",
 				}}
 			>
-				<div className="absolute inset-0 -z-10 flex items-center justify-center">
-					<div className="aspect-square h-full animate-pulse rounded-full bg-card-500 blur-[128px]"></div>
-					<div className="absolute inset-0 flex items-center justify-center text-card-700">
-						<LoadingText
-							radius={128}
-							letterSpacing={20}
-							fontSize={32}
-						/>
+				<div className="flex flex-1 flex-col">
+					<div className="flex h-24 w-full bg-gradient-to-b from-card-200 justify-between pt-8 px-8 text-white">
+						<div>Casual Match</div>
+						<div className="font-bold text-3xl text-card-600">5:00</div>
+						<div>
+							Classic
+						</div>
 					</div>
 				</div>
-				<PlayerSide
-					user={session}
-					side="left"
-					message={challenge.phrase}
-				/>
-				<div className="flex items-center justify-center text-[5rem] font-black text-card-600">
-					<div className="rounded-full bg-card-200 p-8 shadow-sm shadow-card-600">
-						<Swords size={96} />
+				<div className="flex shrink-0 gap-4">
+					<div className="absolute inset-0 -z-10 flex items-center justify-center">
+						<div className="aspect-square h-full animate-pulse rounded-full bg-card-600/50 blur-[200px]"></div>
 					</div>
+					<PlayerSide
+						user={session}
+						side="left"
+						message={challenge.phrase}
+					/>
+					<div className="relative flex items-center justify-center text-[5rem] text-card-600">
+						<div className="rounded-full bg-card-200 p-8 shadow-sm shadow-card-600">
+							<Swords size={96} />
+						</div>
+						<div className="absolute inset-0 flex items-center justify-center text-card-700">
+							<LoadingText
+								radius={128}
+								letterSpacing={20}
+								fontSize={32}
+							/>
+						</div>
+					</div>
+					<PlayerSide
+						user={user2}
+						side="right"
+						message={challenge.response}
+					/>
 				</div>
-				<PlayerSide
-					user={user2}
-					side="right"
-					message={challenge.response}
-				/>
+				<div className="flex flex-1 flex-col justify-end"></div>
 			</Card>
 		</div>
 	);

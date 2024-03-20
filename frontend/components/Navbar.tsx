@@ -708,6 +708,7 @@ function SearchBar() {
 					className={twMerge(
 						`absolute -bottom-2 hidden w-full translate-y-full animate-overlayfast rounded-3xl bg-card-300 p-2
 					transition-all active:block data-[focused=true]:block`,
+						
 					)}
 				>
 					{showLoading ? (
@@ -783,7 +784,7 @@ export function Navbar() {
 		>
 			<div
 				data-solid={solid}
-				className="overflow-hidden shadow-card/25 flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg transition-all
+				className="shadow-card/25 flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg transition-all
 				duration-300 ease-in-out data-[solid=true]:h-full data-[solid=true]:w-full data-[solid=true]:rounded-none data-[solid=true]:bg-black
 				data-[solid=true]:bg-opacity-100
 				data-[solid=true]:px-8
