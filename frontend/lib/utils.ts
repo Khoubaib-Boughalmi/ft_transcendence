@@ -198,3 +198,21 @@ export function useServerId(pathname: string) {
 export function getRandomChallengeMessage() {
 	return challenges[Math.floor(Math.random() * challenges.length)];
 }
+export const paths = {
+	Home: "/",
+	Profile: "/profile",
+	Chat: "/chat",
+	Settings: "/settings",
+	Test: "/test",
+};
+export const buttons = ["Home", "Profile", "Chat", "Test"];
+export const themes = [
+	{ name: "Red" },
+	{ name: "Green" },
+	{ name: "Blue" },
+	{ name: "Purple" },
+];
+export function getCurrentPath(pathName: string) {
+	const current = Object.entries(paths).reverse().find(([_, href]) => pathName.includes(href))?.[0];
+	return current;
+}

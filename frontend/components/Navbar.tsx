@@ -52,27 +52,7 @@ import { SuperSkeleton } from "./SuperSkeleton";
 import UserList from "./UserList";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-
-const paths = {
-	Home: "/",
-	Profile: "/profile",
-	Chat: "/chat",
-	Settings: "/settings",
-}
-
-const buttons = ["Home", "Profile", "Chat"]
-
-const themes = [
-	{ name: "Red" },
-	{ name: "Green" },
-	{ name: "Blue" },
-	{ name: "Purple" },
-];
-
-function getCurrentPath(pathName: string) {
-	const current = Object.entries(paths).reverse().find(([_, href]) => pathName.includes(href))?.[0];
-	return current;
-}
+import { getCurrentPath, buttons, paths, themes } from "@/lib/utils";
 
 function Navigation() {
 	const router = useRouter();
@@ -768,6 +748,7 @@ export function Navbar() {
 	const [solid, setSolid] = useState(false);
 	const { accessToken, session, sessionLoading, twoFactorAuthenticated } =
 		useContext(PublicContext) as any;
+	const currentPath = getCurrentPath(usePathname());
 
 	useEffect(() => {
 		const listener = () => {
@@ -781,13 +762,13 @@ export function Navbar() {
 	return (
 		<nav
 			data-solid={solid}
-			className="fixed top-0 z-50 flex h-28 w-full items-center justify-center px-8
+			className={twMerge(`fixed top-0 z-50 flex h-28 w-full items-center justify-center px-8
 				transition-all
 				duration-300 ease-in-out
 				data-[solid=true]:h-16
 				data-[solid=true]:px-0
-				"
-		>
+				`, currentPath == "Test" && "-translate-y-full")}
+				>
 			<div
 				data-solid={solid}
 				className="shadow-card/25 flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg transition-all

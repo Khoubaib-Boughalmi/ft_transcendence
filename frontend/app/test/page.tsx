@@ -239,9 +239,13 @@ export default function Page() {
 	console.log("rendering", tab);
 
 	return (
-		<div onClick={() => {
+		<div  className="absolute inset-0 flex justify-center items-center overflow-hidden">
+		<motion.div
+			initial={{ opacity: 0, translateY: "100%"}}
+			animate={{ opacity: 1, translateY: "0%"}}
+		onClick={() => {
 			setTab((prev) => prev == "loading" ? "game" : "loading");
-		}} className="flex items-center justify-center pb-16 flex-col gap-4 py-0">
+		}} className="flex items-center justify-center flex-col gap-4 py-0">
 			<Card className="bg-card-200 w-full h-12" classNames={{
 				innerContainer: "flex items-center justify-between px-4 py-0"
 			}}>
@@ -297,6 +301,7 @@ export default function Page() {
 
 				</AnimatePresence>
 			</Card>
+		</motion.div>
 		</div>
 	);
 }
