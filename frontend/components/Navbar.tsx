@@ -53,11 +53,15 @@ import UserList from "./UserList";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 
-const buttons = {
+const paths = {
 	Home: "/",
 	Profile: "/profile",
 	Chat: "/chat",
+	Settings: "/settings",
 }
+
+const buttons = ["Home", "Profile", "Chat"]
+
 const themes = [
 	{ name: "Red" },
 	{ name: "Green" },
@@ -65,23 +69,24 @@ const themes = [
 	{ name: "Purple" },
 ];
 
+function getCurrentPath(pathName: string) {
+	const current = Object.entries(paths).reverse().find(([_, href]) => pathName.includes(href))?.[0];
+	return current;
+}
+
 function Navigation() {
 	const router = useRouter();
 	const pathName = usePathname();
-
-	console.log(pathName);
-
-	const current = Object.entries(buttons).reverse().find(([_, href]) => pathName.includes(href))?.[0];
-
+	const current = getCurrentPath(pathName);
 
 	return (
 		<>
 			<div className="flex gap-2">
-				{Object.entries(buttons).map(([name, href]) => (
+				{buttons.map((name) => (
 					<Button
 						key={name}
 						onClick={() =>
-							router.push(href)
+							router.push(paths[name])
 						}
 						variant={current == name ? "default" : "transparent"}
 					>
@@ -486,6 +491,7 @@ function ProfileButton({ user }: { user: User }) {
 	) as any;
 	const { isOpen, onClose, onOpen, onOpenChange } = useDisclosure();
 	const { theme, setTheme } = useTheme();
+	const currentPath = getCurrentPath(usePathname());
 
 	useEffect(() => setMounted(true), []);
 
@@ -518,7 +524,7 @@ function ProfileButton({ user }: { user: User }) {
 			</ModalSet>
 			<SuperDropdown aria-label="Profile Dropdown">
 				<DropdownTrigger aria-label="Avatar">
-					<div className="flex h-full items-center gap-2 text-xs text-white">
+					<div className={twMerge("flex h-full items-center gap-2 text-xs text-white rounded-full", currentPath == "Settings" && "ring-2 ring-primary-500")}>
 						<div className="relative aspect-square h-full">
 							<SuperImage
 								width={32}
