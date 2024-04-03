@@ -116,12 +116,14 @@ function LoadingScreen() {
 								</div>
 							</div>
 							<div
-								className={`aspect-square h-full flex-shrink-0 ${getRank(user.rank).color
-									} flex items-center justify-center rounded-lg`}
+								className={`aspect-square h-full flex-shrink-0 ${
+									getRank(user.rank).color
+								} flex items-center justify-center rounded-lg`}
 							>
 								<span
-									className={`text-transparent ${getRank(user.rank).color
-										} fuck-css text-2xl mix-blend-plus-lighter`}
+									className={`text-transparent ${
+										getRank(user.rank).color
+									} fuck-css text-2xl mix-blend-plus-lighter`}
 								>
 									{getRank(user.rank).name}
 								</span>
@@ -142,13 +144,9 @@ function LoadingScreen() {
 		);
 	}
 
-
 	return (
-		<div className="relative flex gap-4 flex-col h-full w-full">
-
-			<div className="flex flex-1 flex-col">
-
-			</div>
+		<div className="relative flex h-full w-full flex-col gap-4">
+			<div className="flex flex-1 flex-col"></div>
 			<div className="flex shrink-0 gap-4">
 				<div className="absolute inset-0 -z-10 flex items-center justify-center">
 					<div className="aspect-square h-full animate-pulse rounded-full bg-card-600/50 blur-[200px]"></div>
@@ -176,20 +174,24 @@ function LoadingScreen() {
 					message={challenge.response}
 				/>
 			</div>
-			<div className="flex flex-1 flex-col justify-center items-center text-white/50 text-xl animate-pulse">
+			<div className="flex flex-1 animate-pulse flex-col items-center justify-center text-xl text-white/50">
 				Waiting for opponent...
-
 			</div>
 		</div>
-
-	)
+	);
 }
 
 function GameScreen() {
-	function PlayerSide({ side, user }: { side: "left" | "right", user: User }) {
+	function PlayerSide({
+		side,
+		user,
+	}: {
+		side: "left" | "right";
+		user: User;
+	}) {
 		return (
 			<div className="h-full py-4">
-				<div className="h-full aspect-square rounded-full overflow-hidden">
+				<div className="aspect-square h-full overflow-hidden rounded-full">
 					<SuperImage
 						className="h-full w-full object-cover"
 						src={user.avatar}
@@ -199,109 +201,109 @@ function GameScreen() {
 					/>
 				</div>
 			</div>
-		)
+		);
 	}
 
 	return (
-		<div className="h-full w-full">
-			<div className="h-32 w-full bg-gradient-to-b from-black/50 pt-8 flex justify-center items-center gap-8 relative">
-				<div className="absolute inset-0 bg-gradient-to-t from-black/50 -translate-y-full"></div>
-				<PlayerSide side="left" user={user1} />
-				<div className="h-full flex aspect-video rounded-xl overflow-hidden">
-					<div className="flex-1 flex justify-center items-center bg-card-200 text-3xl text-white">
-						1
+		<div className="relative h-full w-full">
+			<div className="absolute inset-0 flex flex-col-reverse">
+				<div className="relative flex h-32 w-full items-center justify-center gap-8 bg-gradient-to-t from-black/50 pb-8">
+					<div className="absolute inset-0 translate-y-full bg-gradient-to-b from-black/50"></div>
+					<PlayerSide side="left" user={user1} />
+					<div className="flex aspect-video h-full overflow-hidden rounded-xl">
+						<div className="flex flex-1 items-center justify-center bg-card-200 text-3xl text-white">
+							1
+						</div>
+						<div className="flex flex-1 items-center justify-center bg-card-500 text-3xl text-white">
+							2
+						</div>
 					</div>
-					<div className="flex-1 flex justify-center items-center bg-card-500 text-3xl text-white">
-						2
+					<PlayerSide side="right" user={user2} />
+				</div>
+				<div className="flex w-full items-center justify-center py-4 text-center text-xs text-white">
+					<div className="rounded-full bg-card-400 p-2 px-12">
+						First to 5
 					</div>
 				</div>
-				<PlayerSide side="right" user={user2} />
 			</div>
-			<div className="w-full flex justify-center items-center text-center text-white text-xs py-4">
-				<div className="bg-card-400 rounded-full p-2 px-12">
-					First to 5
-				</div>
-			</div>
+			<div className="h-full w-full"></div>
 		</div>
-	)
+	);
 }
 
 export default function Page() {
 	const [tab, setTab] = useState("loading");
-	const tabs = [[
-		"loading",
-		<LoadingScreen />
-	], [
-		"game",
-		<GameScreen />
-	]] as any;
+	const tabs = [
+		["loading", <LoadingScreen />],
+		["game", <GameScreen />],
+	] as any;
 
 	console.log("rendering", tab);
 
 	return (
-		<div  className="absolute inset-0 flex justify-center items-center overflow-hidden">
-		<motion.div
-			initial={{ opacity: 0, translateY: "100%"}}
-			animate={{ opacity: 1, translateY: "0%"}}
-		onClick={() => {
-			setTab((prev) => prev == "loading" ? "game" : "loading");
-		}} className="flex items-center justify-center flex-col gap-4 py-0">
-			<Card className="bg-card-200 w-full h-12" classNames={{
-				innerContainer: "flex items-center justify-between px-4 py-0"
-			}}>
-				<div className="flex gap-2">
-					<Gamepad2 size={24} />
-					Casual
-				</div>
-				<div className="text-foreground-700 font-bold text-lg flex gap-2 relative h-full items-center">
-					<TimerIcon size={24} />
-					2:00
-					<div className="absolute inset-x-[-300px] inset-y-0 -z-10 bg-gradient-to-r from-transparent to-transparent via-card-500">
-
-					</div>
-				</div>
-				<div className="flex gap-2">
-					Space
-					<Map size={24} />
-				</div>
-			</Card>
-			<Card
-				className="aspect-video h-[75vh] overflow-hidden"
-				classNames={{
-					innerContainer: "p-0",
+		<div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+			<motion.div
+				initial={{ opacity: 0, translateY: "100%" }}
+				animate={{ opacity: 1, translateY: "0%" }}
+				onClick={() => {
+					setTab((prev) => (prev == "loading" ? "game" : "loading"));
 				}}
+				className="flex flex-col items-center justify-center gap-4 py-0"
 			>
-				<AnimatePresence  mode="popLayout">
-					<div className="h-full w-full overflow-hidden rounded-3xl select-none">
-
-					{
-						tab == "loading" ? (
-							<motion.div
-								key="loading"
-								initial={{ opacity: 0, translateY: "100%"}}
-								animate={{ opacity: 1, translateY: "0%"}}
-								exit={{ opacity: 0, translateY: "-100%" }}
-								className="h-full w-full"
-							>
-								<LoadingScreen />
-							</motion.div>
-						) : (
-							<motion.div
-								key="game"
-								initial={{ opacity: 0, translateY: "100%"}}
-								animate={{ opacity: 1, translateY: "0%"}}
-								exit={{ opacity: 0, translateY: "-100%"}}
-								className="h-full w-full"
-							>
-								<GameScreen />
-							</motion.div>
-						)
-					}
-										</div>
-
-				</AnimatePresence>
-			</Card>
-		</motion.div>
+				<Card
+					className="h-12 w-full bg-card-200"
+					classNames={{
+						innerContainer:
+							"flex items-center justify-between px-4 py-0",
+					}}
+				>
+					<div className="flex gap-2">
+						<Gamepad2 size={24} />
+						Casual
+					</div>
+					<div className="relative flex h-full items-center gap-2 text-lg font-bold text-foreground-700">
+						<TimerIcon size={24} />
+						2:00
+						<div className="absolute inset-x-[-300px] inset-y-0 -z-10 bg-gradient-to-r from-transparent via-card-500 to-transparent"></div>
+					</div>
+					<div className="flex gap-2">
+						Space
+						<Map size={24} />
+					</div>
+				</Card>
+				<Card
+					className="aspect-video h-[80vh] overflow-hidden"
+					classNames={{
+						innerContainer: "p-0",
+					}}
+				>
+					<AnimatePresence mode="popLayout">
+						<div className="h-full w-full select-none overflow-hidden rounded-3xl">
+							{tab == "loading" ? (
+								<motion.div
+									key="loading"
+									initial={{ opacity: 0, translateY: "100%" }}
+									animate={{ opacity: 1, translateY: "0%" }}
+									exit={{ opacity: 0, translateY: "-100%" }}
+									className="h-full w-full"
+								>
+									<LoadingScreen />
+								</motion.div>
+							) : (
+								<motion.div
+									key="game"
+									initial={{ opacity: 0, translateY: "100%" }}
+									animate={{ opacity: 1, translateY: "0%" }}
+									exit={{ opacity: 0, translateY: "-100%" }}
+									className="h-full w-full"
+								>
+									<GameScreen />
+								</motion.div>
+							)}
+						</div>
+					</AnimatePresence>
+				</Card>
+			</motion.div>
 		</div>
 	);
 }
