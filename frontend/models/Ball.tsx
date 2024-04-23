@@ -21,6 +21,8 @@ export function Ball(gprops) {
 		setMypoints,
 		oppPoints2,
 		setOppPoints,
+		setRendered,
+		rendered,
 		...props
 	} = gprops;
 
@@ -32,7 +34,7 @@ export function Ball(gprops) {
 		type: "Dynamic",
 		args: [0.05],
 		mass: 0.04,
-		velocity: [0, 0, 3],
+		// velocity: [0, 0, 3],
 		angularVelocity: [0, 0, 0],
 		angularFactor: [0.001, 0, 0],
 		linearFactor: [1, 1, 1],
@@ -63,7 +65,7 @@ export function Ball(gprops) {
 					if (lastTime3ndi.current) {
 						setMypoints((prev) => prev + 1);
 					} else {
-						setMypoints((prev) => prev - 1);
+						setMypoints((prev) => prev + 1);
 					}
 					api.position.set(0, 2.5, 0);
 					api.velocity.set(0, 0, 3);
@@ -149,6 +151,16 @@ export function Ball(gprops) {
 	}));
 	GameData.ballRef = ref;
 	GameData.ballAPi = api;
+	useEffect(() => {
+		if (!ref.current || rendered) return;
+		ref.current.onAfterRender = () => {
+			console.log("onAfterRender", rendered);
+			setRendered(true);
+		};
+		return () => {
+			ref.current.onAfterRender = () => {};
+		};
+	}, [rendered]);
 
 	// if (animationStarted)
 	// {

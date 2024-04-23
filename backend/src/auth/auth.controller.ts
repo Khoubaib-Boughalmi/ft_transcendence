@@ -39,13 +39,12 @@ export class AuthController {
 	@UseGuards(IntraAuthGuard)
 	async handle42Redirect(@Req() req, @Res() res) {
 		const user = await this.userService.user({ id: req.user.id });
-		if (!user)
-			throw new HttpException('User not found', 404);
+		if (!user) throw new HttpException('User not found', 404);
 		const { access_token } = await this.authService.login(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
-			sameSite: 'none',
-			secure: true,
+			// sameSite: 'none',
+			// secure: true,
 		});
 		// When the user logs in for the first time, we redirect them to the frontend settings page
 		if (user.isFirstLogin) {
@@ -63,15 +62,14 @@ export class AuthController {
 	async bypassAuth(@Req() req, @Param() params: any, @Res() res) {
 		if (process.env.NODE_ENV !== 'development')
 			throw new HttpException('Not found', 404);
-		console.log("Bypassing auth for user: ", params);
+		console.log('Bypassing auth for user: ', params);
 		const user = await this.userService.user({ username: params.username });
-		if (!user)
-			throw new HttpException('User not found', 404);
+		if (!user) throw new HttpException('User not found', 404);
 		const { access_token } = await this.authService.login2fa(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
-			sameSite: 'none',
-			secure: true,
+			// sameSite: 'none',
+			// secure: true,
 		});
 		res.redirect(process.env.FRONTEND_URL);
 	}
@@ -150,8 +148,8 @@ export class AuthController {
 		const { access_token } = await this.authService.login2fa(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
-			sameSite: 'none',
-			secure: true,
+			// sameSite: 'none',
+			// secure: true,
 		});
 		res.send();
 	}

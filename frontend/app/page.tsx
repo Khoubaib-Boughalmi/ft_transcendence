@@ -3,7 +3,7 @@ import Card from "@/components/Card";
 import PublicContext from "@/contexts/PublicContext";
 import { Metadata } from "next";
 import { useContext, useEffect } from "react";
-import { history } from "@/mocks/profile";
+import { history, user1 } from "@/mocks/profile";
 import MatchHistoryList, {
 	MatchHistoryEntry,
 } from "@/components/MatchHistoryList";
@@ -20,6 +20,9 @@ import Link from "next/link";
 import { Button } from "@/components/Button";
 import { ScrollShadow } from "@nextui-org/react";
 import NoData from "@/components/NoData";
+import { useRouter } from "next/navigation";
+import axios from "@/lib/axios";
+import socket from "@/lib/socket";
 
 function TopThreeRank({ user, rank }: { user: User; rank: number }) {
 	return (
@@ -64,8 +67,42 @@ function TopThreeRank({ user, rank }: { user: User; rank: number }) {
 	);
 }
 
+async function JoinQueueing(session: any, router: any) {
+	console.log("Joining queueing");
+	try {
+		// Make the HTTP request to invite the user
+		const response = await axios.post("/game/JoinQueueing", {
+			user1: session.id,
+			socket: socket.id,
+		});
+		// Redirect the router to the game session
+		router.push(`/test/${response.data.id}`);
+	} catch (error) {
+		console.error("Error inviting player:", error);
+	}
+}
+
+function DivisionClass({ exp }: { exp: number }) {
+	const rommanNumerals = ["I", "II", "III", "IV", "V", "VI"];
+	const division = Math.floor((exp % 500) / 100);
+
+	console.log("Division", division);
+
+	return (
+		<>
+			<span className="line-clamp-1">
+				Division {rommanNumerals[division]}
+			</span>
+			<span className="line-clamp-1">
+				Division {rommanNumerals[division + 1]}
+			</span>
+		</>
+	);
+}
+
 export default function Page() {
 	const { session } = useContext(PublicContext) as any;
+	const router = useRouter();
 
 	useEffect(() => {
 		document.title = "long enough";
@@ -73,14 +110,14 @@ export default function Page() {
 
 	return (
 		<div className="relative flex-1">
-			<div className="flex flex-col h-full w-full px-12 pb-12 2xl:px-64 2xl:pb-16	 gap-4">
+			<div className="flex h-full w-full flex-col gap-4 px-12 pb-12 2xl:px-64	 2xl:pb-16">
 				<div className="ml-auto shrink-0 text-xl">
 					Good {new Date().getHours() < 14 ? "morning" : "evening"},{" "}
 					<span className="mx-2 text-2xl font-medium text-accent-700">
 						{session?.username}
 					</span>
 				</div>
-				<div className="flex-1 relative">
+				<div className="relative flex-1">
 					<div className="absolute inset-0 grid flex-1 grid-cols-10 grid-rows-10 gap-4">
 						<div className="col-span-2 row-span-10 flex flex-col gap-4 ">
 							<Card
@@ -100,23 +137,30 @@ export default function Page() {
 										/>
 									</div>
 								</div>
-								<div className="flex w-full flex-col gap-2 px-8 mb-8">
+								<div className="mb-8 flex w-full flex-col gap-2 px-8">
 									<div className="flex items-end justify-between text-sm">
 										<div>
 											<span className="text-white">
-												0
+												{session?.level_exp % 100}
 											</span>
 											<span>/100 XP</span>
 										</div>
 										<div className="flex aspect-square h-8 items-center justify-center rounded-full bg-black bg-gradient-to-b from-accent to-card font-medium  text-white">
-											1
+											{Math.floor(
+												session?.level_exp / 100,
+											)}
 										</div>
 									</div>
 									<div className="h-2 w-full overflow-hidden rounded-xl bg-card-100">
-										<div className="h-full w-0 bg-primary"></div>
+										<div
+											style={{
+												width: `${session?.level_exp % 100}%`,
+											}}
+											className="h-full w-0 bg-primary "
+										></div>
 									</div>
 								</div>
-								<div className="grid grid-cols-2 gap-y-2 rounded-b-3xl bg-card-200 p-8 px-12 hidden">
+								<div className="grid hidden grid-cols-2 gap-y-2 rounded-b-3xl bg-card-200 p-8 px-12">
 									{[
 										["Username", session?.username],
 										["Country", session?.country],
@@ -165,9 +209,7 @@ export default function Page() {
 							>
 								<UserList
 									type="list"
-									users={[
-										
-									]}
+									users={[]}
 									classNames={{
 										entryContainer: "rounded-3xl",
 									}}
@@ -201,21 +243,31 @@ export default function Page() {
 											</p>
 											<div className="flex w-full flex-col gap-1 self-center">
 												<div className="h-4 w-full overflow-hidden rounded-xl bg-card-200">
-													<div className="h-full w-0 bg-primary"></div>
+													<div
+														style={{
+															width: `${session?.division_exp % 100}%`,
+														}}
+														className="h-full w-0 bg-primary"
+													></div>
 												</div>
 												<div className="flex w-full justify-between text-sm text-white">
-													<span className="line-clamp-1">
-														Division I
-													</span>
-													<span className="line-clamp-1">
-														Division II
-													</span>
+													<DivisionClass
+														exp={
+															session?.division_exp
+														}
+													/>
 												</div>
 											</div>
 											<Button
 												startContent={
 													<Swords size={18} />
 												}
+												onClick={() => {
+													JoinQueueing(
+														session,
+														router,
+													);
+												}}
 											>
 												Start Queueing
 											</Button>
@@ -341,11 +393,14 @@ export default function Page() {
 							<Card className="no-scrollbar absolute inset-0 flex overflow-y-scroll p-2">
 								<div className="flex-1">
 									<div className="flex flex-col gap-2">
-										{
-											<NoData />	
-										}
-										{[].map((match) => (
-											<MatchHistoryEntry match={match} key={match} />
+										{session.history.length == 0 && (
+											<NoData />
+										)}
+										{session.history.map((match, i) => (
+											<MatchHistoryEntry
+												match={match}
+												key={i}
+											/>
 										))}
 									</div>
 								</div>

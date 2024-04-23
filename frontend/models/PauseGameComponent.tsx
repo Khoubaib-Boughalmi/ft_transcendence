@@ -13,7 +13,7 @@ export const PauseGameComponent = (props) => {
 	};
 
 	return (
-		<div className="absolute right-0 top-0 z-10 flex flex-col items-center">
+		<div className="absolute right-0 top-0 z-10 flex flex-col items-center ">
 			<button
 				onClick={handlePauseGame} // Replace with your pause function
 				className="focus:shadow-outline rounded-lg bg-red-500 px-6 py-3 font-bold text-white shadow-lg hover:bg-red-600 focus:outline-none "
@@ -25,3 +25,4 @@ export const PauseGameComponent = (props) => {
 };
 
 export default PauseGameComponent;
+	

@@ -45,13 +45,15 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log(`Client connected: ${client.id}`);
 		const cookies = client?.handshake?.headers?.cookie;
 		if (!cookies) return client.disconnect();
-		let access_token = null
+		let access_token = null;
 		try {
 			access_token = cookies
-			.split('; ')!
-			.find((cookie: string) => cookie.startsWith('access_token'))!
-			.split('=')[1];
-		} catch (e) { return client.disconnect(); }
+				.split('; ')!
+				.find((cookie: string) => cookie.startsWith('access_token'))!
+				.split('=')[1];
+		} catch (e) {
+			return client.disconnect();
+		}
 		await this.login(client, access_token);
 		if (!client.data || !client.data.id) return;
 		await this.join_channels(client);
@@ -62,6 +64,9 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		console.log(`Client disconnected: ${client.id}`);
 		if (!client.data) return;
 		this.socketService.removeUserSocket(client.data.id, client);
+		this.socketService.removePlayerGame(client.data.id, client);
+		// const getPlayerGame = this.socketService.getPlayerGame(client.data.id);
+		// console.log('getPlayerGame', getPlayerGame);
 	}
 
 	async login(client: Socket, access_token: string) {
@@ -97,6 +102,9 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	async game_start_emit(gameId: string, payload: any) {
 		this.server.to(gameId).emit('game-start', payload);
+	}
+	async announceWaitingPlayer(gameId: string) {
+		this.server.to(gameId).emit('announceWaitingPlayer');
 	}
 
 	// async numberofOnlineUsers() {
@@ -161,8 +169,49 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.gameService.startGame(this.server, client, payload);
 	}
 
+	@SubscribeMessage('game_over')
+	async game_over(client: Socket, payload: any) {
+		console.log('game_over', payload);
+		console.log('score', {
+			score: {
+				player1: payload.mypoints,
+				player2: payload.oppPoints2,
+			},
+			winner_id:
+				payload.mypoints == payload.oppPoints2
+					? 'tie'
+					: payload.mypoints > payload.oppPoints2
+						? payload.player1_id
+						: payload.player2_id,
+		});
+		this.server.to(payload.gameId).emit('recieve_game_data', {
+			score: { player1: payload.mypoints, player2: payload.oppPoints2 },
+		});
+		const winner_id =
+			payload.mypoints == payload.oppPoints2
+				? 'tie'
+				: payload.mypoints > payload.oppPoints2
+					? payload.player1_id
+					: payload.player2_id;
+
+		this.gameService.changeMatchScore(
+			payload.game_id,
+			payload.mypoints,
+			payload.oppPoints2,
+			winner_id,
+		);
+		// if (winner_id == 'tie') {
+		this.userService.addexp(payload.player1_id, winner_id);
+		this.userService.addexp(payload.player2_id, winner_id);
+		// }
+		this.userService.addMatchToHistory(payload.player1_id, payload.game_id);
+		this.userService.addMatchToHistory(payload.player2_id, payload.game_id);
+	}
+
 	@SubscribeMessage('game_data')
 	async game_data(client: Socket, payload: any) {
+		// console.log('game_data', payload.gameId);
+
 		// console.log('game_data', payload);
 		this.server.to(payload.gameId).emit('recieve_game_data', payload);
 		// emit game data to the other player but not to the sender
@@ -177,5 +226,26 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		// send game data to the other player
 		// this.server.to(payload.opponentId).emit('recieve_game_data', payload);
 		// this.gameService.gameData(this.server, client, payload);
+	}
+
+	@SubscribeMessage('playerIsReady')
+	async playerIsReady(client: Socket, payload: any) {
+		console.log('playerIsReady', payload);
+		this.server.to(payload.gameId).emit('palyer_ready', payload);
+	}
+	@SubscribeMessage('playerIsAlive')
+	async playerIsAlive(client: Socket, payload: any) {
+		console.log('playerIsAlive', payload);
+		// this.server.to(payload.gameId).emit('palyer_alive', payload);
+	}
+	@SubscribeMessage('playerGone')
+	async playerGone(client: Socket, payload: any) {
+		console.log('playerGone', payload);
+		// this.server.to(payload.gameId).emit('player_gone', payload);
+	}
+	@SubscribeMessage('leavegame')
+	async leavegame(client: Socket, payload: any) {
+		console.log('leavegame', payload);
+		// this.gameService.leaveGame(this.server, client, payload);
 	}
 }

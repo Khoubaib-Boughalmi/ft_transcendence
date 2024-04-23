@@ -98,23 +98,25 @@ function UserListListEntry({
 			<div>
 				<ContextMenuTrigger
 					isDisabled={!contextContent}
-					menuContent={contextContent ? contextContent({user}) : null}
+					menuContent={
+						contextContent ? contextContent({ user }) : null
+					}
 					className={twMerge(
-						`flex w-full gap-4 rounded-xl bg-card-400 p-2 text-white transition-all h-16`,
-						size == "xs" && "gap-2 h-12",
+						`flex h-16 w-full gap-4 rounded-xl bg-card-400 p-2 text-white transition-all`,
+						size == "xs" && "h-12 gap-2",
 						!endContent && isOnline == false && "brightness-[60%]",
 						classNames?.entryContainer,
 					)}
-					>
-					{startContent && startContent({user})}
+				>
+					{startContent && startContent({ user })}
 					<Link
 						href={`/profile/${user.username}`}
 						className={twMerge(
 							`relative flex-1 gap-4 text-white
 							transition-all hover:scale-105 hover:brightness-110`,
 							!endContent &&
-							isOnline == false &&
-							"brightness-[60%]",
+								isOnline == false &&
+								"brightness-[60%]",
 							size == "xs" && "gap-2",
 							classNames?.entry,
 						)}
@@ -163,7 +165,7 @@ function UserListListEntry({
 							</div>
 						</div>
 					</Link>
-					{endContent && endContent({user})}
+					{endContent && endContent({ user })}
 				</ContextMenuTrigger>
 			</div>
 		</SuperTooltip>
@@ -208,8 +210,8 @@ export default function UserList({
 	}, [users, onlineStates]);
 
 	console.log({
-		users
-	})
+		users,
+	});
 
 	if (type == "list")
 		return (
@@ -221,24 +223,25 @@ export default function UserList({
 			>
 				{sortedUsers?.length == 0 && <NoData />}
 				{sortedUsers?.map((user, i) => {
-					console.log("Rendering", user)
+					console.log("Rendering", user);
 
-					return <UserListListEntry
-					hoverDelay={hoverDelay}
-					key={user.id}
-					endContent={endContent}
-					classNames={classNames}
-					size={size}
-					user={user}
-					showBadge={showBadge}
-					showHover={showHover}
-					contextContent={contextContent}
-					setOnlineStates={setOnlineStates}
-					entryProps={entryProps}
-					startContent={startContent}
-					/>
-				}
-					)}
+					return (
+						<UserListListEntry
+							hoverDelay={hoverDelay}
+							key={user.id}
+							endContent={endContent}
+							classNames={classNames}
+							size={size}
+							user={user}
+							showBadge={showBadge}
+							showHover={showHover}
+							contextContent={contextContent}
+							setOnlineStates={setOnlineStates}
+							entryProps={entryProps}
+							startContent={startContent}
+						/>
+					);
+				})}
 			</div>
 		);
 
@@ -253,7 +256,7 @@ export default function UserList({
 			{users?.map((user, i) => (
 				<UserListGridEntry
 					hoverDelay={hoverDelay}
-					key={user.id}
+					key={i}
 					user={user}
 				/>
 			))}

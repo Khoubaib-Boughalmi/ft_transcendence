@@ -27,6 +27,7 @@ model GameMatch {
   game_type     String
   game_league   String
   game_map      String
+  game_ended    Boolean  @default(false)
 }
 
 model User {
@@ -49,6 +50,7 @@ model User {
   history      String[] @default([])
   rank         Int      @default(0)
   division     String   @default("D")
+  division_exp Int      @default(0)
 
   // Two factor auth
   two_factor        Boolean @default(false)

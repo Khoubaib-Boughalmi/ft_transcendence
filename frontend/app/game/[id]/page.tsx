@@ -8,6 +8,9 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import socket from "@/lib/socket";
 import Game from "@/gameComponents/game";
+import { LoadingScreen } from "@/models";
+import Card from "@/components/Card";
+import { Divide, Gamepad2, Map, Swords, TimerIcon } from "lucide-react";
 // import Cube from "@/components";
 
 // import Game from "@/gameComponents/game";
@@ -51,6 +54,8 @@ export default function Home({ params }: any) {
 
 	useEffect(() => {
 		socket.connect();
+		console.log("socket", socket.id);
+
 		socket.on("disconnect", () => {});
 		socket.on("game-start", (key) => {
 			setReady(true);
@@ -62,25 +67,44 @@ export default function Home({ params }: any) {
 	}, []);
 
 	return (
-		<div className="z-10 flex h-full w-full justify-center pt-28">
+		<div className="z-10 flex h-full w-full justify-center pt-8">
 			<div className="h-[80vh] w-[75vw]">
 				{ready && game && (
 					<>
-						<h4 className="top-0  mb-4  mt-[-40px] text-center font-bold">
-							Game {game.id}
-						</h4>
+						<Card
+							className="mb-4 h-12 w-full bg-card-200"
+							classNames={{
+								innerContainer:
+									"flex items-center justify-between px-4 py-0",
+							}}
+						>
+							<div className="flex gap-2">
+								<Gamepad2 size={24} />
+								Casual
+							</div>
+							<div className="relative flex h-full items-center gap-2 text-lg font-bold text-foreground-700">
+								<TimerIcon size={24} />
+								2:00
+								<div className="absolute inset-x-[-300px] inset-y-0 -z-10 bg-gradient-to-r from-transparent via-card-500 to-transparent"></div>
+							</div>
+							<div className="flex gap-2">
+								Space
+								<Map size={24} />
+							</div>
+						</Card>
 						<Game gameinfo={game} session={session} />
 					</>
 				)}
 				{game && !ready && (
-					<>
-						<h1>waiting</h1>
-						{Object.keys(game).map((key) => (
-							<div key={key}>
-								{key}: {game[key]}
-							</div>
-						))}
-					</>
+					// <>
+					// 	<h1>waiting</h1>
+					// 	{Object.keys(game).map((key) => (
+					// 		<div key={key}>
+					// 			{key}: {game[key]}
+					// 		</div>
+					// 	))}
+					// </>
+					<LoadingScreen />
 				)}
 				{!game && <h1>Loading...</h1>}
 			</div>

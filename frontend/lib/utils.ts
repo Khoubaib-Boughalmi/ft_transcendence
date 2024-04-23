@@ -17,7 +17,7 @@ export function getFlag(country: string) {
 		China: "🇨🇳",
 	};
 
-	return FLAGS[country] ?? "🏳️‍🌈";
+	return FLAGS[country] ?? "🏴‍☠️";
 }
 
 export function getRank(rank: number) {
@@ -138,14 +138,21 @@ export async function InteractionFunctionality(
 		async () => {
 			await sessionMutate();
 			await mutate(`/chat/channel/list`);
-		}
+		},
 	);
 }
 
-export function useIsOnline(userId: string | null, setOnlineStates: any = null) {
-	const { data } = useSWR(userId ? `/user/profile/isonline/${userId}` : null, fetcher, {
-		refreshInterval: 10000,
-	}) as any;
+export function useIsOnline(
+	userId: string | null,
+	setOnlineStates: any = null,
+) {
+	const { data } = useSWR(
+		userId ? `/user/profile/isonline/${userId}` : null,
+		fetcher,
+		{
+			refreshInterval: 10000,
+		},
+	) as any;
 
 	useEffect(() => {
 		if (!setOnlineStates || !userId) return;
@@ -156,8 +163,7 @@ export function useIsOnline(userId: string | null, setOnlineStates: any = null) 
 			const newMap = new Map(prev);
 			newMap.set(userId, newOnline);
 			return newMap;
-		})
-		
+		});
 	}, [userId, data, setOnlineStates]);
 
 	return data ? data.isOnline : false;
@@ -203,9 +209,8 @@ export const paths = {
 	Profile: "/profile",
 	Chat: "/chat",
 	Settings: "/settings",
-	Test: "/test",
 };
-export const buttons = ["Home", "Profile", "Chat", "Test"];
+export const buttons = ["Home", "Profile", "Chat"];
 export const themes = [
 	{ name: "Red" },
 	{ name: "Green" },
@@ -213,6 +218,8 @@ export const themes = [
 	{ name: "Purple" },
 ];
 export function getCurrentPath(pathName: string) {
-	const current = Object.entries(paths).reverse().find(([_, href]) => pathName.includes(href))?.[0];
+	const current = Object.entries(paths)
+		.reverse()
+		.find(([_, href]) => pathName.includes(href))?.[0];
 	return current;
 }

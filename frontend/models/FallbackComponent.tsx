@@ -1,4 +1,13 @@
+import { use, useEffect } from "react";
+
 export const FallbackComponent = () => {
+	useEffect(() => {
+		console.log("Loading...");
+		return () => {
+			console.log("Loaded");
+		};
+	});
+
 	return (
 		<div
 			style={{

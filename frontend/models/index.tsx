@@ -1,4 +1,4 @@
-export { Island } from "./Island";
+// export { Island } from "./Island";
 export { Sky } from "./Sky";
 export { Racket } from "./Racket";
 export { Ball } from "./Ball";
@@ -13,3 +13,4 @@ export { CameraController } from "./CameraController";
 export { PlaneTable } from "./PlaneTable";
 export { PauseGameComponent } from "./PauseGameComponent";
 export { TimingComponent } from "./TimingComponent";
+export { LoadingScreen } from "./LoadingScreen";

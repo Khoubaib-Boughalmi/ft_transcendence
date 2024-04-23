@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { a } from "@react-spring/three";
-import scene from "../assets/3d/racket.glb";
+// import scene from "/3d/racket.glb";
 import { useBox } from "@react-three/cannon";
 
 export function Racket(ogprops) {
-	const { nodes, materials } = useGLTF(scene);
+	const { nodes, materials } = useGLTF("/3d/racket.glb");
 	const { GameData, canvasRef, name, ...props } = ogprops;
 	const [racketRef, api] = useBox(() => ({
 		...props,
@@ -68,7 +68,10 @@ export function Racket(ogprops) {
 	return (
 		<a.group name={name} ref={racketRef} {...props}>
 			<mesh
-				geometry={nodes.SM_PingPongPaddle_M_PingPongPaddle_0.geometry}
+				geometry={
+					(nodes.SM_PingPongPaddle_M_PingPongPaddle_0 as THREE.Mesh)
+						.geometry
+				}
 				material={materials.M_PingPongPaddle}
 			/>
 		</a.group>

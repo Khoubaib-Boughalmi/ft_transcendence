@@ -1,15 +1,12 @@
-"use client";
-import Card from "@/components/Card";
 import Divider from "@/components/Divider";
 import SuperImage from "@/components/SuperImage";
 import PublicContext from "@/contexts/PublicContext";
 import { getFlag, getRandomChallengeMessage, getRank } from "@/lib/utils";
-import { user1, user2 } from "@/mocks/profile";
 import { User } from "@/types/profile";
-import { AnimatePresence, motion } from "framer-motion";
-import { Divide, Gamepad2, Map, Swords, TimerIcon } from "lucide-react";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Swords } from "lucide-react";
+import { useContext, useMemo } from "react";
 import { twMerge } from "tailwind-merge";
+import { AnimatePresence, motion } from "framer-motion";
 
 function LoadingText({
 	radius,
@@ -51,7 +48,7 @@ function LoadingText({
 	);
 }
 
-function LoadingScreen() {
+function LoadingScreen({ user1, user2 }) {
 	const { session } = useContext(PublicContext) as any;
 	const challenge = useMemo(() => {
 		return getRandomChallengeMessage();
@@ -181,132 +178,4 @@ function LoadingScreen() {
 	);
 }
 
-function GameScreen() {
-	function PlayerSide({
-		side,
-		user,
-	}: {
-		side: "left" | "right";
-		user: User;
-	}) {
-		return (
-			<div className="h-full py-4">
-				<div className="aspect-square h-full overflow-hidden rounded-full">
-					<SuperImage
-						className="h-full w-full object-cover"
-						src={user.avatar}
-						alt={user.username}
-						width={256}
-						height={256}
-					/>
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div className="relative h-full w-full">
-			<div className="absolute inset-0 flex flex-col-reverse">
-				<div className="relative flex h-32 w-full items-center justify-center gap-8 bg-gradient-to-t from-black/50 pb-8">
-					<div className="absolute inset-0 translate-y-full bg-gradient-to-b from-black/50"></div>
-					<PlayerSide side="left" user={user1} />
-					<div className="flex aspect-video h-full overflow-hidden rounded-xl">
-						<div className="flex flex-1 items-center justify-center bg-card-200 text-3xl text-white">
-							1
-						</div>
-						<div className="flex flex-1 items-center justify-center bg-card-500 text-3xl text-white">
-							2
-						</div>
-					</div>
-					<PlayerSide side="right" user={user2} />
-				</div>
-				<div className="flex w-full items-center justify-center py-4 text-center text-xs text-white">
-					<div className="rounded-full bg-card-400 p-2 px-12">
-						First to 5
-					</div>
-				</div>
-			</div>
-			<div className="h-full w-full"></div>
-		</div>
-	);
-}
-
-export default function Page() {
-	const [tab, setTab] = useState("loading");
-
-	// const [mypoints, setMypoints] = useState(0);
-	// const [oppPoints2, setOppPoints] = useState(0);
-	// const tabs = [
-	// 	["loading", <LoadingScreen />],
-	// 	["game", <GameScreen />],
-	// ] as any;
-
-	// console.log("rendering", tab);
-
-	return (
-		<div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-			<motion.div
-				initial={{ opacity: 0, translateY: "100%" }}
-				animate={{ opacity: 1, translateY: "0%" }}
-				onClick={() => {
-					setTab((prev) => (prev == "loading" ? "game" : "loading"));
-				}}
-				className="flex flex-col items-center justify-center gap-4 py-0"
-			>
-				<Card
-					className="h-12 w-full bg-card-200"
-					classNames={{
-						innerContainer:
-							"flex items-center justify-between px-4 py-0",
-					}}
-				>
-					<div className="flex gap-2">
-						<Gamepad2 size={24} />
-						Casual
-					</div>
-					<div className="relative flex h-full items-center gap-2 text-lg font-bold text-foreground-700">
-						<TimerIcon size={24} />
-						2:00
-						<div className="absolute inset-x-[-300px] inset-y-0 -z-10 bg-gradient-to-r from-transparent via-card-500 to-transparent"></div>
-					</div>
-					<div className="flex gap-2">
-						Space
-						<Map size={24} />
-					</div>
-				</Card>
-				<Card
-					className="aspect-video h-[80vh] overflow-hidden"
-					classNames={{
-						innerContainer: "p-0",
-					}}
-				>
-					<AnimatePresence mode="popLayout">
-						<div className="h-full w-full select-none overflow-hidden rounded-3xl">
-							{tab == "loading" ? (
-								<motion.div
-									key="loading"
-									initial={{ opacity: 0, translateY: "100%" }}
-									animate={{ opacity: 1, translateY: "0%" }}
-									exit={{ opacity: 0, translateY: "-100%" }}
-									className="h-full w-full"
-								>
-									<LoadingScreen />
-								</motion.div>
-							) : (
-								<motion.div
-									key="game"
-									initial={{ opacity: 0, translateY: "100%" }}
-									animate={{ opacity: 1, translateY: "0%" }}
-									exit={{ opacity: 0, translateY: "-100%" }}
-									className="h-full w-full"
-								>
-									<GameScreen />
-								</motion.div>
-							)}
-						</div>
-					</AnimatePresence>
-				</Card>
-			</motion.div>
-		</div>
-	);
-}
+export default LoadingScreen;

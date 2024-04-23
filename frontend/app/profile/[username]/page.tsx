@@ -281,39 +281,38 @@ function InteractionButton({
 	);
 }
 
-async function inviteplayer(user: User, session: any, router: any) {
-	console.log("Invited", user);
-	console.log("Session", session);
-	const res = await axios.post("/game/invite", {
-		user1: session.id,
-		user2: user.id,
-	});
-	if (res.status == 201) {
-		console.log("Invited", res.data);
-		console.log("redirecting", "/game/" + res.data.id);
-		// socket.emit("message", {
-		// 	targetId: selectedServer?.isDM
-		// 		? selectedServer.membersIds.find((id) => id != session.id)
-		// 		: undefined,
-		// 	chatId: selectedServerId,
-		// 	queueId: newId,
-		// 	message,
-		// });
+async function invitePlayer(user: User, session: any, router: any) {
+	console.log("Inviting user:", user);
+
+	try {
+		// Make the HTTP request to invite the user
+		const response = await axios.post("/game/invite", {
+			user1: session.id,
+			user2: user.id,
+			socket: socket.id,
+		});
+
+		console.log("Invitation sent:", response.data);
+
+		// Emit a socket message with the game invitation link
 		socket.emit("message", {
 			targetId: user.id,
 			chatId: user.id,
-			queueId: res.data.id,
-			message: "http://localhost:8080/game/" + res.data.id,
+			queueId: response.data.id,
+			message: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/test/${response.data.id}`,
 		});
 
-		router.push("/game/" + res.data.id);
+		// Redirect the router to the game session
+		router.push(`/test/${response.data.id}`);
+	} catch (error) {
+		console.error("Error inviting player:", error);
 	}
-
-	console.log(res);
 }
 
 function ProfileTop({ user }: { user: User }) {
-	const { session, onMessageOpen, setMessageTarget } = useContext(PublicContext) as any;
+	const { session, onMessageOpen, setMessageTarget } = useContext(
+		PublicContext,
+	) as any;
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 	const router = useRouter();
 	const userBlocked = session.blocked_users.find(
@@ -423,7 +422,7 @@ function ProfileTop({ user }: { user: User }) {
 												variant="transparent"
 												className="justify-start"
 												onClick={() => {
-													inviteplayer(
+													invitePlayer(
 														user,
 														session,
 														router,
@@ -599,14 +598,14 @@ function ProfileAchievements({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<AchievementsList achievements={user.achievements} />
+						<AchievementsList achievements={user1.achievements} />
 					</ModalSet>
 				</div>
 			}
 			header={"Achievements"}
 			fullWidth
 		>
-			<AchievementsList achievements={user.achievements.slice(0, 3)} />
+			<AchievementsList achievements={user1.achievements.slice(0, 3)} />
 			<div className="flex flex-col gap-4 p-2 pt-4">
 				<div className="h-2 w-full overflow-hidden rounded-full bg-black">
 					<div
@@ -702,9 +701,8 @@ export default function Home({ params }: any) {
 	};
 	const falseUser = { ...user1, ...user };
 
-
 	useEffect(() => {
-		document.title = `${decodeURIComponent(params.username)} | Profile`
+		document.title = `${decodeURIComponent(params.username)} | Profile`;
 	}, [user]);
 
 	if (userError) notFound();

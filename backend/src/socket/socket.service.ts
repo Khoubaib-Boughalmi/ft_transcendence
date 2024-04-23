@@ -4,6 +4,22 @@ import { Socket } from 'socket.io';
 @Injectable()
 export class SocketService {
 	private onlineUsers: Map<string, Socket[]> = new Map();
+	private playerGame: Map<string, { socket: Socket; gameId: string }[]> =
+		new Map();
+
+	private gameInQueue: { socket: string; gameid: string } = {
+		socket: '',
+		gameid: '',
+	};
+	getGameInQueue() {
+		return this.gameInQueue;
+	}
+	setGameInQueue(socket: string, gameid: string) {
+		this.gameInQueue = { socket, gameid };
+	}
+	cleanGameInQueue() {
+		this.gameInQueue = { socket: '', gameid: '' };
+	}
 
 	addUserSocket(userId: string, socket: Socket) {
 		if (this.onlineUsers.has(userId)) {
@@ -28,5 +44,25 @@ export class SocketService {
 
 	getUserSockets(userId: string) {
 		return this.onlineUsers.get(userId);
+	}
+
+	addPlayerGame(userId: string, socket: Socket, gameId: string) {
+		if (this.playerGame.has(userId)) {
+			console.log('should be eliminated');
+			// this.playerGame.get(userId).push({ socket, gameId });
+		} else {
+			this.playerGame.set(userId, [{ socket, gameId }]);
+		}
+	}
+
+	removePlayerGame(userId: string, socket: Socket) {
+		if (this.playerGame.has(userId)) {
+			this.playerGame.delete(userId);
+			console.log('game removed');
+		}
+	}
+
+	getPlayerGame(userId: string) {
+		return this.playerGame.get(userId);
 	}
 }
