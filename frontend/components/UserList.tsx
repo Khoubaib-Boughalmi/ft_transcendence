@@ -228,7 +228,7 @@ export default function UserList({
 					return (
 						<UserListListEntry
 							hoverDelay={hoverDelay}
-							key={user.id}
+							key={user.id + "-" + i}
 							endContent={endContent}
 							classNames={classNames}
 							size={size}
