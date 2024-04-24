@@ -2,7 +2,7 @@
 import Card from "@/components/Card";
 import PublicContext from "@/contexts/PublicContext";
 import { Metadata } from "next";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { history, user1 } from "@/mocks/profile";
 import MatchHistoryList, {
 	MatchHistoryEntry,
@@ -29,7 +29,8 @@ function TopThreeRank({ user, rank }: { user: User; rank: number }) {
 		<div
 			className={twMerge(
 				"relative h-4/6 w-24 rounded-b-xl rounded-t-[40px] bg-card-600/50",
-				rank != 1 && "h-2/6 bg-card-500",
+				rank == 3 && "h-2/6 bg-card-500",
+				rank == 2 && "h-[45%] bg-card-500",
 			)}
 		>
 			<SuperTooltip
@@ -102,6 +103,7 @@ function DivisionClass({ exp }: { exp: number }) {
 
 export default function Page() {
 	const { session } = useContext(PublicContext) as any;
+	const [queuing, setQueuing] = useState(false);
 	const router = useRouter();
 
 	useEffect(() => {
@@ -160,45 +162,6 @@ export default function Page() {
 										></div>
 									</div>
 								</div>
-								<div className="grid hidden grid-cols-2 gap-y-2 rounded-b-3xl bg-card-200 p-8 px-12">
-									{[
-										["Username", session?.username],
-										["Country", session?.country],
-										[
-											"Flag",
-											getFlag(session?.country),
-											"font-flag",
-										],
-										["Wins", session?.wins],
-										["Losses", session?.losses],
-										[
-											"Ratio",
-											(
-												session?.wins /
-													session?.losses || 0
-											).toFixed(2) + "%",
-										],
-
-										[
-											"Joined",
-											new Date(
-												session?.createdAt,
-											).toDateString(),
-										],
-									].map(([key, value, className]) => (
-										<>
-											<span>{key}</span>
-											<span
-												className={twMerge(
-													" text-white",
-													className,
-												)}
-											>
-												{value}
-											</span>
-										</>
-									))}
-								</div>
 							</Card>
 							<Card
 								className="flex-1 overflow-hidden bg-card-300 p-2"
@@ -209,7 +172,7 @@ export default function Page() {
 							>
 								<UserList
 									type="list"
-									users={[]}
+									users={session.friends}
 									classNames={{
 										entryContainer: "rounded-3xl",
 									}}
@@ -263,11 +226,15 @@ export default function Page() {
 													<Swords size={18} />
 												}
 												onClick={() => {
-													JoinQueueing(
-														session,
-														router,
-													);
+													setQueuing(true);
+													setTimeout(() => {
+														JoinQueueing(
+															session,
+															router,
+														);
+													}, 1000);
 												}}
+												loading={queuing}
 											>
 												Start Queueing
 											</Button>
@@ -276,6 +243,7 @@ export default function Page() {
 									<div className="relative col-span-4 flex justify-end  p-8">
 										<div className="absolute inset-0 overflow-hidden">
 											<SuperImage
+												priority
 												src={"/background3.png"}
 												width={1280}
 												height={720}
@@ -285,17 +253,15 @@ export default function Page() {
 										</div>
 										<div className="z-10 aspect-square h-full">
 											<div
-												className={`z-10 flex aspect-square h-full w-full flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-3xl lg:w-auto ${
-													getRank(session.rank).color
-												} relative `}
+												className={`z-10 flex aspect-square h-full w-full flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-3xl lg:w-auto ${getRank(session.rank).color
+													} relative `}
 											>
 												<div className="flex flex-1 flex-col items-center justify-center gap-2">
 													<span
-														className={`text-[8rem] font-bold leading-[6.5rem] text-transparent mix-blend-plus-lighter ${
-															getRank(
-																session.rank,
-															).color
-														} fuck-css`}
+														className={`text-[8rem] font-bold leading-[6.5rem] text-transparent mix-blend-plus-lighter ${getRank(
+															session.rank,
+														).color
+															} fuck-css`}
 													>
 														{
 															getRank(
