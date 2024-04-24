@@ -114,6 +114,8 @@ export class GameController {
 		}
 	}
 
+	// ToDO : exceptions handling for al endpoints,  ingame status ,ping in game , leaderboard , archivement . maps . logic of queueing , remove adding exp in friendly match
+
 	@UseGuards(JwtGuard)
 	@Post('joingame')
 	async joinGame(@Req() req: any) {
