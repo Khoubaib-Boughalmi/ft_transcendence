@@ -7,6 +7,7 @@ import { getFlag, getRank } from "@/lib/utils";
 import { Match, User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
 import { Equal, Medal, X } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 
 export function MatchHistoryEntry({ match }: { match: Match }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
@@ -23,13 +24,6 @@ export function MatchHistoryEntry({ match }: { match: Match }) {
 				data-side={side}
 				className="group relative flex flex-1 gap-2 overflow-hidden p-2"
 			>
-				<SuperImage
-					width={256}
-					height={256}
-					alt="Background"
-					src={user.banner}
-					className="absolute inset-0 h-full w-full scale-150 object-cover blur-sm brightness-50"
-				/>
 				<div className="z-10 flex w-full items-center gap-4 text-white group-data-[side=right]:flex-row-reverse">
 					<div className="relative aspect-square h-full shrink-0 overflow-hidden rounded-full">
 						<SuperImage
@@ -37,7 +31,7 @@ export function MatchHistoryEntry({ match }: { match: Match }) {
 							width={64}
 							alt={user.username}
 							src={user.avatar}
-							className="h-full w-full"
+							className="h-full w-full object-cover"
 						/>
 					</div>
 					<div className="flex max-w-full flex-1 flex-col items-start gap-0.5 overflow-hidden group-data-[side=right]:items-end">
@@ -147,38 +141,47 @@ export function MatchHistoryEntry({ match }: { match: Match }) {
 			onOpenChange={onOpenChange}
 			onClose={onClose}
 			trigger={
-				<div
-					onClick={onOpen}
-					className="relative flex h-16 w-full  cursor-pointer overflow-hidden rounded-3xl bg-black brightness-90 transition-all @container hover:scale-105 hover:brightness-110"
-				>
-					<PlayerSide user={match.user1} side={"left"} />
-					<div
-						data-result={match.result}
-						className="z-10 flex items-center justify-center  gap-4 p-4 text-white"
-					>
-						<Divider orientation="vertical" />
-						<span className="flex aspect-square h-full items-center justify-center">
-							{match.score1}
-						</span>
-						<div className=" flex aspect-square items-center justify-center rounded-full bg-white/25 p-2">
-							{match.result == "win" ? (
-								<Medal size={28} />
-							) : match.result == "lose" ? (
-								<X size={28} />
-							) : (
-								<Equal size={28} />
-							)}
-						</div>
-						<span className="flex aspect-square h-full items-center justify-center">
-							{match.score2}
-						</span>
-						<Divider orientation="vertical" />
+				<div onClick={
+					onOpen
+				} className="h-16 w-full cursor-pointer overflow-hidden rounded-full brightness-90 transition-all hover:scale-105 hover:brightness-110">
+					<div className="flex w-full h-full relative">
+						{
+							[match.user1.banner, match.user2.banner].map((banner, i) =>
+								<div key={i} className="flex-1 relative">
+									<SuperImage className={"absolute inset-0 w-full h-full object-cover blur-sm"} src={banner} width={1280 / 2} height={720 / 2} alt={"bg"} />
+								</div>
+							)
+						}
 					</div>
-					<PlayerSide user={match.user2} side={"right"} />
-					<div
-						data-result={match.result}
-						className="absolute inset-0 bg-gradient-to-r from-transparent via-green-500 to-transparent p-4 text-white data-[result=lose]:via-red-600 data-[result=tie]:via-yellow-400"
-					></div>
+					<div className={twMerge("flex absolute inset-0 bg-gradient-to-r from-black/50 via-green-500 to-black/50 text-white",
+						match.result == "lose" && "via-red-600",
+						match.result == "tie" && "via-yellow-400"
+					)}>
+						<PlayerSide user={match.user1} side={"left"} />
+						<div
+							data-result={match.result}
+							className="z-10 flex items-center justify-center  gap-4 p-4 text-white"
+						>
+							<Divider orientation="vertical" />
+							<span className="flex aspect-square h-full items-center justify-center">
+								{match.score1}
+							</span>
+							<div className=" flex aspect-square items-center justify-center rounded-full bg-white/25 p-2">
+								{match.result == "win" ? (
+									<Medal size={28} />
+								) : match.result == "lose" ? (
+									<X size={28} />
+								) : (
+									<Equal size={28} />
+								)}
+							</div>
+							<span className="flex aspect-square h-full items-center justify-center">
+								{match.score2}
+							</span>
+							<Divider orientation="vertical" />
+						</div>
+						<PlayerSide user={match.user2} side={"right"} />
+					</div>
 				</div>
 			}
 		>
