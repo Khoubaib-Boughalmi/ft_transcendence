@@ -762,7 +762,7 @@ export function Navbar() {
 	return (
 		<nav
 			data-solid={solid}
-			className={twMerge(`fixed top-0 z-50 flex h-28 w-full items-center justify-center px-8
+			className={twMerge(`fixed top-0 z-50 flex h-28 w-screen items-center justify-center px-8
 				transition-all
 				duration-300 ease-in-out
 				data-[solid=true]:h-16
