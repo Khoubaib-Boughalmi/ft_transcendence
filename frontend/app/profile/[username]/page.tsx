@@ -38,7 +38,7 @@ import {
 	X,
 } from "lucide-react";
 import { notFound, redirect, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import MatchHistoryList from "@/components/MatchHistoryList";
 import socket from "@/lib/socket";
@@ -75,7 +75,7 @@ function LevelBar({
 					style={{
 						width: `${percentage}%`,
 					}}
-					className="h-full w-1/2 bg-gradient-to-r from-card via-accent to-primary"
+					className="h-full w-1/2 bg-primary"
 				></div>
 			</div>
 			<div className="flex aspect-square  h-[750%] -translate-y-1/2 items-center justify-center rounded-full bg-gradient-to-b from-accent to-card text-2xl font-bold leading-6 text-white ring-2  ring-card">
@@ -125,7 +125,10 @@ function MatchHistoryCard({ user }: { user: User }) {
 							</Button>
 						}
 					>
+						<div className="p-1 w-full">
+
 						<MatchHistoryList history={user.history} />
+						</div>
 					</ModalSet>
 				</div>
 			}
@@ -632,6 +635,25 @@ function ProfileAchievements({ user }: { user: User }) {
 }
 
 function ProfileStats({ user }: { user: User }) {
+	const activity = useMemo(() => {
+		const currentDate = new Date();
+		const currentYear = currentDate.getFullYear();
+		const currentMonth = currentDate.getMonth() + 1;
+		const activity = Array(12).fill(0);
+
+		user.history.forEach((match) => {
+			const matchDate = new Date(match.date);
+			const matchYear = matchDate.getFullYear();
+			const matchMonth = matchDate.getMonth() + 1;
+
+			if (matchYear === currentYear && matchMonth >= 1 && matchMonth <= currentMonth) {
+				activity[matchMonth - 1]++;
+			}
+		});
+
+		return activity;
+	}, [user.history]);
+
 	return (
 		<Card
 			className="relative"
@@ -641,7 +663,7 @@ function ProfileStats({ user }: { user: User }) {
 		>
 			<div className="flex flex-col gap-4 p-2 ">
 				<div className="grid grid-cols-4 gap-4">
-					{["Wins", "Losses", "Matches", "Ratio"].map((title) => (
+					{["Wins", "Losses", "Matches", "Win Percentage"].map((title) => (
 						<div
 							key={title}
 							className="relative grid h-32 w-full grid-rows-4 overflow-hidden rounded-xl bg-card-400 p-4
@@ -659,15 +681,13 @@ function ProfileStats({ user }: { user: User }) {
 										user.wins,
 										user.losses,
 										user.matches,
-										(user.wins / user.matches || 0).toFixed(
-											2,
-										),
+										((user.wins / user.matches || 0) * 100).toFixed(2) + "%",
 									][
 										[
 											"Wins",
 											"Losses",
 											"Matches",
-											"Ratio",
+											"Win Percentage",
 										].indexOf(title)
 									]
 								}
@@ -680,7 +700,7 @@ function ProfileStats({ user }: { user: User }) {
 				</div>
 				<Divider />
 
-				<Chart activity={user.activity} />
+				<Chart activity={activity} />
 			</div>
 		</Card>
 	);
