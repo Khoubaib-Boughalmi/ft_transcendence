@@ -1,6 +1,6 @@
 "use client";
 import { useIsOnline } from "@/lib/utils";
-import { User } from "@/types/profile";
+import { User, UserStatus } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
 import Link from "next/link";
 import { twMerge } from "tailwind-merge";
@@ -38,7 +38,7 @@ function UserListGridEntry({
 				className={twMerge(
 					`flex h-full w-full flex-col items-center justify-center gap-1 rounded-xl bg-card-400 p-4 text-white transition-all
 					hover:scale-105 hover:brightness-110`,
-					isOnline == false && "brightness-[60%]",
+					isOnline == "Offline" && "brightness-[60%]",
 				)}
 			>
 				<div className="relative aspect-square h-24 w-24 overflow-hidden rounded-full">
@@ -104,7 +104,7 @@ function UserListListEntry({
 					className={twMerge(
 						`flex h-16 w-full gap-4 rounded-xl bg-card-400 p-2 text-white transition-all`,
 						size == "xs" && "h-12 gap-2",
-						!endContent && isOnline == false && "brightness-[60%]",
+						!endContent && isOnline == "Offline" && "brightness-[60%]",
 						classNames?.entryContainer,
 					)}
 				>
@@ -115,7 +115,7 @@ function UserListListEntry({
 							`relative flex-1 gap-4 text-white
 							transition-all hover:scale-105 hover:brightness-110`,
 							!endContent &&
-								isOnline == false &&
+								isOnline == "Offline" &&
 								"brightness-[60%]",
 							size == "xs" && "gap-2",
 							classNames?.entry,
@@ -197,14 +197,15 @@ export default function UserList({
 	contextContent?: ({ user }: { user: User }) => ReactNode;
 	startContent?: ({ user }: { user: User }) => ReactNode;
 }) {
-	const [onlineStates, setOnlineStates] = useState<Map<string, boolean>>(
+	const [onlineStates, setOnlineStates] = useState<Map<string, UserStatus>>(
 		new Map(),
 	);
 
 	const sortedUsers = useMemo(() => {
 		return users.toSorted((a, b) => {
-			if (onlineStates.get(a.id) && !onlineStates.get(b.id)) return -1;
-			if (!onlineStates.get(a.id) && onlineStates.get(b.id)) return 1;
+			if (onlineStates.get(a.id) == "Playing" && onlineStates.get(b.id) != "Playing") return -1;
+			if (onlineStates.get(a.id) == "Online" && onlineStates.get(b.id) == "Offline") return -1;
+			if (onlineStates.get(a.id) == "Offline" && onlineStates.get(b.id)  == "Online") return 1;
 			return 0;
 		});
 	}, [users, onlineStates]);

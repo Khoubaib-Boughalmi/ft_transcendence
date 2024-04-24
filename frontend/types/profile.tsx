@@ -3,6 +3,7 @@ export type Rank = {
 	name: string;
 	color: "bronze" | "silver" | "gold" | "platinum" | "diamond";
 };
+export type UserStatus = "Online" | "Offline" | "Playing";
 export type MatchType = "Classic" | "Power";
 export type MatchLeague = "Casual" | "Ranked" | "Tournament";
 export type Achievement = {

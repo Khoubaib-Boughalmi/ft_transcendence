@@ -3,7 +3,7 @@ import ChatContext from "@/contexts/ChatContext";
 import ContextMenuContext from "@/contexts/ContextMenuContext";
 import axios from "@/lib/axios";
 import { ChatContextType } from "@/types/chat";
-import { InteractionType, Rank, User } from "@/types/profile";
+import { InteractionType, Rank, User, UserStatus } from "@/types/profile";
 import { usePathname } from "next/navigation";
 import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
@@ -142,10 +142,13 @@ export async function InteractionFunctionality(
 	);
 }
 
+
 export function useIsOnline(
 	userId: string | null,
 	setOnlineStates: any = null,
-) {
+): UserStatus {
+
+
 	const { data } = useSWR(
 		userId ? `/user/profile/isonline/${userId}` : null,
 		fetcher,
@@ -158,7 +161,7 @@ export function useIsOnline(
 		if (!setOnlineStates || !userId) return;
 		setOnlineStates((prev: any) => {
 			const prevOnline = prev[userId];
-			const newOnline = data ? data.isOnline : false;
+			const newOnline = data ? data.isOnline : "Offline";
 			if (prevOnline === newOnline) return prev;
 			const newMap = new Map(prev);
 			newMap.set(userId, newOnline);
@@ -166,7 +169,7 @@ export function useIsOnline(
 		});
 	}, [userId, data, setOnlineStates]);
 
-	return data ? data.isOnline : false;
+	return data ? data.isOnline : "Offline";
 }
 
 export function randomString() {

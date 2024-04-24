@@ -83,7 +83,9 @@ export class UserController {
 	async getProfileIsOnline(@Req() req, @Param() params: AddFriendDTO) {
 		const user = await this.userService.user({ id: params.id });
 		if (!user) throw new HttpException('User not found', 404);
-		return { isOnline: await this.userGateway.isOnline(user.id) };
+		const isOnline = await this.userGateway.isOnline(user.id);
+		const isPlaying = false;
+		return { isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline' };
 	}
 
 	@UseGuards(JwtGuard)
