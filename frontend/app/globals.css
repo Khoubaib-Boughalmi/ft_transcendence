@@ -216,7 +216,7 @@ img {
 }
 
 body {
-	overflow-y: scroll;
+	scrollbar-gutter: stable;
 }
 
 @layer utilities {
