@@ -56,7 +56,7 @@ export function Button({
 			{...(props as React.ButtonHTMLAttributes<HTMLButtonElement> &
 				React.AnchorHTMLAttributes<HTMLAnchorElement>)}
 		>
-			{loading ? <Spinner size="sm" /> : startContent}
+			{loading ? <Spinner className={twMerge(variant == "default" && "invert")} size="sm" /> : startContent}
 			{children}
 			{endContent}
 		</As>
