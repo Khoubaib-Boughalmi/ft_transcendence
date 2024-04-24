@@ -1268,7 +1268,9 @@ export default function App({ params }: any) {
 									</Button>
 									{!selectedServer?.isDM && (
 										<SuperDropdown>
-											<DropdownTrigger>
+											<DropdownTrigger
+												aria-label="Settings"
+											>
 												<div>
 													<Button
 														variant="transparent"
@@ -1279,6 +1281,7 @@ export default function App({ params }: any) {
 												</div>
 											</DropdownTrigger>
 											<SuperDropdownMenu
+												aria-label="Settings"
 												onAction={(action) => {
 													if (action == "settings") {
 														onOpen();
