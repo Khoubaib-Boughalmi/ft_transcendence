@@ -4,9 +4,11 @@ import { Spinner } from "@nextui-org/react";
 import { useContext, useEffect } from "react";
 import { Button } from "./Button";
 import { motion } from "framer-motion";
+import Divider from "./Divider";
+import { useRouter } from "next/navigation";
 
 const LongEnough = () => {
-	const words = "long enough";
+	const words = "Transcendence";
 
 	return (
 		<motion.div className="relative text-center">
@@ -44,6 +46,7 @@ export default function LoginGuard({ children }: any) {
 	const { verified, verifiedLoading, sessionLoading } = useContext(
 		PublicContext,
 	) as any;
+	const router = useRouter();
 
 	useEffect(() => {
 		if (verified) return;
@@ -62,22 +65,20 @@ export default function LoginGuard({ children }: any) {
 			{verified ? (
 				<>{children}</>
 			) : (
-				<div className="z-10 flex select-none flex-col items-center justify-center gap-14 text-[0.75em]">
+				<div onClick={() => {
+					router.push(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/intra/login`)
+				}}  className="z-10 flex flex-col select-none  items-center text-[0.75em] justify-center relative active:scale-95 transition-all active:opacity-50">
+					<div>
+						
 					<LongEnough />
-					<div className="-mt-12 text-[1.25em] font-light text-foreground-600">
+					<div className="-mt-14 text-[1.25em] font-light text-foreground-600 bg-card-500 rounded-3xl px-4 py-2 animate-slow_fadein">
 						An interactive gaming platform for the 1337 community.
 						All rights reserved 2024 ©.
 					</div>
-					<Button
-						className="px-96 text-lg"
-						startContent={
-							<img className="h-7 w-7" src="/42_Logo.svg" />
-						}
-						as="a"
-						href={`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/intra/login`}
-					>
-						تسجيل الدخول
-					</Button>
+					</div>
+					<div className="text-xl absolute bottom-32 text-neutral-500 animate-bounce">
+						انقر في أي مكان للمتابعة
+					</div>
 				</div>
 			)}
 		</>
