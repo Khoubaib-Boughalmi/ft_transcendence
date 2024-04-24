@@ -282,6 +282,7 @@ export default function DiscoverPage() {
 				<div className="relative h-full w-full overflow-hidden rounded-xl bg-card-200">
 					<div className="h-full w-full">
 						<SuperImage
+							priority
 							width={1280}
 							height={720}
 							alt="background"
