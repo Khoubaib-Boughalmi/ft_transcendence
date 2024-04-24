@@ -73,7 +73,7 @@ function LoadingScreen({ user1, user2 }) {
 				>
 					<div className="relative aspect-square h-32 rounded-full ring ring-card-600/25">
 						<SuperImage
-							className="absolute inset-0 h-full w-full rounded-full object-cover"
+							className={twMerge("absolute inset-0 h-full w-full rounded-full object-cover", user.id.length < 3 && "opacity-0")}
 							src={user?.avatar}
 							alt={user?.username}
 							width={256}
@@ -83,6 +83,7 @@ function LoadingScreen({ user1, user2 }) {
 					<div
 						className={twMerge(
 							"flex flex-1 flex-col items-start justify-center text-foreground-900",
+							user.id.length < 2 && "opacity-0",
 						)}
 					>
 						<div
