@@ -3,6 +3,8 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 import { a } from "@react-spring/three";
 // import scene from "/3d/racket.glb";
 import { useBox } from "@react-three/cannon";
+import * as THREE from "three";
+
 
 export function Racket(ogprops) {
 	const { nodes, materials } = useGLTF("/3d/racket.glb");

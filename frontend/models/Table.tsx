@@ -2,6 +2,7 @@
 import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { a } from "@react-spring/three";
+import * as THREE from "three";
 // import scene from "../assets/3d/group2.glb";
 // import { useFrame, useThree } from "@react-three/fiber";
 // import { usePlane } from "@react-three/cannon";
