@@ -1,16 +1,18 @@
 version: '3'
+
 services:
   database:
-    image: postgres:10.4
+    image: postgres:14.4-alpine
     ports:
       - '5432:5432'
-    env_file:
-      - ./database/.env
     volumes:
-      - ./database:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
     restart: always
     container_name: database
     hostname: database
+    env_file:
+      - ./database/.env
+    tty: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -25,21 +27,23 @@ services:
     ports:
       - 8080:8080
     restart: always
-    command: [npm, run, start]
     container_name: frontend
     hostname: frontend
+    tty: true
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - 3000:3000
+      - 5555:5555
     depends_on:
       - database
     restart: always
-    command: [npm, run, 'start']
     container_name: backend
     hostname: backend
+    tty: true
 
 volumes:
   database:
