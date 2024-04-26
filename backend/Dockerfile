@@ -1,13 +1,17 @@
-FROM node:18.18.0-alpine
-
-RUN npm install -g npm@10.5.0
+FROM node:21-alpine3.18
 
 WORKDIR /app
 
-COPY . /app/
+COPY package*.json ./
 
 RUN npm install
 
-RUN npm run build
+RUN npm audit fix --force
 
-EXPOSE 3000
+COPY . .
+
+COPY ./init.sh /usr/local/bin
+
+RUN chmod 755 /usr/local/bin/init.sh
+
+ENTRYPOINT [ "init.sh" ]

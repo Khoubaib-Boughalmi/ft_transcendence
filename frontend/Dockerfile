@@ -1,22 +1,28 @@
-FROM node:18.18.0-alpine
-
-# Upgrade npm to version 10.5.0
-RUN npm install -g npm@10.5.0
+FROM node:21-alpine3.18
 
 WORKDIR /app
 
-COPY . /app/
-
-RUN apk update; apk add --no-cache bash nginx
+COPY package*.json ./
 
 RUN npm install
 
-RUN npm run build
+RUN npm audit fix --force
+
+COPY . .
+
+RUN apk update; apk add --no-cache nginx
+
+RUN npm install
+
+RUN npm audit fix --force
 
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
 RUN mkdir -p /usr/share/nginx/html
 
-RUN cp -r ./.next /usr/share/nginx/html
+# RUN cp -r ./.next /usr/share/nginx/html
+COPY ./init.sh /usr/local/bin
 
-EXPOSE 8080
+RUN chmod 755 /usr/local/bin/init.sh
+
+ENTRYPOINT [ "init.sh" ]

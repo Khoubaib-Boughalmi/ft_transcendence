@@ -3,3 +3,4 @@ database/.env
 backend/.env
 database
 .vscode/
+.env
