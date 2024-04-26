@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   database:
@@ -10,9 +10,9 @@ services:
     restart: always
     container_name: database
     hostname: database
-    tty: true
     env_file:
-      - .env
+      - ./database/.env
+    tty: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -30,8 +30,6 @@ services:
     container_name: frontend
     hostname: frontend
     tty: true
-    env_file:
-      - .env
 
   backend:
     build:
@@ -46,8 +44,6 @@ services:
     container_name: backend
     hostname: backend
     tty: true
-    env_file:
-      - .env
 
 volumes:
   database:
