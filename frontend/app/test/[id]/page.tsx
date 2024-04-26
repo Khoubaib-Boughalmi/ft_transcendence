@@ -38,6 +38,7 @@ function GameScreen({
 	setOppPoints,
 	setGameStarted,
 	gameover,
+	setGameOver,
 	router,
 }) {
 	function PlayerSide({
@@ -108,6 +109,7 @@ function GameScreen({
 						setGameStarted={setGameStarted}
 						player1={user1}
 						player2={user2}
+						setGameOver={setGameOver}
 					/>
 				</div>
 			)}
@@ -390,6 +392,7 @@ export default function Page({ params }) {
 										setOppPoints={setOppPoints}
 										setGameStarted={setGameStarted}
 										gameover={gameover}
+										setGameOver={setGameOver}
 										router={router}
 									/>
 								</motion.div>

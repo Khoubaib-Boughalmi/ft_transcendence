@@ -86,6 +86,8 @@ export class GameController {
 		// return game;
 
 		const ThegameInQueue = this.socketService.getGameInQueue();
+		console.log('ThegameInQueue', ThegameInQueue.gameid);
+
 		if (ThegameInQueue.gameid) {
 			console.log('Yougonna join to ', ThegameInQueue);
 			const game = await this.gameService.joinToQueuedGame(
@@ -104,6 +106,7 @@ export class GameController {
 			this.socketService.cleanGameInQueue();
 			return game;
 		} else {
+			ThegameInQueue.gameid = '-1';
 			const game = await this.gameService.createMatch(
 				req.body.user1,
 				'-1',
