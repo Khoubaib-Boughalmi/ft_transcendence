@@ -85,8 +85,12 @@ export class GameController {
 		// // log('Game invite', game);
 		// return game;
 
-		const ThegameInQueue = this.socketService.getGameInQueue();
+		let ThegameInQueue = this.socketService.getGameInQueue();
 		console.log('ThegameInQueue', ThegameInQueue.gameid);
+		while (ThegameInQueue.gameid == '-1') {
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			ThegameInQueue = this.socketService.getGameInQueue();
+		}
 
 		if (ThegameInQueue.gameid) {
 			console.log('Yougonna join to ', ThegameInQueue);
