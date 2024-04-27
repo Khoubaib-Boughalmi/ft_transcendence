@@ -19,7 +19,7 @@ import {
 	getRank,
 	interactionDictionary,
 } from "@/lib/utils";
-import { user1 } from "@/mocks/profile";
+import { achievements, user1 } from "@/mocks/profile";
 import { Achievement, InteractionType, User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
 import axios from "@/lib/axios";
@@ -38,7 +38,14 @@ import {
 	X,
 } from "lucide-react";
 import { notFound, redirect, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import useSWR from "swr";
 import MatchHistoryList from "@/components/MatchHistoryList";
 import socket from "@/lib/socket";
@@ -125,9 +132,8 @@ function MatchHistoryCard({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<div className="p-1 w-full">
-
-						<MatchHistoryList history={user.history} />
+						<div className="w-full p-1">
+							<MatchHistoryList history={user.history} />
 						</div>
 					</ModalSet>
 				</div>
@@ -601,14 +607,14 @@ function ProfileAchievements({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<AchievementsList achievements={user1.achievements} />
+						<AchievementsList achievements={achievements} />
 					</ModalSet>
 				</div>
 			}
 			header={"Achievements"}
 			fullWidth
 		>
-			<AchievementsList achievements={user1.achievements.slice(0, 3)} />
+			<AchievementsList achievements={achievements.slice(0, 3)} />
 			<div className="flex flex-col gap-4 p-2 pt-4">
 				<div className="h-2 w-full overflow-hidden rounded-full bg-black">
 					<div
@@ -646,7 +652,11 @@ function ProfileStats({ user }: { user: User }) {
 			const matchYear = matchDate.getFullYear();
 			const matchMonth = matchDate.getMonth() + 1;
 
-			if (matchYear === currentYear && matchMonth >= 1 && matchMonth <= currentMonth) {
+			if (
+				matchYear === currentYear &&
+				matchMonth >= 1 &&
+				matchMonth <= currentMonth
+			) {
 				activity[matchMonth - 1]++;
 			}
 		});
@@ -663,37 +673,42 @@ function ProfileStats({ user }: { user: User }) {
 		>
 			<div className="flex flex-col gap-4 p-2 ">
 				<div className="grid grid-cols-4 gap-4">
-					{["Wins", "Losses", "Matches", "Win Percentage"].map((title) => (
-						<div
-							key={title}
-							className="relative grid h-32 w-full grid-rows-4 overflow-hidden rounded-xl bg-card-400 p-4
-									after:absolute after:inset-0 after:bg-gradient-to-t after:from-card-300 after:to-transparent after:content-['']"
-						>
-							<div className="grid-rows-1 text-white">
-								{title}
-							</div>
+					{["Wins", "Losses", "Matches", "Win Percentage"].map(
+						(title) => (
 							<div
-								suppressHydrationWarning
-								className="grid-row-3 text-7xl text-white"
+								key={title}
+								className="relative grid h-32 w-full grid-rows-4 overflow-hidden rounded-xl bg-card-400 p-4
+									after:absolute after:inset-0 after:bg-gradient-to-t after:from-card-300 after:to-transparent after:content-['']"
 							>
-								{
-									[
-										user.wins,
-										user.losses,
-										user.matches,
-										((user.wins / user.matches || 0) * 100).toFixed(2) + "%",
-									][
+								<div className="grid-rows-1 text-white">
+									{title}
+								</div>
+								<div
+									suppressHydrationWarning
+									className="grid-row-3 text-7xl text-white"
+								>
+									{
 										[
-											"Wins",
-											"Losses",
-											"Matches",
-											"Win Percentage",
-										].indexOf(title)
-									]
-								}
+											user.wins,
+											user.losses,
+											user.matches,
+											(
+												(user.wins / user.matches ||
+													0) * 100
+											).toFixed(2) + "%",
+										][
+											[
+												"Wins",
+												"Losses",
+												"Matches",
+												"Win Percentage",
+											].indexOf(title)
+										]
+									}
+								</div>
 							</div>
-						</div>
-					))}
+						),
+					)}
 				</div>
 				<div className="text-lg text-background-900 ">
 					Monthly Activity

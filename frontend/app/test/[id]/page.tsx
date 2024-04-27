@@ -269,6 +269,7 @@ export default function Page({ params }) {
 	}, [game, session]);
 
 	useEffect(() => {
+		if (!game) return;
 		socket.connect();
 		console.log("socket", socket.id);
 
