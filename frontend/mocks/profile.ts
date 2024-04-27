@@ -16,6 +16,7 @@ export const user1: User = {
 	achievements_percentage: 0,
 	rank: 0,
 	division: "I",
+	division_exp: 0,
 	friends: [],
 	history: [],
 	achievements: [],
@@ -23,7 +24,7 @@ export const user1: User = {
 	two_factor: false,
 	friend_requests: [],
 	blocked_users: [],
-	createdAt: new Date(),
+	createdAt: new Date()
 };
 
 export const user2: User = {
@@ -54,92 +55,92 @@ export const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
 export const achievements: Achievement[] = [
 	{
 		id: 1,
-		name: "Ace Master",
+		name: "Welcome to the Club!",
 		description:
-			"Awarded for achieving a certain number of aces in a single match or over multiple matches.",
-		icon: "/ace_master_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for playing your first match.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 2,
 		name: "Unbeatable",
 		description:
-			"Awarded for maintaining a winning streak of a certain number of consecutive matches.",
-		icon: "/unbeatable_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for maintaining a winning streak of Three matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 3,
 		name: "Iron Paddle",
 		description:
-			"Awarded for playing a certain number of matches without losing a single point.",
-		icon: "/iron_paddle_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for playing three matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 4,
-		name: "Quick Reflexes",
+		name: "Dominating Victory",
 		description:
-			"Awarded for successfully returning a certain number of fast-paced shots within a short time frame.",
-		icon: "/quick_reflexes_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for winning a match with a margin of at least 5 points.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 5,
-		name: "Spin Wizard",
+		name: "Win Master",
 		description:
-			"Awarded for consistently using spin shots effectively throughout matches.",
-		icon: "/spin_wizard_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for maintaining a winning streak of Five matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 6,
-		name: "Precision Player",
+		name: "Unstoppable Player",
 		description:
-			"Awarded for hitting a certain percentage of shots within a designated target area on the opponent's side of the table.",
-		icon: "/precision_player_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for maintaining a winning streak of Ten matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 7,
-		name: "Comeback King/Queen",
+		name: "King/Queen",
 		description:
-			"Awarded for winning a match after being down by a certain number of points.",
-		icon: "/comeback_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for maintaining a winning streak of hundred matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 8,
-		name: "Rally Maestro",
+		name: "Maestro",
 		description:
-			"Awarded for participating in a rally that lasts for a certain number of hits.",
-		icon: "/rally_maestro_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for playing hundred matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 9,
 		name: "Power Player",
 		description:
-			"Awarded for hitting the ball above a certain speed threshold in a match.",
-		icon: "/power_player_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for playing Five matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 	{
 		id: 10,
-		name: "Tournament Champion",
+		name: "Champion",
 		description:
-			"Awarded for winning a specific tournament or series of tournaments.",
-		icon: "/tournament_champion_icon.png",
-		date: new Date("2024-04-27T00:00:00.000Z"),
+			"Awarded for playing Ten matches.",
+		icon: "/pfp.png",
+		date: new Date(),
 		score: 100,
 	},
 ];
@@ -171,6 +172,7 @@ export const dummyUser: User = {
 	achievements_percentage: 0,
 	rank: 0,
 	division: "I",
+	division_exp: 0,
 	friends: [],
 	history: [],
 	achievements: [],
@@ -178,5 +180,5 @@ export const dummyUser: User = {
 	two_factor: false,
 	friend_requests: [],
 	blocked_users: [],
-	createdAt: new Date(),
+	createdAt: new Date()
 };
