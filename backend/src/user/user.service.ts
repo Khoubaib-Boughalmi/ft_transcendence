@@ -551,6 +551,7 @@ export class UserService {
 		  }),
 		);
 		const sortedUserProfiles = userProfiles.sort((a, b) => b.division_exp - a.division_exp);
+		// console.log("sortedUserProfiles", sortedUserProfiles);
 		return sortedUserProfiles;
 	  }
 }
