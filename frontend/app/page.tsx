@@ -27,15 +27,7 @@ import { PrismaClient } from "@prisma/client";
 import { log } from "console";
 
 function TopThreeRank({ user, rank }: { user: User; rank: number }) {
-	if (!user) {
-		return (
-			<div className="relative h-4/6 w-24 rounded-b-xl rounded-t-[40px] bg-card-600/50">
-				<div className="absolute inset-0 flex animate-pulse items-center justify-center">
-					<div className="h-24 w-24 animate-pulse rounded-full bg-black" />
-				</div>
-			</div>
-		);
-	}
+	if (!user) return null;
 	return (
 		<div
 			className={twMerge(
