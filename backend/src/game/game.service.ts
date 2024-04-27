@@ -7,16 +7,13 @@ import { Chat, GameMatch, Message, Prisma, User } from '@prisma/client';
 export class GameService {
 	constructor(
 		private prisma: PrismaService,
-		// private socketService: SocketService,
+		private socketService: SocketService,
 	) {}
 
 	async startGame(server: any, client: any, payload: any) {
-		console.log('Game started');
-		// const user = await this.prisma.user.findUnique({
-		// 	where: {
-		// 		id: userId,
-		// 	},
-		// });
+		this.socketService.addPlayerToGame(payload.player1Id);
+		this.socketService.addPlayerToGame(payload.player2Id);
+		// console.log('Game started', payload);
 	}
 
 	async createMatch(userId1: string, userId2: string): Promise<GameMatch> {

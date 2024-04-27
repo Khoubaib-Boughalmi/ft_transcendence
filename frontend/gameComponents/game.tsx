@@ -124,13 +124,19 @@ const Home = (data: any) => {
 	};
 
 	useEffect(() => {
-		console.log("RENDERED", rendered);
 		if (!rendered) return;
+		// sleep(1000);
+		console.log("RENDERED", rendered);
 
-		socket.emit("playerIsReady", {
-			mTheHost: mTheHost,
-			gameId: gameinfo.id,
-		});
+		setTimeout(() => {
+			socket.emit("playerIsReady", {
+				mTheHost: mTheHost,
+				gameId: gameinfo.id,
+			});
+		}, 1000);
+		return () => {
+			socket.off("playerIsReady");
+		};
 	}, [rendered]);
 
 	const [startGame, setStartGame] = useState(false);
@@ -223,12 +229,23 @@ const Home = (data: any) => {
 	// }, [startGame]);
 
 	useEffect(() => {
+		if (HostReady && OppReady) {
+			setStartGame(true);
+			setGameStarted(true);
+			socket.emit("start_game", {
+				player1Id: gameinfo.player1_id,
+				player2Id: gameinfo.player2_id,
+			});
+		}
+	}, [HostReady, OppReady]);
+
+	useEffect(() => {
 		socket.connect();
 		socket.on("disconnect", () => {});
 		socket.on("palyer_ready", (data) => {
 			console.log("Player Ready", data);
-			setStartGame(true);
-			setGameStarted(true);
+			// setStartGame(true);
+			// setGameStarted(true);
 			if (data.mTheHost) {
 				setHostReady(true);
 			} else {
@@ -372,23 +389,23 @@ const Home = (data: any) => {
 	const [animationStarted, setAnimationStarted] = useState(true);
 	// const mypPoints = useRef(0);
 	// const oppPoints = useRef(0);
-	useEffect(() => {
-		const handleBeforeUnload = (e) => {
-			// Perform actions here, like sending a message to your server
-			// e.preventDefault(); // If you want to show a confirmation dialog in some browsers
-			// e.returnValue = ''; // Chrome requires returnValue to be set
-			socket.emit("playerGone", {
-				gameId: gameinfo.id,
-				playerId: session.id,
-			});
-		};
+	// useEffect(() => {
+	// 	const handleBeforeUnload = (e) => {
+	// 		// Perform actions here, like sending a message to your server
+	// 		// e.preventDefault(); // If you want to show a confirmation dialog in some browsers
+	// 		// e.returnValue = ''; // Chrome requires returnValue to be set
+	// 		socket.emit("playerGone", {
+	// 			gameId: gameinfo.id,
+	// 			playerId: session.id,
+	// 		});
+	// 	};
 
-		window.addEventListener("unload", handleBeforeUnload);
+	// 	window.addEventListener("unload", handleBeforeUnload);
 
-		return () => {
-			window.removeEventListener("unload", handleBeforeUnload);
-		};
-	}, []);
+	// 	return () => {
+	// 		window.removeEventListener("unload", handleBeforeUnload);
+	// 	};
+	// }, []);
 	// useEffect(() => {
 	// 	const handlePopState = () => {
 	// 		// URL has changed

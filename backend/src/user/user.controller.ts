@@ -20,6 +20,7 @@ import { FormDataRequest } from 'nestjs-form-data';
 import { memoryStorage } from 'multer';
 import filetypeinfo from 'magic-bytes.js';
 import { UserGateway } from './user.gateway';
+import { SocketService } from 'src/socket/socket.service';
 
 export class ProfileDTO {
 	@IsLowercase()
@@ -57,6 +58,7 @@ export class UserController {
 		private readonly appService: AppService,
 		private readonly userService: UserService,
 		private readonly userGateway: UserGateway,
+		private socketService: SocketService,
 	) {}
 
 	@UseGuards(JwtGuard)
@@ -84,7 +86,11 @@ export class UserController {
 		const user = await this.userService.user({ id: params.id });
 		if (!user) throw new HttpException('User not found', 404);
 		const isOnline = await this.userGateway.isOnline(user.id);
-		const isPlaying = false;
+		let isPlaying = false;
+		if (isOnline) {
+			isPlaying = this.socketService.checkPlayerInGame(user.id);
+			// console.log('isPlaying', isPlaying);
+		}
 		return {
 			isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline',
 		};

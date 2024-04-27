@@ -171,6 +171,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('game_over')
 	async game_over(client: Socket, payload: any) {
+		this.socketService.removePlayerFromGame(payload.player1_id);
+		this.socketService.removePlayerFromGame(payload.player2_id);
 		console.log('game_over', payload);
 		console.log('score', {
 			score: {
@@ -214,6 +216,10 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		// console.log('game_data', payload);
 		this.server.to(payload.gameId).emit('recieve_game_data', payload);
+		// console.log('game_data', payload);
+
+		// this.socketService.addPlayerToGame(payload.player1_id);
+		// this.socketService.addPlayerToGame(payload.player2_id);
 		// emit game data to the other player but not to the sender
 		// const opponentId = payload.opponentId;
 		// const opponentSockets = this.socketService.getUserSockets(opponentId);

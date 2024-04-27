@@ -17,7 +17,7 @@ export const StartGameComponent = ({
 	const canvasRef = useRef(null);
 
 	const handleStartGame = () => {
-		socket.emit("playerIsReady", { mTheHost: mTheHost, gameId: gameId });
+		// socket.emit("playerIsReady", { mTheHost: mTheHost, gameId: gameId });
 
 		// Implement your game starting logic here
 		console.log("Game started!");

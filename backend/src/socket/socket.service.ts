@@ -7,6 +7,8 @@ export class SocketService {
 	private playerGame: Map<string, { socket: Socket; gameId: string }[]> =
 		new Map();
 
+	private PlayesInGames: string[] = [];
+
 	private gameInQueue: { socket: string; gameid: string } = {
 		socket: '',
 		gameid: '',
@@ -64,5 +66,24 @@ export class SocketService {
 
 	getPlayerGame(userId: string) {
 		return this.playerGame.get(userId);
+	}
+
+	addPlayerToGame(userId: string) {
+		if (!this.PlayesInGames.includes(userId))
+			this.PlayesInGames.push(userId);
+	}
+	removePlayerFromGame(userId: string) {
+		const index = this.PlayesInGames.indexOf(userId);
+		// console.log('removing player', userId, index);
+		// console.log('PlayesInGames BF', this.PlayesInGames);
+
+		if (index !== -1) {
+			this.PlayesInGames.splice(index, 1);
+			// console.log('PlayesInGames AF', this.PlayesInGames);
+		}
+	}
+	checkPlayerInGame(userId: string) {
+		// console.log('PlayesInGames', this.PlayesInGames);
+		return this.PlayesInGames.includes(userId);
 	}
 }
