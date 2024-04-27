@@ -88,6 +88,7 @@ const Home = (data: any) => {
 	const oppPoints2 = data.oppPoints2;
 	const setOppPoints = data.setOppPoints;
 	const setGameStarted = data.setGameStarted;
+	const setGameOver = data.setGameOver;
 	const [rendered, setRendered] = useState(false);
 
 	const GameDataRef = useRef({
@@ -133,13 +134,43 @@ const Home = (data: any) => {
 	}, [rendered]);
 
 	const [startGame, setStartGame] = useState(false);
-	const [lastTimeSeeASocket, setLastTimeSeeASocket] = useState(0);
+	const lastTimeSeeASocket = useRef(0);
 	const [HostReady, setHostReady] = useState(false);
 	const [OppReady, setOppReady] = useState(false);
 
 	useEffect(() => {
-		console.log("lastTimeSeeASocket", lastTimeSeeASocket);
-	}, [lastTimeSeeASocket]);
+		if (!startGame) return;
+
+		const interval = setInterval(() => {
+			console.log("lastTimeSeeASocket", lastTimeSeeASocket.current);
+			if (lastTimeSeeASocket.current == 0) {
+				lastTimeSeeASocket.current = Date.now();
+			}
+
+			if (Date.now() - lastTimeSeeASocket.current > 3000) {
+				console.log(
+					"Player is gone",
+					Date.now() - lastTimeSeeASocket.current,
+				);
+				setMypoints(session.id === gameinfo.player1_id ? 3 : 0);
+				setOppPoints(session.id === gameinfo.player1_id ? 0 : 3);
+				// if (!mTheHost) {
+				socket.emit("game_over", {
+					game_id: gameinfo.id,
+					player1_id: gameinfo.player1_id,
+					player2_id: gameinfo.player2_id,
+					mypoints: session.id === gameinfo.player1_id ? 3 : 0,
+					oppPoints2: session.id === gameinfo.player1_id ? 0 : 3,
+				});
+				// }
+				setGameOver(true);
+			}
+		}, 1000);
+
+		return () => {
+			clearInterval(interval);
+		};
+	}, [startGame, session]);
 
 	useEffect(() => {
 		if (!startGame) return;
@@ -211,8 +242,8 @@ const Home = (data: any) => {
 				return;
 			}
 			// console.log(data);
-			// console.log("tesssssst");
 			if (!GameData.racket2APi || !GameData.ballAPi) return;
+			lastTimeSeeASocket.current = Date.now();
 
 			if (!mTheHost) {
 				if (

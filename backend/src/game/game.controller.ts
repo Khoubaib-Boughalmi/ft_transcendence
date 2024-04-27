@@ -85,7 +85,13 @@ export class GameController {
 		// // log('Game invite', game);
 		// return game;
 
-		const ThegameInQueue = this.socketService.getGameInQueue();
+		let ThegameInQueue = this.socketService.getGameInQueue();
+		console.log('ThegameInQueue', ThegameInQueue.gameid);
+		while (ThegameInQueue.gameid == '-1') {
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			ThegameInQueue = this.socketService.getGameInQueue();
+		}
+
 		if (ThegameInQueue.gameid) {
 			console.log('Yougonna join to ', ThegameInQueue);
 			const game = await this.gameService.joinToQueuedGame(
@@ -104,6 +110,7 @@ export class GameController {
 			this.socketService.cleanGameInQueue();
 			return game;
 		} else {
+			ThegameInQueue.gameid = '-1';
 			const game = await this.gameService.createMatch(
 				req.body.user1,
 				'-1',
@@ -113,6 +120,8 @@ export class GameController {
 			return game;
 		}
 	}
+
+	// ToDO : exceptions handling for al endpoints,  ingame status ,ping in game , leaderboard , archivement . maps . logic of queueing , remove adding exp in friendly match
 
 	@UseGuards(JwtGuard)
 	@Post('joingame')
