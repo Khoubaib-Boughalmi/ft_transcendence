@@ -550,13 +550,6 @@ export class UserService {
 			},
 			take: 13
 		});
-		console.log(users);
-
-		// const userProfiles = await Promise.all(
-		// 	users.map(async (user) => {
-		// 		return await this.getProfileMicro({ id: user.id });
-		// 	}),
-		// );
 		const sortedUserProfiles = users.sort(
 			(a, b) => b.division_exp - a.division_exp,
 		);
@@ -565,23 +558,15 @@ export class UserService {
 			microProfiles.push({
 				id: user.id,
 				username: user.username,
-				email: user.email,
-				createdAt: user.created_at,
 				avatar: user.avatar,
 				banner: user.banner,
-				country: user.country,
-				map: user.map,
-				level: user.level,
-				level_percentage: (user.level_exp * 100) / 1000,
 				rank: user.rank,
 				division: user.division,
-				level_exp: user.level_exp,
 				division_exp: user.division_exp,
 				achievements: [],
 				achievements_percentage: 0,
 			});
 		}
-		// console.log("sortedUserProfiles", sortedUserProfiles);
 		return microProfiles;
 	}
 }
