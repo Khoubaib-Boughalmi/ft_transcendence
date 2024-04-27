@@ -85,7 +85,9 @@ export class UserController {
 		if (!user) throw new HttpException('User not found', 404);
 		const isOnline = await this.userGateway.isOnline(user.id);
 		const isPlaying = false;
-		return { isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline' };
+		return {
+			isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline',
+		};
 	}
 
 	@UseGuards(JwtGuard)
@@ -292,5 +294,11 @@ export class UserController {
 		);
 
 		return usersProfiles;
+	}
+	@UseGuards(JwtGuard)
+	@Get('allusers')
+	async getAllUsers() {
+		const users = await this.userService.getAllUsers();
+		return users;
 	}
 }

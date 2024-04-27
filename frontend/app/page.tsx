@@ -18,13 +18,24 @@ import SuperTooltip from "@/components/SuperTooltip";
 import UserHover from "@/components/UserHover";
 import Link from "next/link";
 import { Button } from "@/components/Button";
-import { ScrollShadow } from "@nextui-org/react";
+import { ScrollShadow, user } from "@nextui-org/react";
 import NoData from "@/components/NoData";
 import { useRouter } from "next/navigation";
 import axios from "@/lib/axios";
 import socket from "@/lib/socket";
+import { PrismaClient } from "@prisma/client";
+import { log } from "console";
 
 function TopThreeRank({ user, rank }: { user: User; rank: number }) {
+	if (!user) {
+		return (
+			<div className="relative h-4/6 w-24 rounded-b-xl rounded-t-[40px] bg-card-600/50">
+				<div className="absolute inset-0 flex animate-pulse items-center justify-center">
+					<div className="h-24 w-24 animate-pulse rounded-full bg-black" />
+				</div>
+			</div>
+		);
+	}
 	return (
 		<div
 			className={twMerge(
@@ -39,9 +50,9 @@ function TopThreeRank({ user, rank }: { user: User; rank: number }) {
 				isDismissable={true}
 			>
 				<div className="relative aspect-square w-full -translate-y-1/2 scale-75 cursor-pointer rounded-full bg-black shadow-xl shadow-card-400 transition-all hover:scale-80 hover:brightness-110">
-					<Link href={`/profile/${user.username}`}>
+					<Link href={`/profile/${user?.username}`}>
 						<SuperImage
-							src={user.avatar}
+							src={user?.avatar}
 							alt="avatar"
 							className="absolute inset-0 h-full w-full rounded-full object-cover"
 							width={200}
@@ -62,7 +73,7 @@ function TopThreeRank({ user, rank }: { user: User; rank: number }) {
 			)}
 			<div className="absolute bottom-0 flex w-full items-center justify-center gap-1 py-4 text-white">
 				<Medal size={16} />
-				500
+				{user?.division_exp}
 			</div>
 		</div>
 	);
@@ -101,15 +112,34 @@ function DivisionClass({ exp }: { exp: number }) {
 	);
 }
 
+async function fetchTopUsers() {
+	try {
+		const response = await axios.get("/user/allusers");
+		return response.data;
+	} catch (error) {
+		console.error("Error fetching top users:", error);
+		return [];
+	}
+}
+
 export default function Page() {
 	const { session } = useContext(PublicContext) as any;
 	const [queuing, setQueuing] = useState(false);
 	const router = useRouter();
+	const [allusers, setTopUsers] = useState<User[]>([]);
 
 	useEffect(() => {
 		document.title = "long enough";
 	}, []);
+	useEffect(() => {
+		const fetchTopUsersData = async () => {
+			const users = await fetchTopUsers();
+			console.log("Fetched users:", users);
+			setTopUsers(users);
+		};
 
+		fetchTopUsersData();
+	}, []);
 	return (
 		<div className="relative flex-1">
 			<div className="flex h-full w-full flex-col gap-4 px-12 pb-12 2xl:px-64	 2xl:pb-16">
@@ -253,15 +283,17 @@ export default function Page() {
 										</div>
 										<div className="z-10 aspect-square h-full">
 											<div
-												className={`z-10 flex aspect-square h-full w-full flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-3xl lg:w-auto ${getRank(session.rank).color
-													} relative `}
+												className={`z-10 flex aspect-square h-full w-full flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-3xl lg:w-auto ${
+													getRank(session.rank).color
+												} relative `}
 											>
 												<div className="flex flex-1 flex-col items-center justify-center gap-2">
 													<span
-														className={`text-[8rem] font-bold leading-[6.5rem] text-transparent mix-blend-plus-lighter ${getRank(
-															session.rank,
-														).color
-															} fuck-css`}
+														className={`text-[8rem] font-bold leading-[6.5rem] text-transparent mix-blend-plus-lighter ${
+															getRank(
+																session.rank,
+															).color
+														} fuck-css`}
 													>
 														{
 															getRank(
@@ -291,28 +323,25 @@ export default function Page() {
 								<div className="relative flex min-h-72 flex-1 shrink-0  items-end justify-center pt-12">
 									<div className="absolute inset-0 z-10 aspect-square translate-y-[-70%] rounded-full bg-card-500 blur-[69px]" />
 									<div className="z-20 flex h-full items-end justify-center">
-										<TopThreeRank user={session} rank={2} />
-										<TopThreeRank user={session} rank={1} />
-										<TopThreeRank user={session} rank={3} />
+										<TopThreeRank
+											user={allusers[1]}
+											rank={2}
+										/>
+										<TopThreeRank
+											user={allusers[0]}
+											rank={1}
+										/>
+										<TopThreeRank
+											user={allusers[2]}
+											rank={3}
+										/>
 									</div>
 								</div>
 								{/* <Divider /> */}
 								<div className="flex flex-1 items-end gap-2 p-8 ">
 									{[
-										[
-											session,
-											session,
-											session,
-											session,
-											session,
-										],
-										[
-											session,
-											session,
-											session,
-											session,
-											session,
-										],
+										allusers.slice(3, 8), // 4th to 8th users
+										allusers.slice(8, 13), // 9th to 13th users
 									].map((users, i) => {
 										return (
 											<UserList
@@ -323,14 +352,15 @@ export default function Page() {
 													list: "z-10 flex-1",
 												}}
 												type="list"
-												startContent={(user) => {
+												startContent={({user}) => {
+													const userIndex = users.indexOf(user);
 													return (
 														<div className="-mr-2  flex aspect-square h-full shrink-0 items-center justify-center text-xl font-medium">
-															1
+															{i * 5 + userIndex + 4}
 														</div>
 													);
 												}}
-												endContent={(user) => {
+												endContent={({user}) => {
 													return (
 														<div className="flex items-center justify-center">
 															<div className="jsutify-center flex items-center gap-1 rounded-xl bg-secondary-300 px-2">
@@ -342,7 +372,7 @@ export default function Page() {
 																	/>
 																</div>
 																<div className="flex items-center justify-center gap-4 bg-gradient-to-t from-secondary-500 to-white bg-clip-text text-lg font-bold text-transparent">
-																	5842
+																	{user.division_exp}
 																</div>
 															</div>
 														</div>

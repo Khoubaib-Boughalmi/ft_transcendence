@@ -44,6 +44,7 @@ export type User = {
 	matches: number;
 	rank: number;
 	division: string;
+	division_exp: number;
 	activity: number[];
 	friends: User[];
 	friend_requests: User[];
