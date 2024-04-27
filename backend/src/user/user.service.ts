@@ -543,4 +543,15 @@ export class UserService {
 		);
 		return friendsProfiles;
 	}
+	async getAllUsers(): Promise<UserProfileMicro[]> {
+		const users = await this.prisma.user.findMany();
+		const userProfiles = await Promise.all(
+		  users.map(async (user) => {
+			return await this.getProfileMicro({ id: user.id });
+		  }),
+		);
+		const sortedUserProfiles = userProfiles.sort((a, b) => b.division_exp - a.division_exp);
+		// console.log("sortedUserProfiles", sortedUserProfiles);
+		return sortedUserProfiles;
+	  }
 }

@@ -314,4 +314,10 @@ export class UserController {
 
 		return usersProfiles;
 	}
+	@UseGuards(JwtGuard)
+	@Get('allusers')
+	async getAllUsers() {
+		const users = await this.userService.getAllUsers();
+		return users;
+	}
 }
