@@ -19,6 +19,7 @@ export type UserProfile = {
 	avatar: string;
 	banner: string;
 	country: string;
+	map: string;
 	level: number;
 	level_percentage: number;
 	rank: number;
@@ -276,6 +277,7 @@ export class UserService {
 			avatar: user.avatar,
 			banner: user.banner,
 			country: user.country,
+			map: user.map,
 			level: user.level,
 			level_percentage: (user.level_exp * 100) / 1000,
 			rank: user.rank,

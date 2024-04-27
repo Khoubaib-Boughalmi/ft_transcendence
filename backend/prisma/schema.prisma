@@ -51,6 +51,7 @@ model User {
   rank         Int      @default(0)
   division     String   @default("D")
   division_exp Int      @default(0)
+  map         String   @default("universe")
 
   // Two factor auth
   two_factor        Boolean @default(false)

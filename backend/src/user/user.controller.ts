@@ -85,7 +85,9 @@ export class UserController {
 		if (!user) throw new HttpException('User not found', 404);
 		const isOnline = await this.userGateway.isOnline(user.id);
 		const isPlaying = false;
-		return { isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline' };
+		return {
+			isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline',
+		};
 	}
 
 	@UseGuards(JwtGuard)
@@ -102,6 +104,19 @@ export class UserController {
 			data: { username: body.username },
 		});
 		return { message: 'Settings updated' };
+	}
+
+	@UseGuards(JwtGuard)
+	@Post('/changeMap')
+	@FormDataRequest()
+	async changeMap(@Req() req, @Body() body: any) {
+		const user = await this.userService.user({ id: req.user.id });
+		if (!user) throw new HttpException('User not found', 404);
+		await this.userService.updateUser({
+			where: { id: req.user.id },
+			data: { map: body.map },
+		});
+		return { message: 'Map changed' };
 	}
 
 	@UseGuards(JwtGuard)

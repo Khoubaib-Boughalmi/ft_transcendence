@@ -142,13 +142,10 @@ export async function InteractionFunctionality(
 	);
 }
 
-
 export function useIsOnline(
 	userId: string | null,
 	setOnlineStates: any = null,
 ): UserStatus {
-
-
 	const { data } = useSWR(
 		userId ? `/user/profile/isonline/${userId}` : null,
 		fetcher,
@@ -220,6 +217,7 @@ export const themes = [
 	{ name: "Blue" },
 	{ name: "Purple" },
 ];
+export const maps = [{ name: "Universe" }, { name: "Basic" }];
 export function getCurrentPath(pathName: string) {
 	const current = Object.entries(paths)
 		.reverse()

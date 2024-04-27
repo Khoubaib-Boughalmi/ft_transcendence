@@ -13,6 +13,7 @@ import {
 	makeForm,
 	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
 	useChatContext,
+	maps,
 } from "@/lib/utils";
 import { Message } from "@/types/chat";
 import { User } from "@/types/profile";
@@ -38,6 +39,7 @@ import {
 	UserPlus2,
 	Users2,
 	X,
+	Map,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
@@ -65,9 +67,7 @@ function Navigation() {
 				{buttons.map((name) => (
 					<Button
 						key={name}
-						onClick={() =>
-							router.push(paths[name])
-						}
+						onClick={() => router.push(paths[name])}
 						variant={current == name ? "default" : "transparent"}
 					>
 						{name}
@@ -404,7 +404,7 @@ function FriendsButton() {
 										onMouseEnter: () =>
 											setCloseOnSelect(true),
 									}}
-									endContent={({user}) => (
+									endContent={({ user }) => (
 										<div
 											className="flex flex-shrink-0 gap-1"
 											onMouseEnter={() =>
@@ -462,6 +462,10 @@ function FriendsButton() {
 	);
 }
 
+function ChangeMap(user, map) {
+	axios.post("/user/changeMap", makeForm({ map: map }));
+}
+
 function ProfileButton({ user }: { user: User }) {
 	const [mounted, setMounted] = useState(false);
 
@@ -470,7 +474,14 @@ function ProfileButton({ user }: { user: User }) {
 		PublicContext,
 	) as any;
 	const { isOpen, onClose, onOpen, onOpenChange } = useDisclosure();
+	const {
+		isOpen: mapIsOpen,
+		onClose: mapOnClose,
+		onOpen: mapOnOpen,
+		onOpenChange: mapOnOpenChange,
+	} = useDisclosure();
 	const { theme, setTheme } = useTheme();
+
 	const currentPath = getCurrentPath(usePathname());
 
 	useEffect(() => setMounted(true), []);
@@ -502,9 +513,43 @@ function ProfileButton({ user }: { user: User }) {
 						))}
 				</div>
 			</ModalSet>
+			<ModalSet
+				isOpen={mapIsOpen}
+				onClose={mapOnClose}
+				size="xs"
+				title={"Map"}
+				onOpenChange={mapOnOpenChange}
+			>
+				<div className="flex flex-col gap-2 p-2">
+					{mounted &&
+						maps.map((t) => (
+							<Button
+								key={t.name}
+								variant={
+									theme == t.name.toLowerCase()
+										? undefined
+										: "transparent"
+								}
+								onClick={() => {
+									ChangeMap(user, t.name.toLowerCase());
+									mapOnClose();
+								}}
+								className="w-full"
+							>
+								{t.name}
+							</Button>
+						))}
+				</div>
+			</ModalSet>
 			<SuperDropdown aria-label="Profile Dropdown">
 				<DropdownTrigger aria-label="Avatar">
-					<div className={twMerge("flex h-full items-center gap-2 text-xs text-white rounded-full", currentPath == "Settings" && "ring-2 ring-primary-500")}>
+					<div
+						className={twMerge(
+							"flex h-full items-center gap-2 rounded-full text-xs text-white",
+							currentPath == "Settings" &&
+								"ring-2 ring-primary-500",
+						)}
+					>
 						<div className="relative aspect-square h-full">
 							<SuperImage
 								width={32}
@@ -533,6 +578,8 @@ function ProfileButton({ user }: { user: User }) {
 							});
 						} else if (item == "theme") {
 							onOpen();
+						} else if (item == "map") {
+							mapOnOpen();
 						}
 					}}
 				>
@@ -611,6 +658,13 @@ function ProfileButton({ user }: { user: User }) {
 						startContent={<Paintbrush2 />}
 					>
 						Theme
+					</DropdownItem>
+					<DropdownItem
+						variant="solid"
+						key="map"
+						startContent={<Map />}
+					>
+						Map
 					</DropdownItem>
 					<DropdownItem
 						aria-label="Logout"
@@ -694,7 +748,6 @@ function SearchBar() {
 					className={twMerge(
 						`absolute -bottom-2 hidden w-full translate-y-full animate-overlayfast rounded-3xl bg-card-300 p-2
 					transition-all active:block data-[focused=true]:block`,
-						
 					)}
 				>
 					{showLoading ? (
@@ -711,7 +764,7 @@ function SearchBar() {
 								entry: "truncate hover:scale-[99%]",
 								list: "gap-2",
 							}}
-							endContent={({user}) => {
+							endContent={({ user }) => {
 								const areFriends = session.friends.some(
 									(f: any) => f.id == user.id,
 								);
@@ -762,16 +815,19 @@ export function Navbar() {
 	return (
 		<nav
 			data-solid={solid}
-			className={twMerge(`fixed top-0 z-50 flex h-28 w-screen items-center justify-center px-8
+			className={twMerge(
+				`fixed top-0 z-50 flex h-28 w-screen items-center justify-center px-8
 				transition-all
 				duration-300 ease-in-out
 				data-[solid=true]:h-16
 				data-[solid=true]:px-0
-				`, currentPath == "Test" && "-translate-y-full")}
-				>
+				`,
+				currentPath == "Test" && "-translate-y-full",
+			)}
+		>
 			<div
 				data-solid={solid}
-				className="shadow-card/25 flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg transition-all
+				className="flex w-3/4 items-center justify-center rounded-full bg-black/50 shadow-lg shadow-card/25 transition-all
 				duration-300 ease-in-out data-[solid=true]:h-full data-[solid=true]:w-full data-[solid=true]:rounded-none data-[solid=true]:bg-black
 				data-[solid=true]:bg-opacity-100
 				data-[solid=true]:px-8
@@ -779,7 +835,10 @@ export function Navbar() {
 				"
 			>
 				<div className="m-2 flex h-9 w-full items-center justify-between gap-2">
-					<Link href={"/"} className="h-full aspect-square rounded-full bg-card-400 ring-card-500 ring-0 hover:ring-2 flex justify-center items-center text-card-600 hover:shadow-LE font-black select-none hover:brightness-150 transition-all">
+					<Link
+						href={"/"}
+						className="flex aspect-square h-full select-none items-center justify-center rounded-full bg-card-400 font-black text-card-600 ring-0 ring-card-500 transition-all hover:shadow-LE hover:ring-2 hover:brightness-150"
+					>
 						LE
 					</Link>
 					<div className="flex h-full flex-1 items-center justify-start gap-2">
