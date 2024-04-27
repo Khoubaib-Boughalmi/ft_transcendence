@@ -203,8 +203,16 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			winner_id,
 		);
 		// if (winner_id == 'tie') {
-		this.userService.addexp(payload.player1_id, winner_id);
-		this.userService.addexp(payload.player2_id, winner_id);
+		this.userService.addexp(
+			payload.player1_id,
+			winner_id,
+			payload.gameType,
+		);
+		this.userService.addexp(
+			payload.player2_id,
+			winner_id,
+			payload.gameType,
+		);
 		// }
 		this.userService.addMatchToHistory(payload.player1_id, payload.game_id);
 		this.userService.addMatchToHistory(payload.player2_id, payload.game_id);

@@ -207,6 +207,7 @@ export default function Page({ params }) {
 					player2_id: game.player2_id,
 					mypoints,
 					oppPoints2,
+					gameType: game.game_type,
 				});
 			}
 		}

@@ -161,12 +161,15 @@ const Home = (data: any) => {
 				setMypoints(session.id === gameinfo.player1_id ? 3 : 0);
 				setOppPoints(session.id === gameinfo.player1_id ? 0 : 3);
 				// if (!mTheHost) {
+				// console.log("game type", gameinfo.type);
+
 				socket.emit("game_over", {
 					game_id: gameinfo.id,
 					player1_id: gameinfo.player1_id,
 					player2_id: gameinfo.player2_id,
 					mypoints: session.id === gameinfo.player1_id ? 3 : 0,
 					oppPoints2: session.id === gameinfo.player1_id ? 0 : 3,
+					gameType: gameinfo.game_type,
 				});
 				// }
 				setGameOver(true);

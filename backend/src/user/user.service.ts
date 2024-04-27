@@ -175,8 +175,12 @@ export class UserService {
 		});
 	}
 
-	async addexp(user_id: string, winner_id: string): Promise<void> {
-		console.log('addexp', user_id, winner_id);
+	async addexp(
+		user_id: string,
+		winner_id: string,
+		gameType: string,
+	): Promise<void> {
+		console.log('addexp', user_id, winner_id, gameType);
 		let user = null;
 
 		if (winner_id === user_id) {
@@ -187,7 +191,7 @@ export class UserService {
 						increment: 25,
 					},
 					division_exp: {
-						increment: 25,
+						increment: gameType == 'arena' ? 25 : 0,
 					},
 				},
 			});
@@ -200,7 +204,7 @@ export class UserService {
 						increment: 15,
 					},
 					division_exp: {
-						increment: 5,
+						increment: gameType == 'arena' ? 5 : 0,
 					},
 				},
 			});
@@ -213,7 +217,7 @@ export class UserService {
 						increment: 5,
 					},
 					division_exp: {
-						decrement: 10,
+						decrement: gameType == 'arena' ? 10 : 0,
 					},
 				},
 			});
@@ -546,12 +550,14 @@ export class UserService {
 	async getAllUsers(): Promise<UserProfileMicro[]> {
 		const users = await this.prisma.user.findMany();
 		const userProfiles = await Promise.all(
-		  users.map(async (user) => {
-			return await this.getProfileMicro({ id: user.id });
-		  }),
+			users.map(async (user) => {
+				return await this.getProfileMicro({ id: user.id });
+			}),
 		);
-		const sortedUserProfiles = userProfiles.sort((a, b) => b.division_exp - a.division_exp);
+		const sortedUserProfiles = userProfiles.sort(
+			(a, b) => b.division_exp - a.division_exp,
+		);
 		// console.log("sortedUserProfiles", sortedUserProfiles);
 		return sortedUserProfiles;
-	  }
+	}
 }

@@ -39,7 +39,11 @@ export class GameController {
 		const player = req.body.user1;
 		const opponent = req.body.user2;
 		// console.log('Game invite', player, opponent);
-		const game = await this.gameService.createMatch(player, opponent);
+		const game = await this.gameService.createMatch(
+			player,
+			opponent,
+			'friendly',
+		);
 		console.log('addplayer data', req.body.user1, req.body.socket, game.id);
 
 		this.socketService.addPlayerGame(
@@ -114,6 +118,7 @@ export class GameController {
 			const game = await this.gameService.createMatch(
 				req.body.user1,
 				'-1',
+				'arena',
 			);
 			this.socketService.setGameInQueue(req.body.socket, game.id);
 			console.log("You're in queue");

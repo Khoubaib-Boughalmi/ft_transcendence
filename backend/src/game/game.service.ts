@@ -16,7 +16,11 @@ export class GameService {
 		// console.log('Game started', payload);
 	}
 
-	async createMatch(userId1: string, userId2: string): Promise<GameMatch> {
+	async createMatch(
+		userId1: string,
+		userId2: string,
+		type: string,
+	): Promise<GameMatch> {
 		console.log('Creating game match', userId1, userId2);
 
 		const game = await this.createGame({
@@ -26,7 +30,7 @@ export class GameService {
 			player2_score: 0,
 			winner_id: 'tie',
 			duration: 0,
-			game_type: '',
+			game_type: type,
 			game_league: '',
 			game_map: '',
 			game_ended: false,

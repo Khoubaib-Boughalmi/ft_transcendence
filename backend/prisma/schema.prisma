@@ -24,7 +24,7 @@ model GameMatch {
   player2_score Int
   winner_id     String
   duration      Int
-  game_type     String
+  game_type     String @default("friendly")
   game_league   String
   game_map      String
   game_ended    Boolean  @default(false)
