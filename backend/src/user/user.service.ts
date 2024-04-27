@@ -548,16 +548,29 @@ export class UserService {
 		return friendsProfiles;
 	}
 	async getAllUsers(): Promise<UserProfileMicro[]> {
-		const users = await this.prisma.user.findMany();
-		const userProfiles = await Promise.all(
-			users.map(async (user) => {
-				return await this.getProfileMicro({ id: user.id });
-			}),
-		);
-		const sortedUserProfiles = userProfiles.sort(
+		const users = await this.prisma.user.findMany({
+			orderBy: {
+				division_exp: 'desc'
+			},
+			take: 13
+		});
+		const sortedUserProfiles = users.sort(
 			(a, b) => b.division_exp - a.division_exp,
 		);
-		// console.log("sortedUserProfiles", sortedUserProfiles);
-		return sortedUserProfiles;
+		const microProfiles = [];
+		for (const user of sortedUserProfiles) {
+			microProfiles.push({
+				id: user.id,
+				username: user.username,
+				avatar: user.avatar,
+				banner: user.banner,
+				rank: user.rank,
+				division: user.division,
+				division_exp: user.division_exp,
+				achievements: [],
+				achievements_percentage: 0,
+			});
+		}
+		return microProfiles;
 	}
 }
