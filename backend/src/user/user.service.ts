@@ -105,8 +105,6 @@ export class UserService {
 		}
 	}
 
-	
-
 	async getMatchesInfo(user: User): Promise<any> {
 		// Find matches with ids in user.history
 		const matches = await this.prisma.gameMatch.findMany({
@@ -553,9 +551,9 @@ export class UserService {
 	async getAllUsers(): Promise<UserProfileMicro[]> {
 		const users = await this.prisma.user.findMany({
 			orderBy: {
-				division_exp: 'desc'
+				division_exp: 'desc',
 			},
-			take: 13
+			take: 13,
 		});
 		const sortedUserProfiles = users.sort(
 			(a, b) => b.division_exp - a.division_exp,
@@ -587,24 +585,27 @@ export class UserService {
 		console.log('wins', wins);
 		const matches = user.matches;
 		const newAchievements = [];
-		if (wins >= 1) {
-			newAchievements.push(1);
-			if (wins >= 5) {
+			if (wins >= 3) {
 				newAchievements.push(2);
-				if (wins >= 10) {
-					newAchievements.push(3);
-					if (wins >= 100) {
-						newAchievements.push(4);
+				if (wins >= 5) {
+					newAchievements.push(2);
+					if (wins >= 10) {
+						newAchievements.push(3);
+						if (wins >= 100) {
+							newAchievements.push(7);
+						}
 					}
 				}
 			}
-		}
 		if (matches >= 1) {
-			newAchievements.push(5);
-			if (matches >=  5) {
-				newAchievements.push(6);
-				if (matches >= 10) {
-					newAchievements.push(7);
+			newAchievements.push(1);
+			if (matches >= 3) {
+				newAchievements.push(3);
+				if (matches >= 5) {
+					newAchievements.push(9);
+					if (matches >= 10) {
+						newAchievements.push(10);
+					}
 					if (matches >= 100) {
 						newAchievements.push(8);
 					}
@@ -612,8 +613,10 @@ export class UserService {
 			}
 		}
 		const allAchievements = [...achievements, ...newAchievements];
-		let uniqueAchievements = allAchievements.filter((item, index) => allAchievements.indexOf(item) === index);
-		
+		let uniqueAchievements = allAchievements.filter(
+			(item, index) => allAchievements.indexOf(item) === index,
+		);
+
 		await this.prisma.user.update({
 			where: { id: user_id },
 			data: {
