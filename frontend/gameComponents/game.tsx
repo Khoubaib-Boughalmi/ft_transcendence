@@ -1,8 +1,7 @@
 "use client";
-import { Canvas, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useRef, useState, useCallback, use } from "react";
+import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect, useRef, useState } from "react";
 import React from "react";
-import { OrbitControls, PositionPoint } from "@react-three/drei";
 import {
 	Sky,
 	Racket,
@@ -13,69 +12,13 @@ import {
 	PlaneTable,
 	Sky_cloud,
 } from "../models";
-import { useFrame } from "@react-three/fiber";
-import { Controls, useControl } from "react-three-gui";
-import { Stats } from "@react-three/drei";
 
 import socket from "@/lib/socket";
 
-import { Debug, Physics, useCylinder, usePlane } from "@react-three/cannon";
-import type { Group, Mesh } from "three";
-import { User } from "@/types/profile";
-import { user1, user2 } from "@/mocks/profile";
-import SuperImage from "@/components/SuperImage";
+import { Physics } from "@react-three/cannon";
 import LoadingScreen from "./LoadingScreen";
 
-function GameScreen() {
-	function PlayerSide({
-		side,
-		user,
-	}: {
-		side: "left" | "right";
-		user: User;
-	}) {
-		return (
-			<div className="h-full py-4">
-				<div className="aspect-square h-full overflow-hidden rounded-full">
-					<SuperImage
-						className="h-full w-full object-cover"
-						src={user.avatar}
-						alt={user.username}
-						width={256}
-						height={256}
-					/>
-				</div>
-			</div>
-		);
-	}
-
-	return (
-		<div className="h-full w-full">
-			<div className="relative flex h-32 w-full items-center justify-center gap-8 bg-gradient-to-b from-black/50 pt-8">
-				<div className="absolute inset-0 -translate-y-full bg-gradient-to-t from-black/50"></div>
-				<PlayerSide side="left" user={user1} />
-				<div className="flex aspect-video h-full overflow-hidden rounded-xl">
-					<div className="flex flex-1 items-center justify-center bg-card-200 text-3xl text-white">
-						1
-					</div>
-					<div className="flex flex-1 items-center justify-center bg-card-500 text-3xl text-white">
-						2
-					</div>
-				</div>
-				<PlayerSide side="right" user={user2} />
-			</div>
-			<div className="flex w-full items-center justify-center py-4 text-center text-xs text-white">
-				<div className="rounded-full bg-card-400 p-2 px-12">
-					First to 5
-				</div>
-			</div>
-		</div>
-	);
-}
-
 const Home = (data: any) => {
-	// const [mypoints, setMypoints] = useState(0);
-	// const [oppPoints2, setOppPoints] = useState(0);
 	const mypoints = data.mypoints;
 	const setMypoints = data.setMypoints;
 
@@ -100,7 +43,6 @@ const Home = (data: any) => {
 	const session = data.session;
 	const [mTheHost, setMTheHost] = useState(false);
 
-	const Racket_position = useRef([0, 0, 0]);
 	const currentpositions = {
 		racket1position: [0, 0, 0],
 		racket2position: [0, 0, 0],
@@ -119,8 +61,6 @@ const Home = (data: any) => {
 
 	useEffect(() => {
 		if (!rendered) return;
-		// sleep(1000);
-		console.log("RENDERED", rendered);
 
 		setTimeout(() => {
 			socket.emit("playerIsReady", {
@@ -154,8 +94,6 @@ const Home = (data: any) => {
 				);
 				setMypoints(session.id === gameinfo.player1_id ? 3 : 0);
 				setOppPoints(session.id === gameinfo.player1_id ? 0 : 3);
-				// if (!mTheHost) {
-				// console.log("game type", gameinfo.type);
 
 				socket.emit("game_over", {
 					game_id: gameinfo.id,
@@ -179,29 +117,17 @@ const Home = (data: any) => {
 		if (!startGame) return;
 		if (!GameData.racket1APi || !GameData.racket2APi || !GameData.ballAPi)
 			return;
-		// console.log("Game Data", GameData);
-		// if (GameData.racket1APi?.position == undefined) {
-		// 	console.log("Game Data not set");
-		// 	return;
-		// }
 		const interval = setInterval(() => {
-			// console.log(GameData);
 			GameData.racket1APi.position.subscribe((v) =>
 				mTheHost
 					? (currentpositions.racket1position = v)
 					: (currentpositions.racket2position = v),
 			);
-			// GameData.racket2APi.position.subscribe((v) =>
-			// 	mTheHost
-			// 		? (currentpositions.racket2position = v)
-			// 		: (currentpositions.racket1position = v),
-			// );
 			if (mTheHost) {
 				currentpositions.score = {
 					player1: mypoints,
 					player2: oppPoints2,
 				};
-				// console.log("score ", currentpositions.score);
 
 				GameData.ballAPi.position.subscribe(
 					(v) => (currentpositions.ballposition = v),
@@ -210,20 +136,13 @@ const Home = (data: any) => {
 					(v) => (currentpositions.ballvelocity = v),
 				);
 			}
-			// console.log("Game Data", currentpositions);
-
 			socket.emit("game_data", currentpositions);
 		}, 32);
 
-		// return () => clearInterval(interval); // Clean up the interval on component unmount
 		return () => {
 			clearInterval(interval);
 		};
 	}, [mypoints, oppPoints2, startGame]);
-
-	// useEffect(() => {
-	// 	if (startGame) return;
-	// }, [startGame]);
 
 	useEffect(() => {
 		if (HostReady && OppReady) {
@@ -241,8 +160,6 @@ const Home = (data: any) => {
 		socket.on("disconnect", () => {});
 		socket.on("palyer_ready", (data) => {
 			console.log("Player Ready", data);
-			// setStartGame(true);
-			// setGameStarted(true);
 			if (data.mTheHost) {
 				setHostReady(true);
 			} else {
@@ -252,10 +169,8 @@ const Home = (data: any) => {
 
 		socket.on("recieve_game_data", (data) => {
 			if (data.opp_id != session.id) {
-				// console.log("recieve_game_data", data.opp_id, session.id);
 				return;
 			}
-			// console.log(data);
 			if (!GameData.racket2APi || !GameData.ballAPi) return;
 			lastTimeSeeASocket.current = Date.now();
 
@@ -284,7 +199,6 @@ const Home = (data: any) => {
 						data.ballvelocity[2] * -1,
 					);
 				}
-				// console.log("score ", data.score);
 				if (data.score.player1 != mypoints) {
 					setMypoints(data.score.player1);
 				}
@@ -292,7 +206,6 @@ const Home = (data: any) => {
 					setOppPoints(data.score.player2);
 				}
 			} else {
-				// console.log("racket", data.racket2position);
 				if (
 					data.racket2position &&
 					data.racket2position[0] &&
@@ -316,47 +229,19 @@ const Home = (data: any) => {
 
 	if (
 		session.id == gameinfo.player1_id &&
-		mTheHost == false &&
+		!mTheHost &&
 		gameinfo.player1_id != undefined
 	) {
 		setMTheHost(true);
-		// console.log("I am the host", session.id, gameinfo.player1_id);
 	}
 
 	const canvasRef = useRef(null);
-
-	const [refreshCanvas, setRefreshCanvas] = useState(true);
-	useEffect(() => {
-		if (refreshCanvas == true) {
-			setTimeout(() => {
-				setRefreshCanvas(false);
-			}, 50000);
-		} else {
-			setTimeout(() => {
-				setRefreshCanvas(true);
-			}, 1);
-		}
-	}, [refreshCanvas]);
-	const [Timing, setTiming] = useState(0);
-
-	// useEffect(() => {
-	// 	console.log(canvasRef.current);
-	// }, [canvasRef.current]);
 
 	useEffect(() => {
 		if (startGame) {
 			GameData.ballAPi.wakeUp();
 			GameData.ballAPi.position.set(0, 2.5, 0);
 			GameData.ballAPi.velocity.set(0, 0, 3);
-			let seconds = 3;
-			setTiming(3);
-			const interval = setInterval(() => {
-				setTiming((prev) => prev - 1);
-				seconds--;
-				if (seconds <= 0) {
-					clearInterval(interval);
-				}
-			}, 1000);
 		} else {
 			if (GameData.ballAPi) {
 				GameData.ballAPi.position.set(0, 2.5, 0);
@@ -366,81 +251,9 @@ const Home = (data: any) => {
 		}
 	}, [startGame]);
 
-	// useEffect(() => {
-	// 	if (startGame) return;
-	// 	const interval = setInterval(() => {
-	// 		socket.emit("playerIsAlive", {
-	// 			gameId: gameinfo.id,
-	// 			playerId: session.id,
-	// 		});
-	// 	}, 3000);
-
-	// 	return () => {
-	// 		clearInterval(interval);
-	// 	};
-	// }, [startGame]);
-
-	const [isRotating, setIsRotating] = useState(false);
-
-	const [cameraPosition, setCameraPosition] = useState([0, 2.9, 4.2]);
 	const [animationStarted, setAnimationStarted] = useState(true);
-	// const mypPoints = useRef(0);
-	// const oppPoints = useRef(0);
-	// useEffect(() => {
-	// 	const handleBeforeUnload = (e) => {
-	// 		// Perform actions here, like sending a message to your server
-	// 		// e.preventDefault(); // If you want to show a confirmation dialog in some browsers
-	// 		// e.returnValue = ''; // Chrome requires returnValue to be set
-	// 		socket.emit("playerGone", {
-	// 			gameId: gameinfo.id,
-	// 			playerId: session.id,
-	// 		});
-	// 	};
-
-	// 	window.addEventListener("unload", handleBeforeUnload);
-
-	// 	return () => {
-	// 		window.removeEventListener("unload", handleBeforeUnload);
-	// 	};
-	// }, []);
-	// useEffect(() => {
-	// 	const handlePopState = () => {
-	// 		// URL has changed
-	// 		socket.emit("playerGone", {
-	// 			gameId: gameinfo.id,
-	// 			playerId: session.id,
-	// 		}); // Perform your actions here
-	// 	};
-
-	// 	window.addEventListener("popstate", handlePopState);
-
-	// 	return () => {
-	// 		window.removeEventListener("popstate", handlePopState);
-	// 	};
-	// }, []);
-
-	// useEffect(() => {
-	// 	window.addEventListener("beforeunload", alertUser);
-	// 	window.addEventListener("unload", handleTabClosing);
-
-	// 	return () => {
-	// 		window.removeEventListener("beforeunload", alertUser);
-	// 		window.removeEventListener("unload", handleTabClosing);
-	// 	};
-	// });
-
-	// const handleTabClosing = () => {
-	// 	console.log("Tab is closing");
-	// };
-
-	// const alertUser = (ev: any) => {
-	// 	ev.preventDefault();
-	// 	return (ev.returnValue = "Are you sure you want to close?");
-	// };
 
 	return (
-		// <Controls.Provider>
-		// <div className="relative h-full">
 		<Suspense
 			fallback={
 				<LoadingScreen
@@ -449,29 +262,6 @@ const Home = (data: any) => {
 				/>
 			}
 		>
-			{/* {!startGame && (
-				<StartGameComponent
-					startGame={startGame}
-					setStartGame={setStartGame}
-					HostReady={HostReady}
-					setHostReady={setHostReady}
-					OppReady={OppReady}
-					setOppReady={setOppReady}
-					mTheHost={mTheHost}
-					gameId={gameinfo.id}
-				/>
-			)} */}
-			{/* {startGame && (
-					<PauseGameComponent
-						startGame={startGame}
-						setStartGame={setStartGame}
-					/>
-				)} */}
-			{/* {Timing != 0 && <TimingComponent Timing={Timing} />} */}
-			{/* <StartGameComponent /> */}
-			{/* <GameScore myPoints={mypoints} oppPoints={oppPoints2} /> */}
-			{/* {rendered && <GameScreen />} */}
-
 			{
 				<Canvas
 					style={{
@@ -479,29 +269,15 @@ const Home = (data: any) => {
 					}}
 					ref={canvasRef}
 					shadows
-					// className={` ${isRotating ? "cursor-grabbing" : "cursor-grab"}`}
 					camera={{
 						near: 0.1,
 						far: 1000,
 						position: [0, 2.9, 4.2],
-						// rotation: [0, 1, 0],
 					}}
 				>
-					{/* {animationStarted && (
-							<RoundCamera
-								cameraPosition={cameraPosition}
-								animationStarted={animationStarted}
-								setAnimationStarted={setAnimationStarted}
-							/>
-						)} */}
 					{<CameraController GameData={GameData} />}
-					{/* <OrbitControls /> */}
-					{session.map == "universe" && (
-						<Sky  />
-					)}
-					{session.map == "cloud" && (
-						<Sky_cloud />
-					)}
+					{session.map == "universe" && <Sky />}
+					{session.map == "cloud" && <Sky_cloud />}
 					<directionalLight
 						position={[4, 10, -30]}
 						intensity={0.1}
@@ -543,11 +319,8 @@ const Home = (data: any) => {
 							position={[0, 1.66, 0]}
 						/>
 
-						{/* {!Timing && ( */}
-
 						<Ball
 							mTheHost={mTheHost}
-							// position={[0, 3, 0]}
 							GameData={GameData}
 							animationStarted={animationStarted}
 							setAnimationStarted={setAnimationStarted}
@@ -562,7 +335,6 @@ const Home = (data: any) => {
 				</Canvas>
 			}
 		</Suspense>
-		// </div>
 	);
 };
 
