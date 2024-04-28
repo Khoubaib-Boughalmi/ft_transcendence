@@ -9,15 +9,8 @@ import {
 	Ball,
 	Jball,
 	Table,
-	TextGeo,
-	FallbackComponent,
-	StartGameComponent,
-	GameScore,
 	CameraController,
-	RoundCamera,
-	PauseGameComponent,
 	PlaneTable,
-	TimingComponent,
 } from "../models";
 import { useFrame } from "@react-three/fiber";
 import { Controls, useControl } from "react-three-gui";
