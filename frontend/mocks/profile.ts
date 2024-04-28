@@ -1,4 +1,5 @@
 import { Achievement, Match, User } from "@/types/profile";
+import axios from 'axios';
 
 const activities = [100, 0, 5, 10, 15, 20, 0, 0, 0, 0, 12, 18];
 
@@ -52,7 +53,8 @@ export const history: Match[] = Array.from({ length: 30 }).map((_, i) => ({
 	score2: 0,
 }));
 
-export const achievements: Achievement[] = [
+
+export const achievementsList: Achievement[] = [
 	{
 		id: 1,
 		name: "Welcome to the Club!",
@@ -149,14 +151,6 @@ export const friends: any[] = Array.from({ length: 10 }).map((_, i) => ({
 	...(i % 2 == 0 ? user1 : user2),
 	friends: [],
 }));
-
-// user1.history = history;
-// user1.achievements = achievements;
-// user1.friends = friends;
-
-// user2.history = history;
-// user2.achievements = achievements;
-// user2.friends = friends;
 
 export const dummyUser: User = {
 	id: "1",

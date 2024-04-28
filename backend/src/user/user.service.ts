@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../prisma.service';
+import { log } from 'console';
 
 type Achievement = {
 	id: number;
@@ -26,7 +27,7 @@ export type UserProfile = {
 	division: string;
 	level_exp: number;
 	division_exp: number;
-	achievements: Achievement[];
+	achievements: number[];
 	achievements_percentage: number;
 };
 
@@ -103,6 +104,8 @@ export class UserService {
 			i++;
 		}
 	}
+
+	
 
 	async getMatchesInfo(user: User): Promise<any> {
 		// Find matches with ids in user.history
@@ -288,7 +291,7 @@ export class UserService {
 			division: user.division,
 			level_exp: user.level_exp,
 			division_exp: user.division_exp,
-			achievements: [],
+			achievements: user.achievements,
 			achievements_percentage: 0,
 		};
 	}
@@ -572,5 +575,50 @@ export class UserService {
 			});
 		}
 		return microProfiles;
+	}
+	async updateAchievements(user_id: string, game_id: string): Promise<void> {
+		const user = await this.getProfileMini({ id: user_id });
+		if (!user) return;
+		const game = await this.prisma.gameMatch.findUnique({
+			where: { id: game_id },
+		});
+		const achievements = user.achievements;
+		const wins = user.wins;
+		console.log('wins', wins);
+		const matches = user.matches;
+		const newAchievements = [];
+		if (wins >= 1) {
+			newAchievements.push(1);
+			if (wins >= 5) {
+				newAchievements.push(2);
+				if (wins >= 10) {
+					newAchievements.push(3);
+					if (wins >= 100) {
+						newAchievements.push(4);
+					}
+				}
+			}
+		}
+		if (matches >= 1) {
+			newAchievements.push(5);
+			if (matches >=  5) {
+				newAchievements.push(6);
+				if (matches >= 10) {
+					newAchievements.push(7);
+					if (matches >= 100) {
+						newAchievements.push(8);
+					}
+				}
+			}
+		}
+		const allAchievements = [...achievements, ...newAchievements];
+		let uniqueAchievements = allAchievements.filter((item, index) => allAchievements.indexOf(item) === index);
+		
+		await this.prisma.user.update({
+			where: { id: user_id },
+			data: {
+				achievements: uniqueAchievements,
+			},
+		});
 	}
 }
