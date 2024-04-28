@@ -19,7 +19,7 @@ import {
 	getRank,
 	interactionDictionary,
 } from "@/lib/utils";
-import { achievements, user1 } from "@/mocks/profile";
+import { achievementsList, user1 } from "@/mocks/profile";
 import { Achievement, InteractionType, User } from "@/types/profile";
 import { useDisclosure } from "@nextui-org/react";
 import axios from "@/lib/axios";
@@ -584,6 +584,11 @@ function AchievementsList({ achievements }: { achievements: Achievement[] }) {
 function ProfileAchievements({ user }: { user: User }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
+	let achvs = []
+	user.achievements.forEach((e) => {
+		achvs.push(achievementsList[Number(e) - 1]);
+	});
+	
 	return (
 		<Card
 			id="Achievements"
@@ -607,32 +612,32 @@ function ProfileAchievements({ user }: { user: User }) {
 							</Button>
 						}
 					>
-						<AchievementsList achievements={achievements} />
+						<AchievementsList achievements={achvs} />
 					</ModalSet>
 				</div>
 			}
 			header={"Achievements"}
 			fullWidth
 		>
-			<AchievementsList achievements={achievements.slice(0, 3)} />
+			<AchievementsList achievements={achvs.slice(0, 3)} />
 			<div className="flex flex-col gap-4 p-2 pt-4">
 				<div className="h-2 w-full overflow-hidden rounded-full bg-black">
 					<div
 						style={{
-							width: `${user.achievements_percentage}%`,
+							width: `${achvs.length*10}%`,
 						}}
 						className="h-full w-3/4 bg-secondary"
 					></div>
 				</div>
 				<div className="flex justify-between">
 					<AchievementScore
-						score={user.achievements.reduce(
+						score={achvs.reduce(
 							(acc, curr) => acc + curr.score,
 							0,
 						)}
 					/>
 					<span className="text-xl font-medium text-white">
-						{user.achievements_percentage}%
+						{achvs.length*10}%
 					</span>
 				</div>
 			</div>

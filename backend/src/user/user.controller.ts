@@ -317,5 +317,5 @@ export class UserController {
 	async getAllUsers() {
 		const users = await this.userService.getAllUsers();
 		return users;
-	}
+	}	
 }
