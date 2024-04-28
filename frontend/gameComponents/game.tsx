@@ -497,10 +497,10 @@ const Home = (data: any) => {
 					{<CameraController GameData={GameData} />}
 					{/* <OrbitControls /> */}
 					{session.map == "universe" && (
-						<Sky isRotating={isRotating} />
+						<Sky  />
 					)}
 					{session.map == "cloud" && (
-						<Sky_cloud isRotating={isRotating} />
+						<Sky_cloud />
 					)}
 					<directionalLight
 						position={[4, 10, -30]}
