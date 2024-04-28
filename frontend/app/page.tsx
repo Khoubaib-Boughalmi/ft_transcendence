@@ -23,7 +23,6 @@ import NoData from "@/components/NoData";
 import { useRouter } from "next/navigation";
 import axios from "@/lib/axios";
 import socket from "@/lib/socket";
-import { PrismaClient } from "@prisma/client";
 import { log } from "console";
 
 function TopThreeRank({ user, rank }: { user: User; rank: number }) {
