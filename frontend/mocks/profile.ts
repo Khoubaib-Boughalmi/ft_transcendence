@@ -58,7 +58,7 @@ export const achievements: Achievement[] = [
 		name: "Welcome to the Club!",
 		description:
 			"Awarded for playing your first match.",
-		icon: "/pfp.png",
+		icon: "/achievements/beg.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -67,7 +67,7 @@ export const achievements: Achievement[] = [
 		name: "Unbeatable",
 		description:
 			"Awarded for maintaining a winning streak of Three matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/ws3.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -76,7 +76,7 @@ export const achievements: Achievement[] = [
 		name: "Iron Paddle",
 		description:
 			"Awarded for playing three matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/p3m.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -85,7 +85,7 @@ export const achievements: Achievement[] = [
 		name: "Dominating Victory",
 		description:
 			"Awarded for winning a match with a margin of at least 5 points.",
-		icon: "/pfp.png",
+		icon: "/achievements/w5d.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -94,7 +94,7 @@ export const achievements: Achievement[] = [
 		name: "Win Master",
 		description:
 			"Awarded for maintaining a winning streak of Five matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/ws5.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -103,7 +103,7 @@ export const achievements: Achievement[] = [
 		name: "Unstoppable Player",
 		description:
 			"Awarded for maintaining a winning streak of Ten matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/ws10.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -112,7 +112,7 @@ export const achievements: Achievement[] = [
 		name: "King/Queen",
 		description:
 			"Awarded for maintaining a winning streak of hundred matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/ws100.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -121,7 +121,7 @@ export const achievements: Achievement[] = [
 		name: "Maestro",
 		description:
 			"Awarded for playing hundred matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/p100m.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -130,7 +130,7 @@ export const achievements: Achievement[] = [
 		name: "Power Player",
 		description:
 			"Awarded for playing Five matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/p5m.jpg",
 		date: new Date(),
 		score: 100,
 	},
@@ -139,7 +139,7 @@ export const achievements: Achievement[] = [
 		name: "Champion",
 		description:
 			"Awarded for playing Ten matches.",
-		icon: "/pfp.png",
+		icon: "/achievements/p10m.jpg",
 		date: new Date(),
 		score: 100,
 	},
