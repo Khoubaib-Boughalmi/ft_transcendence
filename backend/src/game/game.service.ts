@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { SocketService } from 'src/socket/socket.service';
-import { Chat, GameMatch, Message, Prisma, User } from '@prisma/client';
+import { GameMatch, Prisma } from '@prisma/client';
 
 @Injectable()
 export class GameService {
@@ -13,7 +13,6 @@ export class GameService {
 	async startGame(server: any, client: any, payload: any) {
 		this.socketService.addPlayerToGame(payload.player1Id);
 		this.socketService.addPlayerToGame(payload.player2Id);
-		// console.log('Game started', payload);
 	}
 
 	async createMatch(
@@ -21,8 +20,6 @@ export class GameService {
 		userId2: string,
 		type: string,
 	): Promise<GameMatch> {
-		console.log('Creating game match', userId1, userId2);
-
 		const game = await this.createGame({
 			player1_id: userId1,
 			player2_id: userId2,
@@ -35,7 +32,6 @@ export class GameService {
 			game_map: '',
 			game_ended: false,
 		});
-		console.log('Game created', game);
 		return game;
 	}
 
@@ -94,16 +90,11 @@ export class GameService {
 				id: match.player2_id,
 			},
 		});
-		// console.log('player1', player1);
-		// console.log('player2', player2);
-		// console.log('mtchh', match);
 		return {
 			...match,
 			player1info,
 			player2info,
 		};
-
-		// return match;
 	}
 
 	async joinMatch(matchId: string, player1or2: number) {
