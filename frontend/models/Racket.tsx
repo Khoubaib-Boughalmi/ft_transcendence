@@ -12,12 +12,8 @@ export function Racket(ogprops) {
 	const [racketRef, api] = useBox(() => ({
 		...props,
 		collisionResponse: 0,
-		type: "Kinematic", // Set the type to 'Kinematic' to detect collisions without reacting to them
+		type: "Kinematic", 
 		args: [0.55, 0.55, 0.4],
-
-		// onCollide: (e) => {
-		//   console.log("collided", e);
-		// },
 	}));
 	if (props.isplayer) {
 		GameData.racket1Ref = racketRef;
@@ -30,7 +26,6 @@ export function Racket(ogprops) {
 
 	useEffect(() => {
 		const handleMouseMove = (e) => {
-			// console.log("refcanvas", canvasRef);
 			if (!canvasRef.current) return;
 
 			const canvasRect = canvasRef.current.getBoundingClientRect();
@@ -38,13 +33,11 @@ export function Racket(ogprops) {
 			const mouseX = e.clientX - canvasRect.left;
 			const mouseY = e.clientY - canvasRect.top;
 
-			// Normalize these values based on the canvas size
 			const x = (mouseX / canvasRect.width) * 3 - 1.5;
 			const z = mouseY / canvasRect.height - 0.5;
 			const yRotation = -(0.5 - mouseX / canvasRect.width) * 0.7;
 			const zRotation = (0.5 - mouseX / canvasRect.width) * 0.5;
 
-			// Apply these values to your object's position and rotation
 			api.position.set(
 				x,
 				racketRef.current.position.y,
