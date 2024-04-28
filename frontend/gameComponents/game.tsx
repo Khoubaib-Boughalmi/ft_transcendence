@@ -11,6 +11,7 @@ import {
 	Table,
 	CameraController,
 	PlaneTable,
+	Sky_cloud,
 } from "../models";
 import { useFrame } from "@react-three/fiber";
 import { Controls, useControl } from "react-three-gui";
@@ -497,6 +498,9 @@ const Home = (data: any) => {
 					{/* <OrbitControls /> */}
 					{session.map == "universe" && (
 						<Sky isRotating={isRotating} />
+					)}
+					{session.map == "cloud" && (
+						<Sky_cloud isRotating={isRotating} />
 					)}
 					<directionalLight
 						position={[4, 10, -30]}

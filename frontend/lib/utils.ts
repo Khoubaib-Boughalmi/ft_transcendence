@@ -217,7 +217,11 @@ export const themes = [
 	{ name: "Blue" },
 	{ name: "Purple" },
 ];
-export const maps = [{ name: "Universe" }, { name: "Basic" }];
+export const maps = [
+	{ name: "Universe" },
+	{ name: "Basic" },
+	{ name: "Cloud" },
+];
 export function getCurrentPath(pathName: string) {
 	const current = Object.entries(paths)
 		.reverse()

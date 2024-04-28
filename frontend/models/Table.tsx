@@ -3,12 +3,6 @@ import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import { a } from "@react-spring/three";
 import * as THREE from "three";
-// import scene from "../assets/3d/group2.glb";
-// import { useFrame, useThree } from "@react-three/fiber";
-// import { usePlane } from "@react-three/cannon";
-
-// import { Group, Mesh } from "three";
-// import tableScene from "../assets/3d/table_tennis_table.glb";
 
 export function Table(props) {
 	const { nodes, materials } = useGLTF("/3d/table_tennis_table.glb");

@@ -1,15 +1,8 @@
 import { Mesh } from "three";
 import { useRef, useEffect, useState } from "react";
-import { useGLTF } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
 import { useSphere } from "@react-three/cannon";
-// import ballScene from "../assets/3d/ball.glb";
-// import imageww from "../assets/3d/gradient.jpg";
 import { useTexture } from "@react-three/drei";
-import { m } from "framer-motion";
 import React from "react";
-// mypoints = { mypoints };
-// setMypoints = { setMypoints };
 
 export function Ball(gprops) {
 	const {

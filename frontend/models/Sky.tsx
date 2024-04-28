@@ -2,11 +2,9 @@ import { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 // import { useFrame } from "@react-three/fiber";
 
-// import skyScene from "../assets/3d/sky3.glb";
-
 // 3D Model from: https://sketchfab.com/3d-models/phoenix-bird-844ba0cf144a413ea92c779f18912042
 export function Sky({ isRotating }) {
-	const sky = useGLTF("/3d/sky3.glb");
+	const sky = useGLTF("/3d/sky_universe.glb");
 	const skyRef = useRef();
 
 	// Note: Animation names can be found on the Sketchfab website where the 3D model is hosted.

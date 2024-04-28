@@ -1,12 +1,8 @@
 import { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-// import { useFrame } from "@react-three/fiber";
-
-// import jbalScene from "/assets/3d/the_3_islands.glb";
 
 export function Jball(props) {
-	// console.log("jball props", props);
 	const { nodes, materials } = useGLTF("/3d/the_3_islands.glb");
 	const group = useRef();
 
