@@ -89,7 +89,6 @@ export class UserController {
 		let isPlaying = false;
 		if (isOnline) {
 			isPlaying = this.socketService.checkPlayerInGame(user.id);
-			// console.log('isPlaying', isPlaying);
 		}
 		return {
 			isOnline: isPlaying ? 'Playing' : isOnline ? 'Online' : 'Offline',
@@ -297,8 +296,6 @@ export class UserController {
 				username: { contains: params.username, mode: 'insensitive' },
 			},
 		});
-
-		// Sort the users by the first occurence of the search query
 		users.sort((a, b) => {
 			return (
 				a.username.indexOf(params.username) -
@@ -314,6 +311,7 @@ export class UserController {
 
 		return usersProfiles;
 	}
+	
 	@UseGuards(JwtGuard)
 	@Get('allusers')
 	async getAllUsers() {

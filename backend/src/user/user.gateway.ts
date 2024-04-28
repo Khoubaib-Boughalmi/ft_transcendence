@@ -65,8 +65,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		if (!client.data) return;
 		this.socketService.removeUserSocket(client.data.id, client);
 		this.socketService.removePlayerGame(client.data.id, client);
-		// const getPlayerGame = this.socketService.getPlayerGame(client.data.id);
-		// console.log('getPlayerGame', getPlayerGame);
 	}
 
 	async login(client: Socket, access_token: string) {
@@ -106,10 +104,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async announceWaitingPlayer(gameId: string) {
 		this.server.to(gameId).emit('announceWaitingPlayer');
 	}
-
-	// async numberofOnlineUsers() {
-	// 	return this.socketService.numberofOnlineUsers();
-	// }
 
 	private MessageProcessingQueue: string[][] = [];
 
@@ -202,7 +196,6 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			payload.oppPoints2,
 			winner_id,
 		);
-		// if (winner_id == 'tie') {
 		this.userService.addexp(
 			payload.player1_id,
 			winner_id,
@@ -213,53 +206,18 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			winner_id,
 			payload.gameType,
 		);
-		// }
 		this.userService.addMatchToHistory(payload.player1_id, payload.game_id);
 		this.userService.addMatchToHistory(payload.player2_id, payload.game_id);
 	}
 
 	@SubscribeMessage('game_data')
 	async game_data(client: Socket, payload: any) {
-		// console.log('game_data', payload.gameId);
-
-		// console.log('game_data', payload);
 		this.server.to(payload.gameId).emit('recieve_game_data', payload);
-		// console.log('game_data', payload);
-
-		// this.socketService.addPlayerToGame(payload.player1_id);
-		// this.socketService.addPlayerToGame(payload.player2_id);
-		// emit game data to the other player but not to the sender
-		// const opponentId = payload.opponentId;
-		// const opponentSockets = this.socketService.getUserSockets(opponentId);
-		// if (!opponentSockets) return;
-		// opponentSockets.forEach((socket) => {
-		// 	if (socket.id != client.id) {
-		// 		socket.emit('recieve_game_data', payload);
-		// 	}
-		// });
-		// send game data to the other player
-		// this.server.to(payload.opponentId).emit('recieve_game_data', payload);
-		// this.gameService.gameData(this.server, client, payload);
 	}
 
 	@SubscribeMessage('playerIsReady')
 	async playerIsReady(client: Socket, payload: any) {
 		console.log('playerIsReady', payload);
 		this.server.to(payload.gameId).emit('palyer_ready', payload);
-	}
-	@SubscribeMessage('playerIsAlive')
-	async playerIsAlive(client: Socket, payload: any) {
-		console.log('playerIsAlive', payload);
-		// this.server.to(payload.gameId).emit('palyer_alive', payload);
-	}
-	@SubscribeMessage('playerGone')
-	async playerGone(client: Socket, payload: any) {
-		console.log('playerGone', payload);
-		// this.server.to(payload.gameId).emit('player_gone', payload);
-	}
-	@SubscribeMessage('leavegame')
-	async leavegame(client: Socket, payload: any) {
-		console.log('leavegame', payload);
-		// this.gameService.leaveGame(this.server, client, payload);
 	}
 }
