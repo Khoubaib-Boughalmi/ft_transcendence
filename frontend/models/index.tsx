@@ -1,4 +1,3 @@
-// export { Island } from "./Island";
 export { Sky } from "./Sky";
 export { Sky_cloud } from "./Sky_cloud";
 export { Racket } from "./Racket";
