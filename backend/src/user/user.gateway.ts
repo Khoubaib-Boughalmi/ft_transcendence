@@ -190,26 +190,26 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 					? payload.player1_id
 					: payload.player2_id;
 
-		this.gameService.changeMatchScore(
+		await this.gameService.changeMatchScore(
 			payload.game_id,
 			payload.mypoints,
 			payload.oppPoints2,
 			winner_id,
 		);
-		this.userService.addexp(
+		await this.userService.addexp(
 			payload.player1_id,
 			winner_id,
 			payload.gameType,
 		);
-		this.userService.addexp(
+		await this.userService.addexp(
 			payload.player2_id,
 			winner_id,
 			payload.gameType,
 		);
-		this.userService.addMatchToHistory(payload.player1_id, payload.game_id);
-		this.userService.addMatchToHistory(payload.player2_id, payload.game_id);
-		this.userService.updateAchievements(payload.player1_id);
-		this.userService.updateAchievements(payload.player2_id);
+		await this.userService.addMatchToHistory(payload.player1_id, payload.game_id);
+		await this.userService.addMatchToHistory(payload.player2_id, payload.game_id);
+		await this.userService.updateAchievements(payload.player1_id);
+		await this.userService.updateAchievements(payload.player2_id);
 	}
 
 	@SubscribeMessage('game_data')
