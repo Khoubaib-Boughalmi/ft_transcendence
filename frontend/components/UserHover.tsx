@@ -6,18 +6,20 @@ import {
 	getRank,
 	invitePlayer,
 } from "@/lib/utils";
-import { dummyUser } from "@/mocks/profile";
+import { achievementsList, dummyUser } from "@/mocks/profile";
 import { User } from "@/types/profile";
 import { Skeleton, useDisclosure } from "@nextui-org/react";
 import {
 	HeartHandshake,
+	Medal,
 	MessageSquareIcon,
+	Percent,
 	Swords,
 	UserMinus2,
 	UserPlus2,
 	UserX2,
 } from "lucide-react";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import useSWR from "swr";
 import { twMerge } from "tailwind-merge";
 import { Button } from "./Button";
@@ -37,7 +39,7 @@ export default function UserHover({ user }: { user: User }) {
 	} = useContext(PublicContext) as any;
 	const areFriends = session.friends.find((f: User) => f.id == user.id);
 	const isBlocked = session.blocked_users.find((f: User) => f.id == user.id);
-	const { data: fullData, isLoading } = useSWR(
+	const { data: fullData, isLoading } = useSWR<User>(
 		`/user/profile/${user.username}`,
 		fetcher,
 	);
@@ -46,6 +48,21 @@ export default function UserHover({ user }: { user: User }) {
 		...user,
 	};
 	const router = useRouter();
+
+	const achvs = useMemo(() => {
+		if (!fullData) return [];
+		return fullData.achievements.map((e) => achievementsList[Number(e) - 1]);
+	}, [fullData]);
+
+	console.log(
+		{
+			user: user.username,
+			country: user.country,
+			flag: getFlag(user.country),
+		},
+		user,
+		fullData
+	)
 
 	return (
 		<>
@@ -91,12 +108,12 @@ export default function UserHover({ user }: { user: User }) {
 					<Status userId={user.id} size="sm" />
 				</div>
 				<Skeleton
-					isLoaded={!isLoading}
+					isLoaded={(!isLoading) && (fullData != undefined)}
 					classNames={{
 						base: "after:dark:bg-card-250 before:dark:bg-card-250 dark:bg-card-250 rounded-xl",
 					}}
 				>
-					{session.id != user.id && (
+					{session.id != fullData?.id && (
 						<div className="flex w-full gap-2 rounded-full bg-card-250 p-2">
 							{!isBlocked && (
 								<>
@@ -108,7 +125,7 @@ export default function UserHover({ user }: { user: User }) {
 										onClick={() => {
 											InteractionFunctionality(
 												areFriends ? "unfriend" : "add",
-												user,
+												fullData,
 												sessionMutate,
 												setLoading,
 											);
@@ -126,8 +143,8 @@ export default function UserHover({ user }: { user: User }) {
 										iconOnly
 										variant="ghost"
 										onClick={() => {
-											// InteractionFunctionality("block", user, sessionMutate, setLoading);
-											invitePlayer(user, session, router);
+											// InteractionFunctionality("block", fullData, sessionMutate, setLoading);
+											invitePlayer(fullData, session, router);
 										}}
 									>
 										<Swords />
@@ -138,7 +155,7 @@ export default function UserHover({ user }: { user: User }) {
 										iconOnly
 										variant="ghost"
 										onClick={() => {
-											setMessageTarget(user);
+											setMessageTarget(fullData);
 											onMessageOpen();
 										}}
 									>
@@ -157,7 +174,7 @@ export default function UserHover({ user }: { user: User }) {
 								onClick={() => {
 									InteractionFunctionality(
 										isBlocked ? "unblock" : "block",
-										user,
+										fullData,
 										sessionMutate,
 										setLoading,
 									);
@@ -176,37 +193,38 @@ export default function UserHover({ user }: { user: User }) {
 					<div className="flex w-full gap-2 rounded-xl bg-card-250 p-2">
 						<div
 							className={`aspect-square h-16 shrink-0 overflow-hidden rounded-xl bg-red-500 ${
-								getRank(user.rank).color
+								getRank(fullData?.rank).color
 							} flex items-center justify-center`}
 						>
 							<div
 								className={`${
-									getRank(user.rank).color
+									getRank(fullData?.rank).color
 								} fuck-css text-3xl text-transparent mix-blend-plus-lighter`}
 							>
-								{getRank(user.rank).name}
+								{getRank(fullData?.rank).name}
 							</div>
 						</div>
 						<div className="flex w-full flex-col gap-2">
 							<div className="flex w-full flex-col rounded-xl bg-card px-2  py-1 text-[0.55rem]	leading-3">
 								<div className="flex w-full justify-between px-2">
 									<div>Level</div>
-									<div>{user.level}</div>
+									<div className="font-medium">{fullData?.level}</div>
 								</div>
 							</div>
 							<div className="flex w-full flex-1 flex-col gap-1 rounded-xl  bg-card-300 px-2	py-1 text-[0.55rem] leading-3">
 								<div className="flex w-full justify-between px-2">
-									<div>Score</div>
-									<div>
-										{user.achievements.reduce(
-											(acc, curr) => acc + curr.score,
-											0,
-										)}
+									<div className="">
+										<Medal size={10}/>
+									</div>
+									<div className="font-medium">
+										{achvs.reduce((acc, curr) => acc + curr.score, 0)}
 									</div>
 								</div>
 								<div className="flex w-full justify-between px-2">
-									<div>Completion</div>
-									<div>{user.achievements_percentage}%</div>
+									<div className="">
+										<Percent size={10} />
+									</div>
+									<div className="font-medium">{(achvs.length * 100) / achievementsList.length}%</div>
 								</div>
 							</div>
 						</div>
