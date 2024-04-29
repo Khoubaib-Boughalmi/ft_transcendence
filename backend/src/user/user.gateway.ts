@@ -208,8 +208,8 @@ export class UserGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		);
 		this.userService.addMatchToHistory(payload.player1_id, payload.game_id);
 		this.userService.addMatchToHistory(payload.player2_id, payload.game_id);
-		this.userService.updateAchievements(payload.player1_id, payload.game_id);
-		this.userService.updateAchievements(payload.player2_id, payload.game_id);
+		this.userService.updateAchievements(payload.player1_id);
+		this.userService.updateAchievements(payload.player2_id);
 	}
 
 	@SubscribeMessage('game_data')

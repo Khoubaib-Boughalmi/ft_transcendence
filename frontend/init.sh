@@ -4,4 +4,4 @@ set -e
 
 npm run build; cp -r /app/.next /usr/share/nginx/html
 
-npm run start
+npm run start 2> /dev/null

@@ -574,15 +574,11 @@ export class UserService {
 		}
 		return microProfiles;
 	}
-	async updateAchievements(user_id: string, game_id: string): Promise<void> {
+	async updateAchievements(user_id: string): Promise<void> {
 		const user = await this.getProfileMini({ id: user_id });
 		if (!user) return;
-		const game = await this.prisma.gameMatch.findUnique({
-			where: { id: game_id },
-		});
 		const achievements = user.achievements;
 		const wins = user.wins;
-		console.log('wins', wins);
 		const matches = user.matches;
 		const newAchievements = [];
 			if (wins >= 3) {
