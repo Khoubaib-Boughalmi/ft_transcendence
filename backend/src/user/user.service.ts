@@ -570,6 +570,7 @@ export class UserService {
 				division_exp: user.division_exp,
 				achievements: [],
 				achievements_percentage: 0,
+				country: user.country,
 			});
 		}
 		return microProfiles;
