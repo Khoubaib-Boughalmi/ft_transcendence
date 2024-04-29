@@ -10,7 +10,7 @@ import MatchHistoryList, {
 import UserList from "@/components/UserList";
 import SuperImage from "@/components/SuperImage";
 import Divider from "@/components/Divider";
-import { getFlag, getRank } from "@/lib/utils";
+import { fetcher, getFlag, getRank } from "@/lib/utils";
 import { twMerge } from "tailwind-merge";
 import { Circle, Crown, Medal, Swords } from "lucide-react";
 import { User } from "@/types/profile";
@@ -24,6 +24,8 @@ import { useRouter } from "next/navigation";
 import axios from "@/lib/axios";
 import socket from "@/lib/socket";
 import { log } from "console";
+import useSWR from "swr";
+import { SuperSkeleton } from "@/components/SuperSkeleton";
 
 function TopThreeRank({ user, rank }: { user: User; rank: number }) {
 	if (!user) return null;
@@ -117,20 +119,12 @@ export default function Page() {
 	const { session } = useContext(PublicContext) as any;
 	const [queuing, setQueuing] = useState(false);
 	const router = useRouter();
-	const [allusers, setTopUsers] = useState<User[]>([]);
+	const {data: allusers, isLoading} = useSWR<User[]>("/user/allusers", fetcher);
 
 	useEffect(() => {
 		document.title = "long enough";
 	}, []);
-	useEffect(() => {
-		const fetchTopUsersData = async () => {
-			const users = await fetchTopUsers();
-			console.log("Fetched users:", users);
-			setTopUsers(users);
-		};
 
-		fetchTopUsersData();
-	}, []);
 	return (
 		<div className="relative flex-1">
 			<div className="flex h-full w-full flex-col gap-4 px-12 pb-12 2xl:px-64	 2xl:pb-16">
@@ -309,8 +303,16 @@ export default function Page() {
 									innerContainer:
 										"flex flex-col h-full overflow-y-scroll no-scrollbar flex-1 gap-0 p-0 ",
 								}}
-								className="no-scrollbar h-full overflow-y-scroll bg-gradient-to-r from-card-200 to-card-300 p-0"
+								className="no-scrollbar h-full overflow-y-scroll bg-gradient-to-r from-card-200 to-card-300 p-0 relative"
 							>
+								<SuperSkeleton
+									isLoaded={!isLoading}
+									className="absolute inset-0 z-10"
+									classNames={{
+										base: "after:dark:bg-card-300 before:dark:bg-card-300 dark:bg-card-300",
+									}}
+								/>
+								{allusers && <>
 								<div className="relative flex min-h-72 flex-1 shrink-0  items-end justify-center pt-12">
 									<div className="absolute inset-0 z-10 aspect-square translate-y-[-70%] rounded-full bg-card-500 blur-[69px]" />
 									<div className="z-20 flex h-full items-end justify-center">
@@ -379,6 +381,7 @@ export default function Page() {
 										);
 									})}
 								</div>
+								</>}
 							</Card>
 						</div>
 						<div className="relative col-span-3 row-span-10">
