@@ -822,7 +822,7 @@ export function Navbar() {
 				data-[solid=true]:h-16
 				data-[solid=true]:px-0
 				`,
-				currentPath == "Test" && "-translate-y-full",
+				currentPath == "Game" && "-translate-y-full",
 			)}
 		>
 			<div

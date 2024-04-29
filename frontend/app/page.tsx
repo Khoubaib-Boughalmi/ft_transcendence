@@ -79,7 +79,7 @@ async function JoinQueueing(session: any, router: any) {
 			socket: socket.id,
 		});
 		// Redirect the router to the game session
-		router.push(`/test/${response.data.id}`);
+		router.push(`/game/${response.data.id}`);
 	} catch (error) {
 		console.error("Error inviting player:", error);
 	}
@@ -343,15 +343,18 @@ export default function Page() {
 													list: "z-10 flex-1",
 												}}
 												type="list"
-												startContent={({user}) => {
-													const userIndex = users.indexOf(user);
+												startContent={({ user }) => {
+													const userIndex =
+														users.indexOf(user);
 													return (
 														<div className="-mr-2  flex aspect-square h-full shrink-0 items-center justify-center text-xl font-medium">
-															{i * 5 + userIndex + 4}
+															{i * 5 +
+																userIndex +
+																4}
 														</div>
 													);
 												}}
-												endContent={({user}) => {
+												endContent={({ user }) => {
 													return (
 														<div className="flex items-center justify-center">
 															<div className="jsutify-center flex items-center gap-1 rounded-xl bg-secondary-300 px-2">
@@ -363,7 +366,9 @@ export default function Page() {
 																	/>
 																</div>
 																<div className="flex items-center justify-center gap-4 bg-gradient-to-t from-secondary-500 to-white bg-clip-text text-lg font-bold text-transparent">
-																	{user.division_exp}
+																	{
+																		user.division_exp
+																	}
 																</div>
 															</div>
 														</div>

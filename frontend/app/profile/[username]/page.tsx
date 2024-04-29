@@ -308,11 +308,11 @@ async function invitePlayer(user: User, session: any, router: any) {
 			targetId: user.id,
 			chatId: user.id,
 			queueId: response.data.id,
-			message: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/test/${response.data.id}`,
+			message: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/game/${response.data.id}`,
 		});
 
 		// Redirect the router to the game session
-		router.push(`/test/${response.data.id}`);
+		router.push(`/game/${response.data.id}`);
 	} catch (error) {
 		console.error("Error inviting player:", error);
 	}
@@ -584,11 +584,11 @@ function AchievementsList({ achievements }: { achievements: Achievement[] }) {
 function ProfileAchievements({ user }: { user: User }) {
 	const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-	let achvs = []
+	let achvs = [];
 	user.achievements.forEach((e) => {
 		achvs.push(achievementsList[Number(e) - 1]);
 	});
-	
+
 	return (
 		<Card
 			id="Achievements"
@@ -624,20 +624,17 @@ function ProfileAchievements({ user }: { user: User }) {
 				<div className="h-2 w-full overflow-hidden rounded-full bg-black">
 					<div
 						style={{
-							width: `${achvs.length*10}%`,
+							width: `${achvs.length * 10}%`,
 						}}
 						className="h-full w-3/4 bg-secondary"
 					></div>
 				</div>
 				<div className="flex justify-between">
 					<AchievementScore
-						score={achvs.reduce(
-							(acc, curr) => acc + curr.score,
-							0,
-						)}
+						score={achvs.reduce((acc, curr) => acc + curr.score, 0)}
 					/>
 					<span className="text-xl font-medium text-white">
-						{achvs.length*10}%
+						{achvs.length * 10}%
 					</span>
 				</div>
 			</div>
