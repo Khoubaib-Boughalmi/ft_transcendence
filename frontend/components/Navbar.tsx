@@ -468,9 +468,8 @@ function ChangeMap(user, map) {
 
 function ProfileButton({ user }: { user: User }) {
 	const [mounted, setMounted] = useState(false);
-
 	const router = useRouter();
-	const { sessionMutate, fullMutate, twoFactorAuthenticated } = useContext(
+	const { sessionMutate, fullMutate, twoFactorAuthenticated, session } = useContext(
 		PublicContext,
 	) as any;
 	const { isOpen, onClose, onOpen, onOpenChange } = useDisclosure();
@@ -526,7 +525,7 @@ function ProfileButton({ user }: { user: User }) {
 							<Button
 								key={t.name}
 								variant={
-									theme == t.name.toLowerCase()
+									session.map == t.name.toLowerCase()
 										? undefined
 										: "transparent"
 								}
