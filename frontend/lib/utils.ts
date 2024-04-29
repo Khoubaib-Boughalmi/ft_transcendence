@@ -4,7 +4,6 @@ import ContextMenuContext from "@/contexts/ContextMenuContext";
 import axios from "@/lib/axios";
 import { ChatContextType } from "@/types/chat";
 import { InteractionType, Rank, User, UserStatus } from "@/types/profile";
-import { usePathname } from "next/navigation";
 import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import useSWR, { mutate } from "swr";
@@ -211,7 +210,7 @@ export const paths = {
 	Chat: "/chat",
 	Settings: "/settings",
 };
-export const buttons = ["Home", "Profile", "Chat"];
+export const buttons = ["Profile", "Chat"];
 export const themes = [
 	{ name: "Red" },
 	{ name: "Green" },
