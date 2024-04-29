@@ -40,6 +40,7 @@ import {
 	Users2,
 	X,
 	Map,
+	Home,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
@@ -60,6 +61,9 @@ function Navigation() {
 	const router = useRouter();
 	const pathName = usePathname();
 	const current = getCurrentPath(pathName);
+	const iconProps = {
+		size:16
+	}
 
 	return (
 		<>
@@ -69,6 +73,9 @@ function Navigation() {
 						key={name}
 						onClick={() => router.push(paths[name])}
 						variant={current == name ? "default" : "transparent"}
+						startContent={
+							({"Profile": <User2 {...iconProps}/>, "Chat": <MessageSquareIcon {...iconProps}/>})[name]
+						}
 					>
 						{name}
 					</Button>
@@ -836,9 +843,9 @@ export function Navbar() {
 				<div className="m-2 flex h-9 w-full items-center justify-between gap-2">
 					<Link
 						href={"/"}
-						className="flex aspect-square h-full select-none items-center justify-center rounded-full bg-card-400 font-black text-card-600 ring-0 ring-card-500 transition-all hover:shadow-LE hover:ring-2 hover:brightness-150"
+						className={twMerge("flex aspect-square h-full select-none items-center justify-center rounded-full bg-card-400 font-black text-card-600 ring-0 ring-card-500 transition-all hover:shadow-LE hover:ring-2 hover:brightness-150", currentPathname == "/" && "ring-2 ring-primary-500")}
 					>
-						LE
+						<Home size={20} />
 					</Link>
 					<div className="flex h-full flex-1 items-center justify-start gap-2">
 						{twoFactorAuthenticated ? (
