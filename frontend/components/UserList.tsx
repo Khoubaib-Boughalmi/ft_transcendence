@@ -202,10 +202,11 @@ export default function UserList({
 	);
 
 	const sortedUsers = useMemo(() => {
+		if (endContent) return users;
 		return users.toSorted((a, b) => {
-			if (onlineStates.get(a.id) == "Playing" && onlineStates.get(b.id) != "Playing") return -1;
-			if (onlineStates.get(a.id) == "Online" && onlineStates.get(b.id) == "Offline") return -1;
-			if (onlineStates.get(a.id) == "Offline" && onlineStates.get(b.id)  == "Online") return 1;
+			const priority = ["Playing", "Online", "Offline"]
+			console.log({a, b, astate: onlineStates.get(a.id), bstate: onlineStates.get(b.id)});
+			if (priority.indexOf(onlineStates.get(a.id)) < priority.indexOf(onlineStates.get(b.id))) return -1;
 			return 0;
 		});
 	}, [users, onlineStates]);
