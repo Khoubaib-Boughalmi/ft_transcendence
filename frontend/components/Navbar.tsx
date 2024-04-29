@@ -800,7 +800,7 @@ export function Navbar() {
 	const [solid, setSolid] = useState(false);
 	const { accessToken, session, sessionLoading, twoFactorAuthenticated } =
 		useContext(PublicContext) as any;
-	const currentPath = getCurrentPath(usePathname());
+	const currentPathname = usePathname();
 
 	useEffect(() => {
 		const listener = () => {
@@ -821,7 +821,7 @@ export function Navbar() {
 				data-[solid=true]:h-16
 				data-[solid=true]:px-0
 				`,
-				currentPath == "Game" && "-translate-y-full",
+				currentPathname.includes("/game/") && "-translate-y-full",
 			)}
 		>
 			<div
