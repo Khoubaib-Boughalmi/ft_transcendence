@@ -4,7 +4,7 @@ import { Socket } from 'socket.io';
 @Injectable()
 export class SocketService {
 	private onlineUsers: Map<string, Socket[]> = new Map();
-	private playerGame: Map<string, { socket: Socket; gameId: string }[]> =
+	private playerGame: Map<string, { socket: any; gameId: string }[]> =
 		new Map();
 
 	private PlayesInGames: string[] = [];
@@ -48,7 +48,7 @@ export class SocketService {
 		return this.onlineUsers.get(userId);
 	}
 
-	addPlayerGame(userId: string, socket: Socket, gameId: string) {
+	addPlayerGame(userId: string, socket: any, gameId: string) {
 		if (this.playerGame.has(userId)) {
 			console.log('should be eliminated');
 			// this.playerGame.get(userId).push({ socket, gameId });

@@ -1,4 +1,5 @@
 import {
+	Body,
 	Controller,
 	Get,
 	HttpException,
@@ -12,6 +13,51 @@ import { GameService } from './game.service';
 import { log } from 'console';
 import { SocketService } from 'src/socket/socket.service';
 import { UserGateway } from 'src/user/user.gateway';
+import { FormDataRequest } from 'nestjs-form-data';
+import {
+	IsNumber,
+	IsOptional,
+	IsUUID,
+	Length,
+	isNumber,
+} from 'class-validator';
+
+export class GameInviteDTO {
+	@IsUUID()
+	user1: string;
+
+	@IsUUID()
+	user2: string;
+
+	@Length(3, 100)
+	socket: string;
+}
+
+export class joinGameDTO {
+	@IsUUID()
+	match_id: string;
+	@IsUUID()
+	player_id: string;
+
+	@Length(3, 100)
+	socket_id: string;
+
+	@IsNumber()
+	player1or2: number;
+}
+
+export class JoinQueueingDTO {
+	@IsUUID()
+	user1: string;
+
+	@Length(3, 100)
+	socket: string;
+}
+
+export class getProfileDTO {
+	@IsUUID()
+	id: string;
+}
 
 @Controller('game')
 export class GameController {
@@ -25,53 +71,37 @@ export class GameController {
 
 	@UseGuards(JwtGuard)
 	@Post('invite')
-	// @FormDataRequest()
-	async invite(@Req() req: any) {
-		const getPlayerGame = this.socketService.getPlayerGame(req.body.user1);
-		// if (getPlayerGame) {
-		// 	throw new HttpException('You are already in a game', 400);
-		// }
-		const player = req.body.user1;
-		const opponent = req.body.user2;
+	@FormDataRequest()
+	async invite(@Req() req, @Body() body: GameInviteDTO) {
+		const player = body.user1;
+		const opponent = body.user2;
 		const game = await this.gameService.createMatch(
 			player,
 			opponent,
 			'friendly',
 		);
-		console.log('addplayer data', req.body.user1, req.body.socket, game.id);
-
-		this.socketService.addPlayerGame(
-			req.body.user1,
-			req.body.socket,
-			game.id,
-		);
-		console.log(
-			'getPlayerGame',
-			this.socketService.getPlayerGame(req.body.user1),
-		);
+		this.socketService.addPlayerGame(body.user1, body.socket, game.id);
 		return game;
 	}
 
 	@UseGuards(JwtGuard)
 	@Post('JoinQueueing')
-	// @FormDataRequest()
-	async JoinQueueing(@Req() req: any) {
-		const getPlayerGame = this.socketService.getPlayerGame(req.body.user1);
+	@FormDataRequest()
+	async JoinQueueing(@Req() req, @Body() body: JoinQueueingDTO) {
+		const getPlayerGame = this.socketService.getPlayerGame(body.user1);
 		if (getPlayerGame) {
 			throw new HttpException('You are already in a game', 400);
 		}
 
 		let ThegameInQueue = this.socketService.getGameInQueue();
-		console.log('ThegameInQueue', ThegameInQueue.gameid);
 		while (ThegameInQueue.gameid == '-1') {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			ThegameInQueue = this.socketService.getGameInQueue();
 		}
 
 		if (ThegameInQueue.gameid) {
-			console.log('Yougonna join to ', ThegameInQueue);
 			const game = await this.gameService.joinToQueuedGame(
-				req.body.user1,
+				body.user1,
 				ThegameInQueue.gameid,
 			);
 			this.userGateway.announceWaitingPlayer(game.id);
@@ -81,12 +111,11 @@ export class GameController {
 		} else {
 			ThegameInQueue.gameid = '-1';
 			const game = await this.gameService.createMatch(
-				req.body.user1,
+				body.user1,
 				'-1',
 				'arena',
 			);
-			this.socketService.setGameInQueue(req.body.socket, game.id);
-			console.log("You're in queue");
+			this.socketService.setGameInQueue(body.socket, game.id);
 			return game;
 		}
 	}
@@ -95,9 +124,10 @@ export class GameController {
 
 	@UseGuards(JwtGuard)
 	@Post('joingame')
-	async joinGame(@Req() req: any) {
-		const match = req.body.match_id;
-		const player1or2 = req.body.player1or2;
+	@FormDataRequest()
+	async joinGame(@Req() req, @Body() body: joinGameDTO) {
+		const match = body.match_id;
+		const player1or2 = body.player1or2;
 		const game = await this.gameService.joinMatch(match, player1or2);
 		const user1Sockets = this.socketService.getUserSockets(game.player1_id);
 		const user2Sockets = this.socketService.getUserSockets(game.player2_id);
@@ -110,14 +140,11 @@ export class GameController {
 		) {
 			if (user1Sockets) {
 				user1Sockets.forEach((socket) => {
-					console.log('user1Sockets', socket.id);
-
 					socket.join(game.id);
 				});
 			}
 			if (user2Sockets) {
 				user2Sockets.forEach((socket) => {
-					log('user2Sockets', socket.id);
 					socket.join(game.id);
 				});
 			}
@@ -129,7 +156,7 @@ export class GameController {
 
 	@UseGuards(JwtGuard)
 	@Get('match/:id?')
-	async getProfile(@Req() req, @Param() params: any) {
+	async getProfile(@Req() req, @Param() params: getProfileDTO) {
 		if (!params.id) {
 			throw new HttpException('User not found', 404);
 		}

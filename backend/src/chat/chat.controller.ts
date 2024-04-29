@@ -183,9 +183,9 @@ export class ChatController {
 			members,
 			invites,
 			bans,
-			admins: chat.chatAdmins.map((admin) =>
-				members.find((m) => m.id === admin),
-			).filter((m) => m),
+			admins: chat.chatAdmins
+				.map((admin) => members.find((m) => m.id === admin))
+				.filter((m) => m),
 			owner: members.find((m) => m.id === chat.chatOwner),
 		};
 	}
