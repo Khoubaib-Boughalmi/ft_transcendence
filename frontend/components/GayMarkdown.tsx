@@ -114,19 +114,19 @@ function GayMarkdown({ message }: { message: Message }) {
 					// Display Game invite embed
 					if (url?.startsWith(process.env.NEXT_PUBLIC_FRONTEND_URL + "/game")) {
 						return (
-							<div className="my-2 flex">
+							<div className="my-2 flex w-full">
 								<Card
 									className="overflow-hidden bg-card-400 p-0 shadow-md shadow-card-100/75"
 									classNames={{
 										innerContainer: "p-0 flex",
 									}}
 								>
-									<div className="aspect-square h-full">
+									<div className="aspect-square h-[128px]">
 										<SuperImage
 											src={message.user.avatar}
 											alt={message.user.username}
-											width={256 / 2}
-											height={256 / 2}
+											width={128}
+											height={128}
 											className="h-full w-full object-cover"
 										/>
 									</div>
