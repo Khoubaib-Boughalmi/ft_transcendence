@@ -34,6 +34,10 @@ export class UserSearchDTO {
 	@Length(1, 36)
 	username: string;
 }
+export class ChangeMapDTO {
+	@Length(1, 36)
+	map: string;
+}
 
 export class AddFriendDTO {
 	@IsUUID()
@@ -114,7 +118,7 @@ export class UserController {
 	@UseGuards(JwtGuard)
 	@Post('/changeMap')
 	@FormDataRequest()
-	async changeMap(@Req() req, @Body() body: any) {
+	async changeMap(@Req() req, @Body() body: ChangeMapDTO) {
 		const user = await this.userService.user({ id: req.user.id });
 		if (!user) throw new HttpException('User not found', 404);
 		await this.userService.updateUser({
@@ -311,11 +315,11 @@ export class UserController {
 
 		return usersProfiles;
 	}
-	
+
 	@UseGuards(JwtGuard)
 	@Get('allusers')
 	async getAllUsers() {
 		const users = await this.userService.getAllUsers();
 		return users;
-	}	
+	}
 }
