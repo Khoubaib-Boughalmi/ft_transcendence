@@ -525,7 +525,7 @@ function AchievementsEntry({ achievement }: { achievement: Achievement }) {
 					className="h-full w-full object-cover"
 				/>
 			</div>
-			<div className="z-20 flex flex-col items-start justify-between py-2 pr-4">
+			<div className="z-20 flex flex-col items-start justify-between py-2 pr-4 w-full">
 				<div className="flex flex-col text-white">
 					<span className="line-clamp-1">{achievement.name}</span>
 					<span className="line-clamp-3 text-sm text-background-900">
