@@ -43,8 +43,8 @@ export class AuthController {
 		const { access_token } = await this.authService.login(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
-			// sameSite: 'none',
-			// secure: true,
+			sameSite: 'none',
+			secure: true,
 		});
 		// When the user logs in for the first time, we redirect them to the frontend settings page
 		if (user.isFirstLogin) {
@@ -68,8 +68,8 @@ export class AuthController {
 		const { access_token } = await this.authService.login2fa(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
-			// sameSite: 'none',
-			// secure: true,
+			sameSite: 'none',
+			secure: true,
 		});
 		res.redirect(process.env.FRONTEND_URL);
 	}
@@ -148,8 +148,8 @@ export class AuthController {
 		const { access_token } = await this.authService.login2fa(user);
 		res.cookie('access_token', access_token, {
 			httpOnly: true,
-			// sameSite: 'none',
-			// secure: true,
+			sameSite: 'none',
+			secure: true,
 		});
 		res.send();
 	}
