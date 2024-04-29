@@ -11,7 +11,10 @@ import SuperImage from "@/components/SuperImage";
 import { SuperSkeleton } from "@/components/SuperSkeleton";
 import UserList from "@/components/UserList";
 import PublicContext from "@/contexts/PublicContext";
-import { AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing } from "@/lib/utils";
+import {
+	AbstractedAttemptedExclusivelyPostRequestToTheNestBackendWhichToastsOnErrorThatIsInTheArgumentsAndReturnsNothing,
+	invitePlayer,
+} from "@/lib/utils";
 import {
 	InteractionFunctionality,
 	fetcherUnsafe,
@@ -288,34 +291,6 @@ function InteractionButton({
 			{buttonText}
 		</Button>
 	);
-}
-
-async function invitePlayer(user: User, session: any, router: any) {
-	console.log("Inviting user:", user);
-
-	try {
-		// Make the HTTP request to invite the user
-		const response = await axios.post("/game/invite", {
-			user1: session.id,
-			user2: user.id,
-			socket: socket.id,
-		});
-
-		console.log("Invitation sent:", response.data);
-
-		// Emit a socket message with the game invitation link
-		socket.emit("message", {
-			targetId: user.id,
-			chatId: user.id,
-			queueId: response.data.id,
-			message: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/game/${response.data.id}`,
-		});
-
-		// Redirect the router to the game session
-		router.push(`/game/${response.data.id}`);
-	} catch (error) {
-		console.error("Error inviting player:", error);
-	}
 }
 
 function ProfileTop({ user }: { user: User }) {

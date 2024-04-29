@@ -4,6 +4,7 @@ import {
 	fetcher,
 	getFlag,
 	getRank,
+	invitePlayer,
 } from "@/lib/utils";
 import { dummyUser } from "@/mocks/profile";
 import { User } from "@/types/profile";
@@ -23,6 +24,7 @@ import { Button } from "./Button";
 import MessageBox from "./MessageBox";
 import Status from "./Status";
 import SuperImage from "./SuperImage";
+import { useRouter } from "next/navigation";
 
 export default function UserHover({ user }: { user: User }) {
 	const [loading, setLoading] = useState(false);
@@ -43,6 +45,7 @@ export default function UserHover({ user }: { user: User }) {
 		...dummyUser,
 		...user,
 	};
+	const router = useRouter();
 
 	return (
 		<>
@@ -124,6 +127,7 @@ export default function UserHover({ user }: { user: User }) {
 										variant="ghost"
 										onClick={() => {
 											// InteractionFunctionality("block", user, sessionMutate, setLoading);
+											invitePlayer(user, session, router);
 										}}
 									>
 										<Swords />

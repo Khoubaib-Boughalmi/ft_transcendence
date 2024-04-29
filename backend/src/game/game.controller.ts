@@ -28,9 +28,9 @@ export class GameController {
 	// @FormDataRequest()
 	async invite(@Req() req: any) {
 		const getPlayerGame = this.socketService.getPlayerGame(req.body.user1);
-		if (getPlayerGame) {
-			throw new HttpException('You are already in a game', 400);
-		}
+		// if (getPlayerGame) {
+		// 	throw new HttpException('You are already in a game', 400);
+		// }
 		const player = req.body.user1;
 		const opponent = req.body.user2;
 		const game = await this.gameService.createMatch(

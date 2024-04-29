@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { useContext, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import useSWR, { mutate } from "swr";
+import socket from "./socket";
 
 export function getFlag(country: string) {
 	const FLAGS: {
@@ -227,4 +228,32 @@ export function getCurrentPath(pathName: string) {
 		.reverse()
 		.find(([_, href]) => pathName.includes(href))?.[0];
 	return current;
+}
+
+export async function invitePlayer(user: User, session: any, router: any) {
+	console.log("Inviting user:", user);
+
+	try {
+		// Make the HTTP request to invite the user
+		const response = await axios.post("/game/invite", {
+			user1: session.id,
+			user2: user.id,
+			socket: socket.id,
+		});
+
+		console.log("Invitation sent:", response.data);
+
+		// Emit a socket message with the game invitation link
+		socket.emit("message", {
+			targetId: user.id,
+			chatId: user.id,
+			queueId: response.data.id,
+			message: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/game/${response.data.id}`,
+		});
+
+		// Redirect the router to the game session
+		router.push(`/game/${response.data.id}`);
+	} catch (error) {
+		console.error("Error inviting player:", error);
+	}
 }
