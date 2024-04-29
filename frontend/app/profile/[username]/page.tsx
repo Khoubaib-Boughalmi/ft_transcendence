@@ -609,7 +609,7 @@ function ProfileAchievements({ user }: { user: User }) {
 						score={achvs.reduce((acc, curr) => acc + curr.score, 0)}
 					/>
 					<span className="text-xl font-medium text-white">
-						{achvs.length * 10}%
+						{(achvs.length * 100) / achievementsList.length}%
 					</span>
 				</div>
 			</div>
