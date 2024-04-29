@@ -55,7 +55,7 @@ export function Ball(gprops) {
 					position.current[0] < -1.8
 				) {
 					if (lastTime3ndi.current) {
-						setMypoints((prev) => prev + 1);
+						setOppPoints((prev) => prev + 1);
 					} else {
 						setMypoints((prev) => prev + 1);
 					}
